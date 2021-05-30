@@ -1,0 +1,224 @@
+#
+# Copyright 2013-2018 RIKEN
+# Copyright 2018-2020 Chiba Institute of Technology
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Author: Masatomo Hashimoto <m.hashimoto@stair.center>
+
+
+DEFINE input:inference "ont.cpi"
+
+PREFIX fb:      <http://codinuum.com/fb/>
+PREFIX ent:     <http://codinuum.com/fact/entity/>
+PREFIX rel:     <http://codinuum.com/fact/version/release/>
+PREFIX variant: <http://codinuum.com/fact/version/variant/>
+PREFIX src:     <http://codinuum.com/ontologies/2012/10/source-code-entity#>
+PREFIX ver:     <http://codinuum.com/ontologies/2012/10/versioning#>
+PREFIX f:       <http://codinuum.com/ontologies/2013/05/fortran-entity#>
+PREFIX cpp:     <http://codinuum.com/ontologies/2019/02/cpp-entity#>
+
+INSERT {
+  ?call f:mayCall ?callee .
+}
+WHERE {
+
+  ?call a ?call_cat OPTION (INFERENCE NONE) .
+  FILTER (?call_cat IN (f:CallStmt, f:FunctionReference, f:PartName))
+
+  FILTER (EXISTS {
+    ?call f:inProgramUnit*/ver:version ?ver .
+    ?callee f:inProgramUnit*/ver:version ?ver .
+  } || EXISTS {
+    ?call f:inProgramUnit*/ver:version ?ver .
+    ?callee cpp:inTranslationUnit/ver:version ?ver .
+  })
+
+  {
+    {
+      SELECT DISTINCT ?callee ?callee_name ?b
+      WHERE {
+
+        ?callee a f:Subprogram ;
+                src:binding ?b ;
+                f:name ?callee_name .
+
+      } GROUP BY ?callee ?callee_name ?b
+    }
+
+    ?call src:binding ?b .
+  }
+  UNION
+  {
+    ?callee a f:Subprogram ;
+            f:name ?callee_name .
+
+    ?call f:refersTo ?callee .
+  }
+  UNION
+  {
+    ?callee a f:Subprogram ;
+            f:provides/f:regexp ?xpat .
+
+    ?call f:requires/f:name ?xn .
+    FILTER (REGEX(?xn, ?xpat, "i"))
+  }
+  UNION
+  {
+    {
+      SELECT DISTINCT ?call ?callee_name ?pu
+      WHERE {
+
+        {
+          ?call f:refersTo ?ifb .
+        }
+        UNION
+        {
+          ?call src:binding ?b .
+          ?ifb src:binding ?b .
+        }
+
+        ?ifb a f:InterfaceBlock ;
+             f:name ?ifb_name ;
+             f:inProgramUnit ?pu .
+
+        ?x f:name ?callee_name ;
+           f:inInterfaceBlock ?ifb .
+
+      } GROUP BY ?call ?callee_name ?pu
+    }
+    {
+      SELECT DISTINCT ?callee ?callee_name ?pu
+      WHERE {
+        ?callee a f:Subprogram ;
+                f:name ?callee_name ;
+                f:inProgramUnit ?pu .  
+
+      } GROUP BY ?callee ?callee_name ?pu
+    }
+  }
+  UNION
+  {
+    {
+      SELECT DISTINCT ?call ?xb ?pu
+      WHERE {
+
+        {
+          ?call f:refersTo ?ifb .
+        }
+        UNION
+        {
+          ?call src:binding ?b .
+          ?ifb src:binding ?b .
+        }
+
+        ?ifb a f:InterfaceBlock ;
+             f:name ?ifb_name ;
+             f:inProgramUnit ?pu .
+
+        ?x f:name ?callee_name ;
+           src:binding ?xb ;
+           f:inInterfaceBlock ?ifb .
+
+      } GROUP BY ?call ?xb ?pu
+    }
+    {
+      SELECT DISTINCT ?callee ?xb ?pu
+      WHERE {
+        ?callee a f:Subprogram ;
+                src:binding ?xb ;
+                f:name ?callee_name ;
+                f:inProgramUnit ?pu .
+
+      } GROUP BY ?callee ?xb ?pu
+    }
+  }
+  UNION
+  {
+    {
+      SELECT DISTINCT ?call ?x
+      WHERE {
+        ?call f:refersTo ?pdecl .
+
+        ?pdecl a f:ProcDecl ;
+               src:binding ?b .
+
+        ?x a f:Name ;
+           src:binding ?b .
+      } GROUP BY ?call ?x
+    }
+    {
+      ?x f:refersTo ?callee .
+    }
+    UNION
+    {
+      ?x src:parent ?assign .
+      ?assign a ?assign_cat OPTION (INFERENCE NONE) .
+      FILTER (?assign_cat IN (f:AssignmentStmt,f:PointerAssignmentStmt))
+      [] rdf:first ?x ;
+         rdf:rest/rdf:first ?rhs .
+      FILTER EXISTS {
+        ?rhs src:binding ?b0 .
+        ?callee src:binding ?b0 .
+      }
+    }
+    ?callee a f:Subprogram ;
+            f:name ?callee_name .
+  }
+  UNION
+  {
+    ?assign a ?assign_cat OPTION (INFERENCE NONE) ;
+            src:children/rdf:first ?lhs ;
+            src:children/rdf:rest/rdf:first ?rhs .
+    FILTER (?assign_cat IN (f:AssignmentStmt,f:PointerAssignmentStmt))
+
+    ?rhs src:binding ?b .
+
+    ?callee a f:Subprogram ;
+            f:name ?callee_name ;
+            src:binding ?b .
+
+    ?dvar a f:PartName ;
+          src:parent+ ?lhs ;
+          f:declarator ?dtor .
+
+    ?var a f:PartName ;
+         f:declarator ?dtor ;
+         src:parent ?pdesig .
+
+    ?pdesig a f:ProcedureDesignator ;
+            src:parent ?call ;
+            f:name ?pdesig_name .
+
+    ?call f:name ?call_name .
+
+    [] rdf:first ?dvar ;
+       rdf:rest/rdf:first ?compo ;
+       rdf:rest/rdf:rest rdf:nil .
+
+    ?compo a ?compo_cat OPTION (INFERENCE NONE) ;
+           f:name ?call_name .
+
+    [] rdf:first ?var ;
+       rdf:rest/rdf:rest rdf:nil .
+  }
+  UNION
+  {
+    ?callee a cpp:FunctionDefinition ;
+            cpp:provides ?xn .
+
+    ?call f:requires ?xn .
+  }
+
+}

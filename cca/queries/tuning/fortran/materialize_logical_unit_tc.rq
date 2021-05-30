@@ -1,0 +1,71 @@
+#
+# Copyright 2013-2017 RIKEN
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Author: Masatomo Hashimoto <m.hashimoto@riken.jp>
+
+
+DEFINE input:inference "ont.cpi"
+
+PREFIX fb:      <http://codinuum.com/fb/>
+PREFIX ent:     <http://codinuum.com/fact/entity/>
+PREFIX unit:    <http://codinuum.com/fact/unit/>
+PREFIX variant: <http://codinuum.com/fact/version/variant/>
+PREFIX src:     <http://codinuum.com/ontologies/2012/10/source-code-entity#>
+PREFIX ver:     <http://codinuum.com/ontologies/2012/10/versioning#>
+PREFIX f:       <http://codinuum.com/ontologies/2013/05/fortran-entity#>
+
+
+INSERT {
+  ?unit a src:LogicalUnit .
+  ?unit src:name ?bn .
+  ?unit ver:version ?v .
+  ?ent src:inLogicalUnit ?unit .
+}
+WHERE {
+
+  {
+    SELECT ?v ?pu ?call0 ?call1 ?bid
+    WHERE {
+
+      ?call0 a f:CallStmt ;
+             src:parent+ ?pu ;
+             f:name "timer_sta" ;
+             src:children/rdf:first/f:value ?bid .
+
+      ?call1 a f:CallStmt ;
+             src:parent+ ?pu ;
+             f:name "timer_end" ;
+             src:children/rdf:first/f:value ?bid .
+
+      ?pu a f:ProgramUnit ;
+          ver:version ?v .
+
+    } GROUP BY ?v ?pu ?call0 ?call1 ?bid
+  }
+
+  OPTIONAL {
+    ?b0 rdf:first ?call0 .
+    ?b0 rdf:rest+ ?b .
+    ?b rdf:first ?ent .
+    ?b rdf:rest+ ?b1 .
+    ?b1 rdf:first ?call1 .
+  }
+
+  BIND (IRI(CONCAT("unit:", STRAFTER(STR(?call0), "entity/"), "-BLOCK")) AS ?unit)
+  BIND (CONCAT("block", STR(?bid)) AS ?bn)
+
+}
+

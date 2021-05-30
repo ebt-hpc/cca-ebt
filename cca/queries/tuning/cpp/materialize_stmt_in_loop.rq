@@ -1,0 +1,53 @@
+#
+# Copyright 2013-2018 RIKEN
+# Copyright 2018-2020 Chiba Institute of Technology
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Author: Masatomo Hashimoto <m.hashimoto@stair.center>
+
+
+DEFINE input:inference "ont.cpi"
+
+PREFIX fb:      <http://codinuum.com/fb/>
+PREFIX ent:     <http://codinuum.com/fact/entity/>
+PREFIX unit:    <http://codinuum.com/fact/unit/>
+PREFIX variant: <http://codinuum.com/fact/version/variant/>
+PREFIX src:     <http://codinuum.com/ontologies/2012/10/source-code-entity#>
+PREFIX ver:     <http://codinuum.com/ontologies/2012/10/versioning#>
+PREFIX cpp:     <http://codinuum.com/ontologies/2019/02/cpp-entity#>
+
+INSERT {
+  ?stmt cpp:inIterationStatementN ?loopN .
+}
+WHERE {
+
+  ?stmt a cpp:Statement ;
+        cpp:inTranslationUnit ?tu ;
+        cpp:inIterationStatement ?loop0 .
+
+  ?loop0 a cpp:inIterationStatement ;
+         cpp:inTranslationUnit ?tu .
+
+  {
+    SELECT ?l0 ?loopN
+    WHERE {
+      ?l0 a cpp:IterationStatement ;
+          cpp:inIterationStatement ?loopN .
+    }
+  } OPTION(TRANSITIVE, T_IN(?l0), T_OUT(?loopN), T_DISTINCT, T_MIN(0))
+  FILTER (?l0 = ?loop0)
+
+}
+

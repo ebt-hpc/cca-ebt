@@ -1,0 +1,76 @@
+#
+# Copyright 2013-2018 RIKEN
+# Copyright 2018-2020 Chiba Institute of Technology
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Author: Masatomo Hashimoto <m.hashimoto@stair.center>
+
+
+DEFINE input:inference "ont.cpi"
+
+PREFIX fb:      <http://codinuum.com/fb/>
+PREFIX ent:     <http://codinuum.com/fact/entity/>
+PREFIX variant: <http://codinuum.com/fact/version/variant/>
+PREFIX rel:     <http://codinuum.com/fact/version/release/>
+PREFIX svn:     <http://codinuum.com/fact/version/svn/revision/>
+PREFIX src:     <http://codinuum.com/ontologies/2012/10/source-code-entity#>
+PREFIX ver:     <http://codinuum.com/ontologies/2012/10/versioning#>
+PREFIX cpp:     <http://codinuum.com/ontologies/2019/02/cpp-entity#>
+
+INSERT {
+  ?macc cpp:declarator ?dtor .
+  ?dtor cpp:declarationTypeSpec ?tspec .
+}
+WHERE {
+
+  ?macc a cpp:PostfixExpression ;
+        a ?cat OPTION (INFERENCE NONE) ;
+        src:child0 ?obj ;
+        src:child2/cpp:name ?field_name .
+
+  FILTER (?cat IN (cpp:PostfixExpressionDot, cpp:PostfixExpressionArrow))
+
+  {
+    ?obj cpp:declarator/cpp:declarationTypeSpec ?tspec0 .
+  }
+  UNION
+  {
+    ?obj cpp:declarator/cpp:declarationTypeSpec ?tspec1 .
+    ?tspec1 cpp:refersTo/cpp:inSimpleDeclaration/src:child1 ?tspec0 .
+  }
+  UNION
+  {
+    ?obj src:binding ?b .
+    ?x src:child1 ?tspec0 ;
+       src:binding ?b .
+    FILTER (?x != ?obj)
+  }
+
+  ?tspec0 cpp:refersTo/cpp:inSimpleDeclaration/src:child1 ?cspec .
+
+  ?cspec a cpp:ClassSpecifier ;
+         src:child2 ?members .
+
+  ?member a cpp:MemberDeclarationDecl ;
+          src:child1 ?tspec ;
+          src:child2 ?dtor ;
+          src:parent ?members .
+
+  FILTER EXISTS {
+    ?dtor src:child0/cpp:name ?field_name .
+    ?tspec a cpp:TypeSpecifier .
+  }
+
+}

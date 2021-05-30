@@ -1,0 +1,49 @@
+#
+# Copyright 2018 Chiba Institute of Technology
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Author: Masatomo Hashimoto <m.hashimoto@stair.center>
+
+
+DEFINE input:inference "ont.cpi"
+
+PREFIX fb:      <http://codinuum.com/fb/>
+PREFIX ent:     <http://codinuum.com/fact/entity/>
+PREFIX variant: <http://codinuum.com/fact/version/variant/>
+PREFIX rel:     <http://codinuum.com/fact/version/release/>
+PREFIX svn:     <http://codinuum.com/fact/version/svn/revision/>
+PREFIX src:     <http://codinuum.com/ontologies/2012/10/source-code-entity#>
+PREFIX ver:     <http://codinuum.com/ontologies/2012/10/versioning#>
+PREFIX f:       <http://codinuum.com/ontologies/2013/05/fortran-entity#>
+
+INSERT {
+  ?tspec a f:NumericType .
+  ?tspec f:body ?body .
+}
+WHERE {
+
+  ?tspec a f:PpMacroTypeSpec ;
+         f:name ?tname .
+
+  ?mdef a f:PpDefine ;
+        f:name ?tname ;
+        f:body ?body .
+
+  FILTER (CONTAINS(?body, "real") ||
+          CONTAINS(?body, "double") ||
+          CONTAINS(?body, "complex") ||
+          CONTAINS(?body, "integer"))
+
+}

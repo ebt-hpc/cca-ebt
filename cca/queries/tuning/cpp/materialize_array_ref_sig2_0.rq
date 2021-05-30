@@ -1,0 +1,88 @@
+#
+# Copyright 2013-2018 RIKEN
+# Copyright 2018-2020 Chiba Institute of Technology
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Author: Masatomo Hashimoto <m.hashimoto@stair.center>
+
+
+DEFINE input:inference "ont.cpi"
+
+PREFIX fb:      <http://codinuum.com/fb/>
+PREFIX ent:     <http://codinuum.com/fact/entity/>
+PREFIX variant: <http://codinuum.com/fact/version/variant/>
+PREFIX rel:     <http://codinuum.com/fact/version/release/>
+PREFIX svn:     <http://codinuum.com/fact/version/svn/revision/>
+PREFIX src:     <http://codinuum.com/ontologies/2012/10/source-code-entity#>
+PREFIX ver:     <http://codinuum.com/ontologies/2012/10/versioning#>
+PREFIX cpp:     <http://codinuum.com/ontologies/2019/02/cpp-entity#>
+
+INSERT {
+  ?aa cpp:arrayRefSig2 ?asig .
+}
+WHERE {
+
+  {
+    SELECT DISTINCT ?aa (CONCAT(?an, ":", ?x1) AS ?asig)
+    WHERE {
+
+      {
+        SELECT DISTINCT ?aa ?an ?idx ?loop ?pu
+        WHERE {
+
+          ?aa a cpp:PostfixExpressionSubscr ;
+              src:child0 ?a ;
+              src:child1 ?idx ;
+              cpp:inIterationStatement ?loop .
+
+          ?a cpp:name ?an .
+
+          ?loop a cpp:IterationStatement ;
+                cpp:inTranslationUnit ?tu .
+
+          FILTER NOT EXISTS {
+            ?aax a cpp:PostfixExpressionSubscr ;
+                 src:parent+ ?aa .
+          }
+
+        } GROUP BY ?aa ?an ?idx ?loop ?tu
+      }
+
+      OPTIONAL {
+
+        ?idx a ?cat_add_or_subt OPTION (INFERENCE NONE) ;
+             src:children (?left ?right) .
+
+        FILTER (?cat_add_or_subt IN (cpp:AdditiveExpressionAdd, cpp:AdditiveExpressionSubt))
+
+        {
+          ?left a cpp:IntegerLiteral OPTION (INFERENCE NONE) .
+          ?right cpp:signature ?s1 .
+
+        } UNION {
+          ?right a cpp:IntegerLiteral OPTION (INFERENCE NONE) .
+          ?left cpp:signature ?s1 .
+        }
+
+      }
+
+      ?idx cpp:signature ?sig1 .
+
+      BIND (COALESCE(?s1, ?sig1) AS ?x1)
+
+    } GROUP BY ?aa ?an ?x1
+  }
+
+}

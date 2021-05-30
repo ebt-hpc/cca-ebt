@@ -1,0 +1,3 @@
+#!/bin/bash
+CCA_HOME=$(dirname $0)
+sudo -u cca -H /bin/bash -c "${CCA_HOME}/ebtutil/opcount.py $* >& /var/log/cca/opcount.log"

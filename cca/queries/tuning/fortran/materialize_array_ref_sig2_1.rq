@@ -1,0 +1,94 @@
+#
+# Copyright 2013-2017 RIKEN
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Author: Masatomo Hashimoto <m.hashimoto@riken.jp>
+
+
+DEFINE input:inference "ont.cpi"
+
+PREFIX fb:      <http://codinuum.com/fb/>
+PREFIX ent:     <http://codinuum.com/fact/entity/>
+PREFIX variant: <http://codinuum.com/fact/version/variant/>
+PREFIX rel:     <http://codinuum.com/fact/version/release/>
+PREFIX svn:     <http://codinuum.com/fact/version/svn/revision/>
+PREFIX src:     <http://codinuum.com/ontologies/2012/10/source-code-entity#>
+PREFIX ver:     <http://codinuum.com/ontologies/2012/10/versioning#>
+PREFIX f:       <http://codinuum.com/ontologies/2013/05/fortran-entity#>
+
+INSERT {
+  ?aa f:arrayRefSig2 ?asig .
+}
+WHERE {
+
+
+  {
+    SELECT DISTINCT ?aa
+    (CONCAT(?an, ":", ?x1, ",", GROUP_CONCAT(DISTINCT ?x; SEPARATOR=",")) AS ?asig)
+    WHERE {
+
+      {
+        SELECT DISTINCT ?aa ?an ?idxs ?expr1 ?loop ?pu
+        WHERE {
+
+          ?aa a f:ArrayAccess ;
+              f:name ?an ;
+              src:children/rdf:rest/rdf:first/src:children ?idxs ;
+              f:inDoConstruct ?loop .
+
+          ?loop a f:DoConstruct ;
+                f:inProgramUnit ?pu .
+
+          ?idxs rdf:rest/rdf:first ?expr1 .
+
+        } GROUP BY ?aa ?an ?idxs ?expr1 ?loop ?pu
+      }
+
+      OPTIONAL {
+
+        ?expr1 a ?cat_add_or_subt OPTION (INFERENCE NONE) ;
+               src:children (?expr1_0 ?expr1_1) .
+
+        FILTER (?cat_add_or_subt IN (f:Add, f:Subt))
+
+        {
+          ?expr1_0 a f:IntLiteralConstant OPTION (INFERENCE NONE) .
+          ?expr1_1 f:signature ?s1 .
+
+        } UNION {
+          ?expr1_1 a f:IntLiteralConstant OPTION (INFERENCE NONE) .
+          ?expr1_0 f:signature ?s1 .
+        }
+
+      }
+
+      ?expr1 f:signature ?sig1 .
+
+      BIND (COALESCE(?s1, ?sig1) AS ?x1)
+
+      {
+        SELECT ?a ?b ?x
+        WHERE {
+          ?a rdf:rest ?b .
+          ?b rdf:first/f:signature ?x .
+        }
+      } OPTION (TRANSITIVE, T_IN(?a), T_OUT(?b), T_DISTINCT,
+                T_MIN(2), T_MAX(14), T_NO_CYCLES)
+      FILTER (?a = ?idxs)
+
+    } GROUP BY ?aa ?an ?x1
+  }
+
+}
