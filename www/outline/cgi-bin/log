@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+
+'''
+  Log provider
+
+  Copyright 2013-2018 RIKEN
+  Copyright 2018-2020 Chiba Institute of Technology
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+'''
+
+__author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
+
+import os
+import datetime
+from pymongo import MongoClient
+import json
+
+from common import DEFAULT_USER, MONGO_PORT
+
+TEMPL = '''Content-Type: application/json
+
+%s
+'''
+
+###
+
+import cgi
+import cgitb
+cgitb.enable()
+
+form = cgi.FieldStorage()
+
+query_json = form.getvalue('query', None)
+
+if query_json:
+    result = {}
+    try:
+        cli = MongoClient('localhost', MONGO_PORT)
+        db = cli.loop_survey
+        col = db.log
+
+        query = json.loads(query_json)
+
+        records = col.find(query)
+
+        result = []
+        for record in records:
+            del record['_id']
+            result.append(record)
+
+    except Exception as e:
+        result['failure'] = str(e)
+
+    print(TEMPL % json.dumps(result))
+
+else:
+    user = form.getvalue('user', DEFAULT_USER)
+    proj = form.getvalue('proj', None)
+    ver  = form.getvalue('ver', None)
+
+    _node_data = form.getvalue('node_data', None)
+    if _node_data:
+        node_data = json.loads(_node_data)
+    else:
+        node_data = [{}]
+    
+    if proj and ver and node_data:
+
+        ip = os.environ.get('REMOTE_ADDR', '???')
+
+        response = {'user':user,'ip':ip,'failure':{},'log':{}}
+
+        has_comment = form.getvalue('has_comment', False)
+        comment = form.getvalue('comment', '')
+        judgment = form.getvalue('judgment', None)
+        estimation_scheme = form.getvalue('estimation_scheme', None)
+
+
+        for nd in node_data:
+
+            nid = nd.get('nid', None)
+
+            path = nd.get('path', None)
+
+            lnum = nd.get('lnum', None)
+
+            idx = nd.get('idx', None)
+            leftmost_idx = nd.get('lmi', None)
+
+            time = datetime.datetime.now().isoformat() # !!! should be UTC!
+            #time = datetime.datetime.utcnow().isoformat()
+
+            response['time'] = time
+
+            ###
+
+            log = {
+                'user' : user,
+                'time' : time,
+                'ip'   : ip,
+                'proj' : proj,
+                'ver'  : ver,
+            }
+
+            def check_bool(key, true_only=False):
+                v = form.getvalue(key, nd.get(key, None))
+                if v == 'true' or v == True:
+                    log[key] = True
+                elif (v == 'false' or v == False) and not true_only:
+                    log[key] = False
+
+            if nid:
+                log['nid'] = nid
+            if idx:
+                log['idx'] = idx
+            if leftmost_idx:
+                log['lmi'] = leftmost_idx
+
+            if path:
+                log['path'] = path
+            if lnum:
+                log['lnum'] = lnum
+
+            if has_comment:
+                log['comment'] = comment
+
+            if judgment:
+                log['judgment'] = judgment
+
+            if estimation_scheme:
+                log['estimation_scheme'] = estimation_scheme
+
+
+            check_bool('checked')
+            check_bool('opened')
+
+            check_bool('relevant', true_only=True)
+            check_bool('target', true_only=True)
+
+            check_bool('open_source', true_only=True)
+            check_bool('expand_target_loops', true_only=True)
+            check_bool('expand_relevant_loops', true_only=True)
+            check_bool('expand_all', true_only=True)
+            check_bool('collapse_all', true_only=True)
+
+            log_id = None
+            db_failure = None
+
+            try:
+                cli = MongoClient('localhost', MONGO_PORT)
+                db = cli.loop_survey
+                col = db.log
+                log_id = col.insert(log)
+
+            except Exception as e:
+                db_failure = str(e)
+
+            ###
+
+            #log['user'] = user
+            log['_id'] = str(log_id)
+
+            response['log'][nid] = log #str(log_id)
+
+            if db_failure:
+                #log['failure'] = db_failure
+                response['failure'][nid] = db_failure
+
+
+        print(TEMPL % json.dumps(response))
+
+    else:
+        print('')

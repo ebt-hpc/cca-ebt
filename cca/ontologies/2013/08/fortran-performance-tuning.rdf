@@ -1,0 +1,779 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY dc "http://purl.org/dc/elements/1.1/" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY ver "http://codinuum.com/ontologies/2012/10/versioning#" >
+    <!ENTITY chg "http://codinuum.com/ontologies/2012/10/primitive-change#" >
+    <!ENTITY src "http://codinuum.com/ontologies/2012/10/source-code-entity#" >
+    <!ENTITY fpt "http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#" >
+]>
+
+
+<rdf:RDF xmlns="http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#"
+     xml:base="http://codinuum.com/ontologies/2013/08/fortran-performance-tuning"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:chg="http://codinuum.com/ontologies/2012/10/primitive-change#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:fpt="http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:ver="http://codinuum.com/ontologies/2012/10/versioning#"
+     xmlns:src="http://codinuum.com/ontologies/2012/10/source-code-entity#">
+    <owl:Ontology rdf:about="http://codinuum.com/ontologies/2013/08/fortran-performance-tuning">
+        <dc:title xml:lang="en">A Vocabulary of HPC Performance Tuning</dc:title>
+        <dc:creator xml:lang="en">Codinuum Software Lab</dc:creator>
+        <owl:imports rdf:resource="http://codinuum.com/ontologies/2012/10/primitive-change"/>
+        <owl:imports rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity"/>
+        <owl:imports rdf:resource="http://codinuum.com/ontologies/2012/10/versioning"/>
+        <owl:imports rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity"/>
+        <owl:imports rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#changePattern -->
+
+    <owl:AnnotationProperty rdf:about="&fpt;changePattern">
+        <rdfs:domain rdf:resource="&chg;EntityPair"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#addedDirective -->
+
+    <owl:ObjectProperty rdf:about="&fpt;addedDirective">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;addedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#addedEntity -->
+
+    <owl:ObjectProperty rdf:about="&fpt;addedEntity">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#addedEntityDecl -->
+
+    <owl:ObjectProperty rdf:about="&fpt;addedEntityDecl">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;addedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#changePattern -->
+
+    <owl:ObjectProperty rdf:about="&fpt;changePattern">
+        <rdfs:range rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#filePair -->
+
+    <owl:ObjectProperty rdf:about="&fpt;filePair">
+        <rdfs:range rdf:resource="&chg;FilePair"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#indexVectorInitLoop -->
+
+    <owl:ObjectProperty rdf:about="&fpt;indexVectorInitLoop">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#logicalUnit -->
+
+    <owl:ObjectProperty rdf:about="&fpt;logicalUnit">
+        <rdfs:range rdf:resource="&src;LogicalUnit"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#loopVariable -->
+
+    <owl:ObjectProperty rdf:about="&fpt;loopVariable">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedArrayAccess -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedArrayAccess">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedArrayAccessContext -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedArrayAccessContext">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedAssignedArrayContext -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedAssignedArrayContext">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedCondition -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedCondition">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedDirectiveContext -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedDirectiveContext">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedDoStmt -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedDoStmt">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedEntity -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedEntity">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedEntityDecl -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedEntityDecl">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedEntityDeclContext -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedEntityDeclContext">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedIndex -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedIndex">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedLoop -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedLoop">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedStmt -->
+
+    <owl:ObjectProperty rdf:about="&fpt;modifiedStmt">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalArrayAccess -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalArrayAccess">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalCondition -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalCondition">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalDirectiveContext -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalDirectiveContext">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalDoStmt -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalDoStmt">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalEntity -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalEntity">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalEntityDecl -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalEntityDecl">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalEntityDeclContext -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalEntityDeclContext">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalIndex -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalIndex">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalLoop -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalLoop">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalScalar -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalScalar">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalStmt -->
+
+    <owl:ObjectProperty rdf:about="&fpt;originalStmt">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#otherModifiedLoop -->
+
+    <owl:ObjectProperty rdf:about="&fpt;otherModifiedLoop">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#otherOriginalLoop -->
+
+    <owl:ObjectProperty rdf:about="&fpt;otherOriginalLoop">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#removedArrayAccess -->
+
+    <owl:ObjectProperty rdf:about="&fpt;removedArrayAccess">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;removedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#removedAssignedArray -->
+
+    <owl:ObjectProperty rdf:about="&fpt;removedAssignedArray">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;removedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#removedDirective -->
+
+    <owl:ObjectProperty rdf:about="&fpt;removedDirective">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;removedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#removedEntity -->
+
+    <owl:ObjectProperty rdf:about="&fpt;removedEntity">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#removedEntityDecl -->
+
+    <owl:ObjectProperty rdf:about="&fpt;removedEntityDecl">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;removedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#sampledModifiedArrayAccess -->
+
+    <owl:ObjectProperty rdf:about="&fpt;sampledModifiedArrayAccess">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;modifiedEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#sampledOriginalArrayAccess -->
+
+    <owl:ObjectProperty rdf:about="&fpt;sampledOriginalArrayAccess">
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2013/05/fortran-entity#Entity"/>
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:subPropertyOf rdf:resource="&fpt;originalEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#arrayIndexName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;arrayIndexName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#arrayName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;arrayName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#directiveName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;directiveName"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#indexVectorName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;indexVectorName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#logicalUnitName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;logicalUnitName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#loopVariableName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;loopVariableName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#modifiedArrayName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;modifiedArrayName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalArrayName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;originalArrayName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalArrayname -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;originalArrayname">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalInnerLoopVariableName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;originalInnerLoopVariableName"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalOuterLoopVariableName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;originalOuterLoopVariableName"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#originalVariableName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;originalVariableName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#strideValue -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;strideValue">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#subprogramName -->
+
+    <owl:DatatypeProperty rdf:about="&fpt;subprogramName">
+        <rdfs:domain rdf:resource="&fpt;Pattern"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/primitive-change#FilePair -->
+
+    <owl:Class rdf:about="&chg;FilePair"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#ArrayDimensionInterchange -->
+
+    <owl:Class rdf:about="&fpt;ArrayDimensionInterchange">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#ArrayMerging -->
+
+    <owl:Class rdf:about="&fpt;ArrayMerging">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#ArrayPadding -->
+
+    <owl:Class rdf:about="&fpt;ArrayPadding">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#ArrayShapeChange -->
+
+    <owl:Class rdf:about="&fpt;ArrayShapeChange">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#CodeHoisting -->
+
+    <owl:Class rdf:about="&fpt;CodeHoisting">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#DirectiveAddition -->
+
+    <owl:Class rdf:about="&fpt;DirectiveAddition">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#DirectiveRemoval -->
+
+    <owl:Class rdf:about="&fpt;DirectiveRemoval">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#IndexVectorIntroduction -->
+
+    <owl:Class rdf:about="&fpt;IndexVectorIntroduction">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#LoopBlocking -->
+
+    <owl:Class rdf:about="&fpt;LoopBlocking">
+        <rdfs:subClassOf rdf:resource="&fpt;LoopTransformation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#LoopFission -->
+
+    <owl:Class rdf:about="&fpt;LoopFission">
+        <rdfs:subClassOf rdf:resource="&fpt;LoopTransformation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#LoopFusion -->
+
+    <owl:Class rdf:about="&fpt;LoopFusion">
+        <rdfs:subClassOf rdf:resource="&fpt;LoopTransformation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#LoopInterchange -->
+
+    <owl:Class rdf:about="&fpt;LoopInterchange">
+        <rdfs:subClassOf rdf:resource="&fpt;LoopTransformation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#LoopPeeling -->
+
+    <owl:Class rdf:about="&fpt;LoopPeeling">
+        <rdfs:subClassOf rdf:resource="&fpt;LoopTransformation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#LoopTransformation -->
+
+    <owl:Class rdf:about="&fpt;LoopTransformation">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#LoopUnrolling -->
+
+    <owl:Class rdf:about="&fpt;LoopUnrolling">
+        <rdfs:subClassOf rdf:resource="&fpt;LoopTransformation"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#OclDirectiveAddition -->
+
+    <owl:Class rdf:about="&fpt;OclDirectiveAddition">
+        <rdfs:subClassOf rdf:resource="&fpt;DirectiveAddition"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#OclDirectiveRemoval -->
+
+    <owl:Class rdf:about="&fpt;OclDirectiveRemoval">
+        <rdfs:subClassOf rdf:resource="&fpt;DirectiveRemoval"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#OmpDirectiveAddition -->
+
+    <owl:Class rdf:about="&fpt;OmpDirectiveAddition">
+        <rdfs:subClassOf rdf:resource="&fpt;DirectiveAddition"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#OmpDirectiveRemoval -->
+
+    <owl:Class rdf:about="&fpt;OmpDirectiveRemoval">
+        <rdfs:subClassOf rdf:resource="&fpt;DirectiveRemoval"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#Pattern -->
+
+    <owl:Class rdf:about="&fpt;Pattern"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#ReplacementOfArrayWithScalar -->
+
+    <owl:Class rdf:about="&fpt;ReplacementOfArrayWithScalar">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#ReplacementOfScalarWithArray -->
+
+    <owl:Class rdf:about="&fpt;ReplacementOfScalarWithArray">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/08/fortran-performance-tuning#TempArrayInlining -->
+
+    <owl:Class rdf:about="&fpt;TempArrayInlining">
+        <rdfs:subClassOf rdf:resource="&fpt;Pattern"/>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net -->
+

@@ -1,0 +1,2331 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY dc "http://purl.org/dc/elements/1.1/" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY fjpa "http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#" >
+]>
+
+
+<rdf:RDF xmlns="http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#"
+     xml:base="http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:fjpa="http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#">
+    <owl:Ontology rdf:about="http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis">
+        <dc:title xml:lang="en">A Vocabulary of Fujitsu Performance Analysis</dc:title>
+        <owl:imports rdf:resource="http://codinuum.com/ontologies/2013/05/performance-analysis"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/creator -->
+
+    <owl:AnnotationProperty rdf:about="&dc;creator"/>
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/title -->
+
+    <owl:AnnotationProperty rdf:about="&dc;title"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#block -->
+
+    <owl:ObjectProperty rdf:about="&fjpa;block">
+        <rdfs:range rdf:resource="&fjpa;Block"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#measurement -->
+
+    <owl:ObjectProperty rdf:about="&fjpa;measurement">
+        <rdfs:range rdf:resource="&fjpa;Measurement"/>
+        <rdfs:domain rdf:resource="&fjpa;Thread"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#process -->
+
+    <owl:ObjectProperty rdf:about="&fjpa;process">
+        <rdfs:range rdf:resource="&fjpa;Process"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#root -->
+
+    <owl:ObjectProperty rdf:about="&fjpa;root">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:range rdf:resource="&fjpa;PaData"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#thread -->
+
+    <owl:ObjectProperty rdf:about="&fjpa;thread">
+        <rdfs:range rdf:resource="&fjpa;Thread"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#0endop -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;0endop">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where no instructions are committed.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#1endop -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;1endop">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where one instruction is committed.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#2endop -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;2endop">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where two instructions are committed.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#3endop -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;3endop">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where three instructions are committed.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#barrierStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;barrierStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#barrierStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;barrierStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#barrierStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;barrierStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#blockID -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;blockID">
+        <rdfs:domain rdf:resource="&fjpa;Block"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#branchCompWait -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;branchCompWait">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where no instructions are committed and the oldest, uncommitted instruction is a branch instruction.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#branchInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;branchInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed branch instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#branchInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;branchInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#branchInstructionStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;branchInstructionStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#branchInstructionStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;branchInstructionStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#branchInstructionStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;branchInstructionStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#cacheMissCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;cacheMissCount">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#cacheMissRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;cacheMissRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#commitCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;commitCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#commitRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;commitRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#commitTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;commitTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#compilerOptions -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;compilerOptions">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#count -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;count">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#cseWindowEmpty -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;cseWindowEmpty">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where no instructions are committed because the CSE is
+empty.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#cseWindowEmptySpFull -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;cseWindowEmptySpFull">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where no instructions are committed because the CSE is
+empty and the store ports are full.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#cycleCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;cycleCount">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#cycleCounts -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;cycleCounts">
+        <rdfs:comment xml:lang="en">Counts the number of cycles when the performance counter is enabled.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#date -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;date">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#effectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;effectiveInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#euCompWait -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;euCompWait">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where no instructions are committed and the oldest, uncommitted instruction is an integer or floating-point instruction.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#executionTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;executionTime">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#flCompWait -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;flCompWait">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where no instructions are committed and the oldest,
+uncommitted instruction is a floating-point instruction.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed 2-operand floating-point instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;floatingPointInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;floatingPointInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointInstructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointInstructionCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;totalFloatingPointInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointInstructionRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointInstructionRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointLoadInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointLoadInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed floating-point load instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointLoadInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointLoadInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointLoadInstructionStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointLoadInstructionStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointLoadInstructionStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointLoadInstructionStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointLoadInstructionStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointLoadInstructionStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointOperation -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointOperation">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointOperationPeakRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointOperationPeakRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointOperationStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointOperationStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointOperationStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointOperationStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointOperationStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointOperationStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointStoreInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed floating-point store instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#floatingPointStoreInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;floatingPointStoreInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#fmaInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;fmaInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed 3-operand floating-point instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;floatingPointInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#fmaInstructionByEffectiveEnstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;fmaInstructionByEffectiveEnstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;floatingPointInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#fourInstructionCommit -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;fourInstructionCommit">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#fourInstructionCommitRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;fourInstructionCommitRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#fourInstructionCommitTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;fourInstructionCommitTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#inhCmitGpr2write -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;inhCmitGpr2write">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where fewer than four instructions are committed due to a
+lack of GPR write ports (only 2 integer registers can be updated each cycle).</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#instructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;instructionCount">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#instructionFetchStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;instructionFetchStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#instructionFetchStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;instructionFetchStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#instructionFetchStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;instructionFetchStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#instructionFlowCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;instructionFlowCount">
+        <rdfs:comment xml:lang="en">Counts the number of committed instruction flows. In SPARC64 VIIIfx, there are instructions that are processed internally as several separate instructions, called instruction flows. This event does not count packed SXAR1 and SXAR2 instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#instructionRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;instructionRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#instructionTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;instructionTime"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#integerLoadInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;integerLoadInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed integer-load instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#integerLoadInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;integerLoadInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#integerOperationStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;integerOperationStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#integerOperationStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;integerOperationStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#integerOperationStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;integerOperationStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#integerStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;integerStoreInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed integer-store and atomic instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#integerStoreInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;integerStoreInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#isMPIUsed -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;isMPIUsed">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:range rdf:resource="&xsd;boolean"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#isThreaded -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;isThreaded">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:range rdf:resource="&xsd;boolean"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1CacheMissCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1CacheMissCount">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1CacheMissRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1CacheMissRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1EngineBusyRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1EngineBusyRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMiss">
+        <rdfs:comment xml:lang="en">Counts the occurrences of D1 cache misses.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissByLoadStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissByLoadStoreInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissDm -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissDm">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissDmByL1dMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissDmByL1dMiss">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissHwpf -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissHwpf">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissHwpfByL1dMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissHwpfByL1dMiss">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissQpf -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissQpf">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissSwpf -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissSwpf">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dMissSwpfByL1dMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dMissSwpfByL1dMiss">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1dThrashing -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1dThrashing">
+        <rdfs:comment xml:lang="en">Counts the occurrences of an L2 read request being issued twice in the period between acquiring and releasing a store port.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1iMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1iMiss">
+        <rdfs:comment xml:lang="en">Counts the occurrences of I1 cache misses.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1iMissByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1iMissByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l1CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l1iThrashing -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l1iThrashing">
+        <rdfs:comment xml:lang="en">Counts the occurrences of an L2 read request being issued twice in the period between acquiring and releasing a store port.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2AccessByFloatingPointLoadInstructionStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2AccessByFloatingPointLoadInstructionStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2AccessByFloatingPointLoadInstructionStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2AccessByFloatingPointLoadInstructionStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2AccessByFloatingPointLoadInstructionStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2AccessByFloatingPointLoadInstructionStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2AccessByIntegerLoadInstructionStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2AccessByIntegerLoadInstructionStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2AccessByIntegerLoadInstructionStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2AccessByIntegerLoadInstructionStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2AccessByIntegerLoadInstructionStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2AccessByIntegerLoadInstructionStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2CacheMissCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2CacheMissCount">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2CacheMissRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2CacheMissRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2EngineBusyRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2EngineBusyRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2EngineThroughput -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2EngineThroughput">
+        <rdfs:comment>GB/sec</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;throughput"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2Miss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2Miss">
+        <rdfs:comment xml:lang="en">L2_miss_dm + L2_miss_pf</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l2CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2MissByLoadStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2MissByLoadStoreInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l2CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2MissDm -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2MissDm">
+        <rdfs:comment xml:lang="en">Counts the number of L2 cache misses caused by demand requests.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l2CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2MissDmByL2Miss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2MissDmByL2Miss">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l2CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2MissPf -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2MissPf">
+        <rdfs:comment xml:lang="en">Counts the number of L2 cache misses caused by prefetch requests.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l2CacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2MissPfByL2Miss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2MissPfByL2Miss">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;l2CacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2Required -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2Required">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;memoryRequired"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2Throughput -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2Throughput">
+        <rdfs:comment>GB/sec</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;throughput"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2WbDm -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2WbDm">
+        <rdfs:comment xml:lang="en">Counts the occurrences of writeback by demand L2-cache misses.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#l2WbPf -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;l2WbPf">
+        <rdfs:comment xml:lang="en">Counts the occurrences of writeback by prefetch L2-cache misses.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;count"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfGprWritePortByFloatingPointInstructionCommit -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfGprWritePortByFloatingPointInstructionCommit">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfGprWritePortByFloatingPointInstructionCommitRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfGprWritePortByFloatingPointInstructionCommitRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfGprWritePortByFloatingPointInstructionCommitTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfGprWritePortByFloatingPointInstructionCommitTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfGprWritePortByIntegerInstructionCommit -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfGprWritePortByIntegerInstructionCommit">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfGprWritePortByIntegerInstructionCommitRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfGprWritePortByIntegerInstructionCommitRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfGprWritePortByIntegerInstructionCommitTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfGprWritePortByIntegerInstructionCommitTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfStorePortStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfStorePortStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfStorePortStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfStorePortStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#lackOfStorePortStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;lackOfStorePortStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#loadStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;loadStoreInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed load/store instructions. Also counts atomic load-store
+instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#loadStoreInstructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;loadStoreInstructionCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;totalLoadStoreInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#loadStoreInstructionRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;loadStoreInstructionRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#mDtlbMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;mDtlbMiss">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;mmuMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#mDtlbMissByLoadStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;mDtlbMissByLoadStoreInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;mmuMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryAccessByIntegerLoadInstructionStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryAccessByIntegerLoadInstructionStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryAccessByIntegerLoadInstructionStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryAccessByIntegerLoadInstructionStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryAccessByIntegerLoadInstructionStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryAccessByIntegerLoadInstructionStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryBusyRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryBusyRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryRequired -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryRequired">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;memoryRequired"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryRequiredR -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryRequiredR">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;memoryRequired"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryRequiredW -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryRequiredW">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;memoryRequired"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryThroughput -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryThroughput">
+        <rdfs:comment>GB/sec</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;throughput"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#memoryThroughputR -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;memoryThroughputR">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;throughput"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#mflops -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;mflops">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#mips -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;mips">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#mmuMissCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;mmuMissCount">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cacheMissCount"/>
+        <rdfs:range rdf:resource="&xsd;integer"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#mmuMissRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;mmuMissRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cacheMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#name -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;name"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#numBlocks -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;numBlocks">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#numProcs -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;numProcs">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#numThreads -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;numThreads">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#oneInstructionCommit -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;oneInstructionCommit">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#oneInstructionCommitRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;oneInstructionCommitRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#oneInstructionCommitTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;oneInstructionCommitTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#opStvWait -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;opStvWait">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where no instructions are committed because the oldest, uncommitted instruction is a memory access waiting for data.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#opStvWaitEx -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;opStvWaitEx">
+        <rdfs:comment xml:lang="en">Counts op_stv_wait for integer memory access instructions. Does not distinguish
+between the L1 cache and L2 cache.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;opStvWait"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#opStvWaitNcPend -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;opStvWaitNcPend">
+        <rdfs:comment xml:lang="en">Counts op_stv_wait for noncacheable accesses.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;opStvWait"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#opStvWaitSwpf -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;opStvWaitSwpf">
+        <rdfs:comment xml:lang="en">Counts op_stv_wait caused by a prefetch instruction that cannot be executed due to the
+lack of an available prefetch port.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;opStvWait"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#opStvWaitSxmiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;opStvWaitSxmiss">
+        <rdfs:comment xml:lang="en">Counts op_stv_wait caused by an L2$ miss. Does not distinguish between integer and floating-point loads.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;opStvWait"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#opStvWaitSxmissEx -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;opStvWaitSxmissEx">
+        <rdfs:comment xml:lang="en">Counts op_stv_wait caused by an integer-load L2$ miss.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;opStvWait"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#otherInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;otherInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#otherInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;otherInstructionByEffectiveInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#otherStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;otherStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#otherStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;otherStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#otherStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;otherStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#prefetchInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;prefetchInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed prefetch instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#prefetchInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;prefetchInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#processID -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;processID">
+        <rdfs:domain rdf:resource="&fjpa;Process"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#profilerName -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;profilerName">
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#rate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;rate"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed 2-operand SIMD floating-point instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdFloatingPointInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdFloatingPointInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointInstructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointInstructionCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionCount"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;totalFloatingPointInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointInstructionRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointInstructionRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointLoadInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointLoadInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed floating-point SIMD load instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointLoadInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointLoadInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointLoadInstructionByTotalFloatingPointLoadInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointLoadInstructionByTotalFloatingPointLoadInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointOperationRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointOperationRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointStoreInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed floating-point SIMD store instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointStoreInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointStoreInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFloatingPointStoreInstructionByTotalFloatingPointStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFloatingPointStoreInstructionByTotalFloatingPointStoreInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFmaInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFmaInstruction">
+        <rdfs:comment xml:lang="en">Counts the number of committed 3-operand SIMD floating-point instructions.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdFloatingPointInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdFmaInstructionByEffectiveInctruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdFmaInstructionByEffectiveInctruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdFloatingPointInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdInstructionByEffectiveInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdInstructionBySimdTargetInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdInstructionBySimdTargetInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdInstructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdInstructionCount">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdInstructionRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdInstructionRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdLoadInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdLoadInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdLoadInstructionBySimdTargetLoadInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdLoadInstructionBySimdTargetLoadInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdLoadStoreInstructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdLoadStoreInstructionCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionCount"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;totalLoadStoreInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdLoadStoreInstructionRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdLoadStoreInstructionRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdOperationInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdOperationInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdOperationInstructionBySimdTargetOperationInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdOperationInstructionBySimdTargetOperationInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdInstructionRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdStoreInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#simdStoreInstructionBySimdTargetStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;simdStoreInstructionBySimdTargetStoreInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;simdLoadStoreInstructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#singleSxarCommit -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;singleSxarCommit">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where the only instruction committed is an unpacked SXAR
+instruction. These cycles are also counted by 0endop.</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#sleepCycle -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;sleepCycle">
+        <rdfs:comment xml:lang="en">Counts the number of cycles where the instruction unit is halted by a SLEEP instruction.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;PaData"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;cycleCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#stallCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;stallCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#stallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;stallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#stallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;stallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#threadID -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;threadID">
+        <rdfs:domain rdf:resource="&fjpa;Thread"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#throughput -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;throughput">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;throughput"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalCommitStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalCommitStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalCommitStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalCommitStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalCommitStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalCommitStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalFloatingPointInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalFloatingPointInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;totalFloatingPointInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalFloatingPointInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalFloatingPointInstructionByEffectiveInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalFloatingPointInstructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalFloatingPointInstructionCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalFloatingPointLoadInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalFloatingPointLoadInstruction">
+        <rdfs:comment>fl_load_instructions + SIMD_fl_load_instructions</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalFloatingPointStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalFloatingPointStoreInstruction">
+        <rdfs:comment>fl_store_instructions + SIMD_fl_store_instructions</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;loadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalInstructionByEffectiveInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalLoadStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalLoadStoreInstruction">
+        <rdfs:comment xml:lang="en">load_store_instructions + SIMD_load_store_instructions</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;totalLoadStoreInstructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalLoadStoreInstructionByEffectiveEnstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalLoadStoreInstructionByEffectiveEnstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalLoadStoreInstructionCount -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalLoadStoreInstructionCount">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalOtherInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalOtherInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#totalOtherInstructionByEffectiveInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;totalOtherInstructionByEffectiveInstruction">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;rate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#trapDmmuMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;trapDmmuMiss">
+        <rdfs:comment xml:lang="en">Counts the occurrences of fast_data_instruction_access_MMU_miss.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;mmuMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#trapDmmuMissByLoadStore -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;trapDmmuMissByLoadStore">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;mmuMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#twoOrThreeInstructionCommit -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;twoOrThreeInstructionCommit">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#twoOrThreeInstructionCommitRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;twoOrThreeInstructionCommitRate">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#twoOrThreeInstructionCommitTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;twoOrThreeInstructionCommitTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;commitTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#uDtlbMiss -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;uDtlbMiss">
+        <rdfs:comment xml:lang="en">Counts the occurrences of data uTLB misses.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;mmuMissCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#uDtlbMissByLoadStoreInstruction -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;uDtlbMissByLoadStoreInstruction">
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;mmuMissRate"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#uOpStall -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;uOpStall">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallCount"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#uOpStallRate -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;uOpStallRate">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallRate"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#uOpStallTime -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;uOpStallTime">
+        <rdfs:subPropertyOf rdf:resource="&fjpa;stallTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#unpackSxar1 -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;unpackSxar1">
+        <rdfs:comment xml:lang="en">Counts the number of unpacked SXAR1 instructions that are committed.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#unpackSxar2 -->
+
+    <owl:DatatypeProperty rdf:about="&fjpa;unpackSxar2">
+        <rdfs:comment xml:lang="en">Counts the number of unpacked SXAR2 instructions that are committed.</rdfs:comment>
+        <rdfs:domain rdf:resource="&fjpa;Measurement"/>
+        <rdfs:subPropertyOf rdf:resource="&fjpa;instructionCount"/>
+        <rdfs:range rdf:resource="&xsd;nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#Block -->
+
+    <owl:Class rdf:about="&fjpa;Block"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#BranchInstruction -->
+
+    <owl:Class rdf:about="&fjpa;BranchInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;Instruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#ExLoadInstruction -->
+
+    <owl:Class rdf:about="&fjpa;ExLoadInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;LoadInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#ExStoreInstruction -->
+
+    <owl:Class rdf:about="&fjpa;ExStoreInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;StoreInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#FMAInstruction -->
+
+    <owl:Class rdf:about="&fjpa;FMAInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;Instruction"/>
+        <rdfs:comment xml:lang="en">3-operand floating-point instruction</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#FlLoadInstruction -->
+
+    <owl:Class rdf:about="&fjpa;FlLoadInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;LoadInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#FlStoreInstruction -->
+
+    <owl:Class rdf:about="&fjpa;FlStoreInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;StoreInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#FloatingInstruction -->
+
+    <owl:Class rdf:about="&fjpa;FloatingInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;Instruction"/>
+        <rdfs:comment xml:lang="en">2-operand floating-point instruction</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#Instruction -->
+
+    <owl:Class rdf:about="&fjpa;Instruction"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#LoadInstruction -->
+
+    <owl:Class rdf:about="&fjpa;LoadInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;LoadStoreInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#LoadStoreInstruction -->
+
+    <owl:Class rdf:about="&fjpa;LoadStoreInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;Instruction"/>
+        <rdfs:comment xml:lang="en">load/store instruction</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#Measurement -->
+
+    <owl:Class rdf:about="&fjpa;Measurement"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#PaData -->
+
+    <owl:Class rdf:about="&fjpa;PaData">
+        <rdfs:subClassOf rdf:resource="http://codinuum.com/ontologies/2013/05/performance-analysis#PaData"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#PrefetchInstruction -->
+
+    <owl:Class rdf:about="&fjpa;PrefetchInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;Instruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#Process -->
+
+    <owl:Class rdf:about="&fjpa;Process"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDFMAInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDFMAInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;SIMDInstruction"/>
+        <rdfs:comment xml:lang="en">3-operand SIMD floating-point instruction</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDFlLoadInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDFlLoadInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;SIMDLoadInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDFlStoreInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDFlStoreInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;SIMDStoreInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDFloatingInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDFloatingInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;SIMDInstruction"/>
+        <rdfs:comment xml:lang="en">2-operand SIMD floating-point instruction</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;Instruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDLoadInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDLoadInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;SIMDLoadStoreInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDLoadStoreInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDLoadStoreInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;SIMDInstruction"/>
+        <rdfs:comment xml:lang="en">SIMD load/store instruction</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#SIMDStoreInstruction -->
+
+    <owl:Class rdf:about="&fjpa;SIMDStoreInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;SIMDLoadStoreInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#StoreInstruction -->
+
+    <owl:Class rdf:about="&fjpa;StoreInstruction">
+        <rdfs:subClassOf rdf:resource="&fjpa;LoadStoreInstruction"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2013/05/fujitsu-performance-analysis#Thread -->
+
+    <owl:Class rdf:about="&fjpa;Thread"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net -->
+

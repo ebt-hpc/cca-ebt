@@ -1,0 +1,494 @@
+#!/usr/bin/env python3
+
+'''
+  Project listing
+
+  Copyright 2013-2018 RIKEN
+  Copyright 2018-2020 Chiba Institute of Technology
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+'''
+
+__author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
+
+import os
+import sys
+import re
+from urllib.parse import urlencode
+from urllib.request import pathname2url
+import json
+from pymongo import MongoClient, ASCENDING, DESCENDING
+import codecs
+
+from common import OUTLINE_DIR, TOPIC_DIR, TARGET_DIR
+from common import DESC_DIR, README_LINKS_DIR
+from common import DEFAULT_USER, MONGO_PORT, TIME_FMT
+from common import get_idx_range_tbl, BASE_URL
+from common import get_ver_path, get_path_list, get_fid_list
+
+import common
+
+#
+
+SOURCES_URL_FMT = 'sources?%s'
+
+###
+
+HTML_TEMPL = '''
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Tree View</title>
+<link rel="stylesheet" type="text/css" href="%(base_url)s/ebt.css"/>
+<style type="text/css">
+<!--
+.topic {
+    font-style: normal;
+    color: #a1522d;
+}
+.noframe-topic {
+  font-size: 90%%;
+  border-style: none;
+  text-align: left;
+  line-height: 70%%;
+}
+.noframe {
+  margin: 0;
+  padding: 0;
+  margin-top: 2px;
+  line-height: 100%%;
+  border-style: none;
+}
+.bar {
+  width: 100px;
+  height: 1em;
+  background: #d8e2fa;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.barValue {
+  height: 1em;
+  float: left;
+  background: #48a948;
+}
+button.src {
+  font-size: 1em;
+  font-weight: bold;
+  padding: 2px 3px;
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid black;
+}
+button.src:hover {
+  background-color: #74a5ea;
+  color: #ffffff;
+}
+.datetime {
+  display: none;
+}
+-->
+</style>
+<script src="%(base_url)s/jquery.min.js"></script>
+<script type="text/javascript">
+function conv_datetime () {
+  $(".datetime").each(function (i, elem) {
+    var dt = new Date($(elem).text());
+    dt = new Date(dt.getTime() - 9 * 60 * 60 * 1000); // !!!
+    $(elem).text(dt.toLocaleString()).css("display", "inline");
+  });
+}
+</script>
+</head>
+
+<body>
+
+<h1>Project(s)</h1>
+
+<h2>UID: %(user)s</h2>
+
+<div class="indent">
+<p>%(progress)s</p>
+</div>
+
+<div class="indent">
+<p>%(last_judgment)s</p>
+</div>
+
+<div class="moreindent">
+<table>
+<tr align="center">
+<th>#</th>
+<th>Project</th>
+<th>Description</th>
+<th>Topic</th>
+<th>Version</th>
+<th>Progress</th>
+<th>Last Judged</th>
+</tr>
+%(content)s
+</table>
+</div>
+
+<script>
+$(function () {
+conv_datetime();
+});
+</script>
+
+</body></html>
+'''
+
+DESC_FMT = '''
+<div style="overflow:scroll;height:100px;width:400px">%(desc)s</div>
+'''.replace('\n', '')
+
+ROW_FMT = '''<tr>
+<td rowspan=%(nvers)d>%(count)d</td>
+<td rowspan=%(nvers)d>%(proj)s</td>
+<td rowspan=%(nvers)d style="text-align:left;">%(desc)s</td>
+<td rowspan=%(nvers)d style="text-align:left;">%(topic)s</td>
+<td><a href="%(path)s" target="_blank">%(ver)s</a></td>
+<td>%(progress)s</td>
+<td>%(time)s</td>
+</tr>'''.replace('\n', '')
+
+ROW_FMT_REST = '''<tr>
+<td><a href="%(path)s" target="_blank">%(ver)s</a></td>
+<td>%(progress)s</td>
+<td>%(time)s</td>
+</tr>'''.replace('\n', '')
+
+TOPIC_ROW_FMT = '''<tr>
+<td class="noframe-topic"><span class="topic">%(topic)s</span></td>
+<td class="noframe-topic">:</td>
+<td class="noframe-topic">%(similarity)s</td>
+</tr>'''.replace('\n', '')
+
+
+LAST_JUDGMENT_FMT = '''<table class="noframe"><tr>
+<td class="noframe" style="vertical-align:middle;">
+<span style="font-weight:bold;">Last Judgment: </span>
+</td>
+<td style="border-style:none;">
+<form style="margin:0;" action="tree" method="GET" target="_blank">
+<input type="hidden" name="user" value="%(user)s">
+<input type="hidden" name="proj" value="%(proj)s">
+<input type="hidden" name="ver" value="%(ver)s">
+<input type="hidden" name="path" value="%(root_path)s">
+<button class="src" type="submit" name="fid" value="%(root_fid)s">
+%(proj)s : %(ver)s : %(path)s
+</button>
+</form>
+</td>
+<td class="noframe" style="vertical-align:middle;">%(time)s</td>
+</tr></table>'''.replace('\n', '')
+
+###
+
+TOPIC_JSON_PAT = re.compile(r'(?P<proj>[0-9a-zA-Z_.-]+)\.json$')
+
+def get_sources_url(user, proj, ver):
+    u = SOURCES_URL_FMT % urlencode({'user':user,'proj':proj,'ver':ver,'target_only':1})
+    return u
+
+def render_topic(t):
+    l = []
+    for d in t[:5]:
+        l.append(TOPIC_ROW_FMT % d)
+
+    s = '<table class="noframe-topic">%s</table>' % '\n'.join(l)
+
+    return s
+
+GIT_PAT = re.compile(r'_git$')
+
+def get_desc(proj):
+    desc = ''
+    desc_fname = GIT_PAT.sub('', proj)+'.desc'
+    p = os.path.join(DESC_DIR, desc_fname)
+    try:
+        with codecs.open(p, encoding='utf-8', errors='replace') as f:
+            desc = f.read()
+    except:
+        pass
+
+    return desc
+
+
+def make_readme_html(proj):
+    html = ''
+    links = []
+    json_path = os.path.join(README_LINKS_DIR, proj+'.json')
+    try:
+        with open(json_path, 'r') as f:
+            links = json.load(f)
+
+    except Exception as e:
+        pass
+
+    if links:
+        html = '<ul>'
+        for d in links:
+            html += '<li><a href="%(url)s" target="_blank">%(path)s</a></li>' % d
+        html += '</ul>'
+
+    return html
+
+def make_desc_html(proj):
+    desc = get_desc(proj)
+    c = '%s%s' % (desc, make_readme_html(proj))
+    html = DESC_FMT % {'desc':c}
+    return html
+
+def get_proj_url(proj):
+    url = None
+    if proj.endswith('_git'):
+        pn = GIT_PAT.sub('.git', proj)
+        url = '/gitweb/?p=%s' % pn
+    else:
+        url = '%s/%s' % (BASE_URL, 'projects/'+proj)
+    return url
+
+
+def is_target_proj(proj):
+    b = os.path.exists(os.path.join(TARGET_DIR, proj))
+    return b
+
+def is_target_ver(proj, ver):
+    b = os.path.exists(os.path.join(TARGET_DIR, proj, ver+'.json'))
+    return b
+
+
+
+def find_root(proj, ver, idx):
+    tbl = get_idx_range_tbl(proj, ver)
+
+    result = None
+
+    for (fidi, (lmi, i, pathi)) in tbl.iteritems():
+        if lmi <= idx <= i:
+            result = (pathi, int(fidi))
+            break
+
+    return result
+
+
+def get_last_judgment(user):
+    try:
+        cli = MongoClient('localhost', MONGO_PORT)
+        col = cli.loop_survey.log
+
+        query = {
+            'user':user,
+            'proj':{'$exists':True},
+            'ver':{'$exists':True},
+            'path':{'$exists':True},
+            'nid':{'$exists':True},
+            'idx':{'$exists':True},
+            'judgment':{'$exists':True},
+        }
+
+        records = col.find(query).sort('time', DESCENDING).limit(1)
+
+        result = ""
+
+        for record in records:
+            proj = record['proj']
+            ver = record['ver']
+            pathi = record['path']
+            time = record['time']
+
+            ver_path = get_ver_path(proj, ver)
+            path_list = get_path_list(ver_path)
+            fid_list = get_fid_list(ver_path)
+
+            path = path_list[pathi]
+            record['path'] = path
+
+            result = 'Last Judgment: %s:%s:%s %s' % (proj, ver, path, time)
+
+            try:
+                i = int(record['idx'])
+
+                (pathi, fidi) = find_root(proj, ver, i)
+
+                record['root_path'] = path_list[pathi]
+                record['root_fid'] = fid_list[fidi]
+                record['time'] = TIME_FMT % time
+                result = LAST_JUDGMENT_FMT % record
+
+            except:
+                raise
+
+            break
+
+        return result
+
+    except Exception as e:
+        raise
+
+def get_progress(user, proj=None, ver=None):
+    p = '-'
+    try:
+        p = common.get_progress(TARGET_DIR, user, proj, ver)
+    except:
+        pass
+    return p
+
+###
+
+import cgi
+import cgitb
+cgitb.enable()
+
+form = cgi.FieldStorage()
+
+user = form.getvalue('user', DEFAULT_USER)
+target_only = form.getvalue('target_only', False)
+
+data = {} # proj -> {'ver','path'} list
+topic_tbl = {}
+
+if os.path.exists(OUTLINE_DIR) and os.path.isdir(OUTLINE_DIR):
+    for proj in os.listdir(OUTLINE_DIR):
+        if target_only:
+            if not is_target_proj(proj):
+                continue
+
+        proj_dir = os.path.join(OUTLINE_DIR, proj)
+
+        if os.path.isdir(proj_dir):
+
+            proj_v_dir = os.path.join(proj_dir, 'v')
+
+            if not (os.path.exists(proj_v_dir) and os.path.isdir(proj_v_dir)):
+                continue
+
+            for ver in os.listdir(proj_v_dir):
+                if target_only:
+                    if not is_target_ver(proj, ver):
+                        continue
+
+                ver_dir = os.path.join(proj_v_dir, ver)
+                if os.path.isdir(ver_dir):
+                    d = {'ver':ver,'path':get_sources_url(user, proj, ver)}
+                    try:
+                        data[proj].append(d)
+                    except KeyError:
+                        data[proj] = [d]
+
+
+if os.path.exists(TOPIC_DIR) and os.path.isdir(TOPIC_DIR):
+    for fn in os.listdir(TOPIC_DIR):
+        m = TOPIC_JSON_PAT.match(fn)
+        if m:
+            proj = m.group('proj')
+            try:
+                with open(os.path.join(TOPIC_DIR, fn), 'r') as f:
+                    t = json.load(f)
+                    topic_tbl[proj] = t
+            except:
+                pass
+
+time_tbl = {} # proj * ver -> time
+
+try:
+    cli = MongoClient('localhost', MONGO_PORT)
+    col = cli.loop_survey.log
+
+    for (proj, ds) in data.iteritems():
+        for d in ds:
+            ver = d['ver']
+            query = {
+                'user':user,
+                'proj':proj,
+                'ver':ver,
+                'judgment':{'$exists':True},
+                'nid':{'$exists':True},
+            }
+            records = col.find(query).sort('time', DESCENDING).limit(1)
+            
+            for record in records:
+                time = record['time']
+                time_tbl[(proj, ver)] = TIME_FMT % time
+                break
+            
+except Exception as e:
+    pass
+    
+
+projs = sorted(list(data.keys()))
+
+content_l = []
+
+proj_count = 0
+
+for proj in projs:
+    ds = data[proj]
+    nvers = len(ds)
+
+    topic = ''
+    td = topic_tbl.get(proj, None)
+    if td:
+        topic = render_topic(td)
+
+    desc = make_desc_html(proj)
+
+    if nvers > 0:
+        d0 = ds[0]
+        d0['count'] = proj_count
+        d0['nvers'] = nvers
+        d0['proj'] = proj
+        d0['desc'] = desc
+        d0['topic'] = topic
+        d0['progress'] = get_progress(user, proj, d0['ver'])
+        d0['time'] = time_tbl.get((proj, d0['ver']), '-')
+
+        url = get_proj_url(proj)
+        if url:
+            d0['proj'] = '<a href="%s" target="_blank">%s</a>' % (url, proj)
+
+        row0 = ROW_FMT % d0
+        content_l.append(row0)
+
+        for i in range(1, nvers):
+            d = ds[i]
+            d['progress'] = get_progress(user, proj, d['ver'])
+            d['time'] = time_tbl.get((proj, d['ver']), '-')
+            row = ROW_FMT_REST % d
+            content_l.append(row)
+
+    proj_count += 1
+
+content = '\n'.join(content_l)
+
+last_judgment = ''
+progress = '???'
+
+progress = get_progress(user)
+try:
+    last_judgment = get_last_judgment(user)
+except:
+    pass
+
+html = HTML_TEMPL % { 'user':user,
+                      'progress':progress,
+                      'content':content,
+                      'base_url':BASE_URL,
+                      'last_judgment':last_judgment,
+}
+
+sys.stdout.write('Content-Type: text/html')
+sys.stdout.write('\n\n')
+print(html)

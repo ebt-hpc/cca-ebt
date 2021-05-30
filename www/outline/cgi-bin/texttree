@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+
+'''
+  Text tree view provider
+
+  Copyright 2013-2018 RIKEN
+  Copyright 2018-2020 Chiba Institute of Technology
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+'''
+
+__author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
+
+import os
+import sys
+import requests
+
+from common import OUTLINE_DIR, DEFAULT_USER, BASE_URL
+from common import get_proj_index, get_ver_index, get_path_list, get_proj_path, get_ver_path
+
+###
+
+TEMPL = '''user: %(user)s
+proj: %(proj)s
+ver:  %(ver)s
+'''
+
+path_list = []
+
+def render(data, lv='', out=sys.stdout):
+
+    indent = lv
+
+    if lv != '':
+        indent = lv[:-1] + '+'
+
+    cat = data.get('cat', '')
+
+    if 'code' in data:
+        if cat.endswith('-block'):
+            out.write('%s<%s>\n' % (indent, cat))
+        else:
+            out.write('%s%s\n' % (indent, data['code']))
+
+    elif cat == 'file':
+        loci = data['loc']
+        try:
+            loc = path_list[loci]
+        except:
+            loc = '[%d]' % loci
+
+        out.write('%s\n' % loc)
+
+    opened = False
+    if 'state' in data:
+        if data['state'].get('opened', False):
+            opened = True
+
+    if opened and 'children' in data:
+        children = data['children']
+        nc = len(children)
+        if nc == 0:
+            pass
+        elif nc == 1:
+            render(children[0], lv=(lv+' '), out=out)
+        else:
+            li = nc - 1
+            for i in range(li):
+                render(children[i], lv=(lv+'|'), out=out)
+            render(children[li], lv=(lv+' '), out=out)
+
+###
+
+import cgi
+import cgitb
+cgitb.enable()
+
+form = cgi.FieldStorage()
+
+user = form.getvalue('user', DEFAULT_USER)
+proj = form.getvalue('proj', None)
+ver  = form.getvalue('ver', None)
+path = form.getvalue('path', None)
+fid  = form.getvalue('fid', None)
+
+content = 'FAILED'
+
+#host = os.environ['HTTP_HOST']
+script = '/'.join(os.environ['SCRIPT_NAME'].split('/')[:-1]) + '/data'
+
+json_url = 'http://localhost%s' % script
+json_url_params = None
+
+if proj and ver:
+    json_url_params = { 'user' : user,
+                        'proj' : proj,
+                        'ver'  : ver,
+                        'path' : path,
+                        'fid'  : fid,
+    }
+
+    proj_path = get_proj_path(proj)
+    ver_path = get_ver_path(proj, ver)
+
+    path_list = get_path_list(ver_path)
+
+    pi_tbl = get_proj_index(proj_path)
+    vi_tbl = get_ver_index(ver_path)
+
+    if pi_tbl and vi_tbl:
+
+        content = TEMPL % {
+            'user' : user,
+            'proj' : proj,
+            'ver'  : ver,
+            'base_url' : BASE_URL,
+            'src'  : path,
+            'url'  : json_url,
+
+                'vid' : '"'+vi_tbl.get('vid', ver)+'"',
+
+                'ver_kind'  : '"'+pi_tbl.get('ver_kind', 'REL')+'"',
+            'hash_algo' : '"'+pi_tbl.get('hash_algo', 'MD5')+'"',
+            'hash_meth' : '"'+pi_tbl.get('hash_meth', 'NORMAL')+'"',
+        }
+
+if json_url_params:
+    r = requests.get(json_url, params=json_url_params)
+    tree_data = r.json()
+    sys.stdout.write('Content-Type: text/plain')
+    sys.stdout.write('\n\n')
+    sys.stdout.write(content)
+    sys.stdout.write('\n')
+    render(tree_data)

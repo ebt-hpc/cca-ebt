@@ -1,0 +1,493 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://codinuum.com/ontologies/2012/10/source-code-entity#"
+     xml:base="http://codinuum.com/ontologies/2012/10/source-code-entity"
+     xmlns:ver="http://codinuum.com/ontologies/2012/10/versioning#"
+     xmlns:chg="http://codinuum.com/ontologies/2012/10/primitive-change#"
+     xmlns:c="http://codinuum.com/ontologies/2012/10/c-entity#"
+     xmlns:java="http://codinuum.com/ontologies/2012/10/java-entity#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:src="http://codinuum.com/ontologies/2012/10/source-code-entity#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <owl:Ontology rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity">
+        <owl:imports rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+        <dc:title xml:lang="en">A Base Ontology for Source Code</dc:title>
+        <dc:creator xml:lang="en">Codinuum Software Lab</dc:creator>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/creator -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/creator"/>
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/title -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/title"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#alignedWith -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#alignedWith">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ReflexiveProperty"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#binding -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#binding">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Binding"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#child -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#child">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#child0 -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#child0">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#child"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#child1 -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#child1">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#child"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#child2 -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#child2">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#child"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#child3 -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#child3">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#child"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#child4 -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#child4">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#child"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#child5 -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#child5">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#child"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#children -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#children">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+        <rdfs:comment xml:lang="en">children of a tree node</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#containedIn -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#containedIn">
+        <owl:inverseOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#contains"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#contains -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#contains">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#containsFile -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#containsFile">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#contains"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#SourceTree"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#File"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#containsLogicalUnit -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#containsLogicalUnit">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#contains"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#File"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#LogicalUnit"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#containsSourceTree -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#containsSourceTree">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#contains"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Project"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#SourceTree"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#endPosition -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#endPosition">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Position"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#inFile -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#inFile">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#containedIn"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#File"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#inLogicalUnit -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#inLogicalUnit">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#containedIn"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#LogicalUnit"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#inProject -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#inProject">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#containedIn"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Project"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#inSourceTree -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#inSourceTree">
+        <rdfs:subPropertyOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#containedIn"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#SourceTree"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#parent -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#parent">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:comment xml:lang="en">parent node of a tree node</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#project -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#project">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#SourceTree"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Project"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#startPosition -->
+
+    <owl:ObjectProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#startPosition">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Position"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#column -->
+
+    <owl:DatatypeProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#column">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Position"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#line -->
+
+    <owl:DatatypeProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#line">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Position"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#location -->
+
+    <owl:DatatypeProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#location">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#File"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#name -->
+
+    <owl:DatatypeProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#name">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#nth -->
+
+    <owl:DatatypeProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#nth">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#offset -->
+
+    <owl:DatatypeProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#offset">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Position"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#treeDigest -->
+
+    <owl:DatatypeProperty rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#treeDigest">
+        <rdfs:domain rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#Binding -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#Binding"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#Digest -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#Digest"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#Entity -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#ExternalName -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#ExternalName">
+        <rdfs:subClassOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#File -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#File">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#location"/>
+                <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:minCardinality>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <rdfs:subClassOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#ListNode -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#ListNode"/>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#LogicalUnit -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#LogicalUnit">
+        <rdfs:subClassOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#Position -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#Position">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#column"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#line"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#offset"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#positiveInteger"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <rdfs:comment xml:lang="en">position in a source file</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#Project -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#Project">
+        <rdfs:subClassOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#SourceTree -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#SourceTree">
+        <rdfs:subClassOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#TextEntity">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#endPosition"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Position"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#startPosition"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onClass rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Position"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#inFile"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#File"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <rdfs:subClassOf rdf:resource="http://codinuum.com/ontologies/2012/10/source-code-entity#Entity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://codinuum.com/ontologies/2012/10/source-code-entity#TupleNode -->
+
+    <owl:Class rdf:about="http://codinuum.com/ontologies/2012/10/source-code-entity#TupleNode"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+

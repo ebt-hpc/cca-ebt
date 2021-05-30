@@ -1,0 +1,550 @@
+#!/usr/bin/env python3
+
+'''
+  Data provider
+
+  Copyright 2013-2018 RIKEN
+  Copyright 2018-2021 Chiba Institute of Technology
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+'''
+
+__author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
+
+import os
+import sys
+import json
+import simplejson
+from pymongo import MongoClient, ASCENDING, DESCENDING
+import re
+from urllib.parse import urlencode, quote_plus
+from time import time
+import msgpack
+
+from common import DEFAULT_USER, OUTLINE_DIR, TARGET_DIR, MONGO_PORT
+from common import EXPAND_TARGET_LOOPS, EXPAND_RELEVANT_LOOPS, EXPAND_ALL, COLLAPSE_ALL
+from common import NodeManager, compute_state, get_idx_range_tbl
+from common import get_proj_index, get_ver_index, get_path_list, get_fid_list
+from common import get_proj_path, get_ver_path
+
+
+MARKER_CALLEE_PAT = re.compile('^.*(dgemm|timer).*$')
+
+###
+
+def open_node(node):
+    try:
+        nstat = node['state']
+    except KeyError:
+        nstat = {}
+        node['state'] = nstat
+
+    nstat['opened'] = True
+
+def close_node(node):
+    try:
+        nstat = node['state']
+    except KeyError:
+        nstat = {}
+        node['state'] = nstat
+
+    nstat['opened'] = False
+
+def expand_all(node_mgr, node):
+    node_mgr.iter_subtree(node, open_node)
+
+def collapse_all(node_mgr, node):
+    node_mgr.iter_subtree(node, close_node)
+
+def expand_loops(node_mgr, node, key):
+
+    def proc(nd):
+        if nd.get(key, False):
+            node_mgr.iter_parents(nd, open_node, itself=True)
+            expand_all(node_mgr, nd)
+
+    node_mgr.iter_subtree(node, proc)
+
+
+def expand_target_loops(node_mgr, node):
+    expand_loops(node_mgr, node, 'target')
+
+def expand_relevant_loops(node_mgr, node):
+    expand_loops(node_mgr, node, 'relevant')
+
+def check_node(node):
+    node['checked'] = True
+
+def uncheck_node(node):
+    if 'checked' in node:
+        del node['checked']
+
+def handle_comment(node, c):
+    
+    if c == '':
+        if 'title' in node['a_attr']:
+            del node['a_attr']['title']
+    else:
+        node['a_attr']['title'] = c
+        attrs = { 
+            'class' : 'jstree-icon comment-icon',
+            'role'  : 'presentation',
+            'id'    : 'c_'+node['id']
+        }
+        mark = '<i %s></i>' % ' '.join(['%s="%s"' % p for p in attrs.items()])
+        node['text'] = node['text'] + mark
+    
+
+def handle_judgment(node, j):
+    node['judgment'] = j
+    
+    _x = 'value="NotYet"'
+    x = 'value="%s"' % j
+    node['text'] = node['text'].replace(_x+' selected', _x).replace(x, x+' selected')
+
+    if node.get('target', False):
+        if j != 'NotYet':
+            node['text'] = node['text'].replace('class="target_node"',
+                                                'class="target_node_completed"')
+
+def mklvid(nid, lv):
+    return '%slv%s' % (nid, lv)
+
+def handle_estimation_scheme(node, lv):
+    node['estimation_scheme'] = lv
+    
+    nid = node['id']
+    prev_lv = 2
+    prev_lv_id = mklvid(nid, prev_lv)
+    lv_id = mklvid(nid, lv);
+    prev = 'class="on_level %s"' % prev_lv_id
+    curr = 'class="on_level %s"' % lv_id
+    prev0 = prev+' style="display:inline;"'
+    curr1 = curr+' style="display:inline;"'
+
+    text = node['text'].replace('prev="%s"' % prev_lv, 'prev="%s"' % lv)
+    _x = 'value="%s"' % prev_lv
+    x = 'value="%s"' % lv
+    text = text.replace(_x+' selected', _x).replace(x, x+' selected')
+    text = text.replace(prev0, prev).replace(curr, curr1)
+
+    node['text'] = text
+    
+def setup_target(node_mgr, target_data):
+    targets = []
+    for nid in target_data:
+        try:
+            nid_list = node_mgr.get_nid_list(nid)
+
+            nid_list.append(nid)
+            
+            for i in nid_list:
+                node = node_mgr.get(i)
+                node['target'] = True
+                targets.append(i)
+                rep = 'class="target_node"'
+                node['text'] = node['text'].replace('class="node"', rep)
+
+        except KeyError:
+            pass
+
+    return targets
+
+def apply_stat(node_mgr, node_stat_tbl):
+
+    idx_list = sorted(node_stat_tbl.keys(), reverse=True)
+
+    for idx in idx_list:
+        stat = node_stat_tbl[idx]
+        try:
+            node = node_mgr.geti(idx)
+            if not node:
+                continue
+
+            if stat.get(EXPAND_TARGET_LOOPS, False):
+                expand_target_loops(node_mgr, node)
+
+            if stat.get(EXPAND_RELEVANT_LOOPS, False):
+                expand_relevant_loops(node_mgr, node)
+
+            if stat.get(EXPAND_ALL, False):
+                expand_all(node_mgr, node)
+
+            if stat.get(COLLAPSE_ALL, False):
+                collapse_all(node_mgr, node)
+
+            if stat.get('checked', False):
+                check_node(node)
+            else:
+                uncheck_node(node)
+
+            if stat.get('opened', False):
+                #open_node(node)
+                node_mgr.iter_parents(node, open_node, itself=True)
+            elif 'opened' in stat:
+                close_node(node)
+
+            if stat.get('comment', None):
+                handle_comment(node, stat['comment'])
+
+            if stat.get('judgment', None):
+                handle_judgment(node, stat['judgment'])
+
+            if stat.get('estimation_scheme', None):
+                handle_estimation_scheme(node, stat['estimation_scheme'])
+
+        except KeyError:
+            pass
+
+#
+
+TEXT_FMT0 = '''
+<span class="%(code_style)s">%(code)s</span>
+[%(unit)s%(fname)s:%(start)s-%(end)s]
+%(form)s
+'''.replace('\n', '')
+
+TEXT_FMT = '''
+<div class="node">
+
+<div>
+%(text)s
+%(others)s
+</div>
+
+<select id="es_%(nid)s" class="estimation-scheme" prev="2">
+<option value="2" selected>ES2</option>
+<option value="1">ES1</option>
+<option value="0">ES0</option>
+</select>
+
+%(ess)s
+
+<select id="j_%(nid)s" class="judgment">
+<option value="NotYet" selected>Loop Type</option>
+<option value="NonKernel">Not a Kernel</option>
+<optgroup label="A Kernel:">
+<option value="M1">&nbsp;&nbsp;M1: Low B/F & DGEMM</option>
+<option value="M2">&nbsp;&nbsp;M2: Low B/F & for Cache Blocking</option>
+<option value="M3">&nbsp;&nbsp;M3: Low B/F & Simple Loop Body</option>
+<option value="M4">&nbsp;&nbsp;M4: Low B/F & Complex Loop Body</option>
+<option value="M5">&nbsp;&nbsp;M5: High B/F & Direct Array Ref.</option>
+<option value="M6">&nbsp;&nbsp;M6: High B/F & Indirect Array Ref.</option>
+<option value="Other">&nbsp;&nbsp;Other Kernel</option>
+</optgroup>
+<option value="Ignored">Ignored</option>
+</select>
+
+</div>
+'''.replace('\n', '')
+
+METRICS_LINE_FMT = '''
+<div %(attr)s>
+%(others)s<span class="byte">B</span>/<span class="flops">F</span>:%(bf)s&nbsp;
+</div>
+
+<div %(attr)s>
+<div class="bar"><div class="barValue" style="width:%(perc)s%%;"></div></div>
+</div>
+
+<div %(attr)s>&nbsp;</div>
+'''.replace('\n', '')
+
+#
+
+def get_last_nid(user, proj, ver, root_fidi):
+    result = None
+    try:
+        cli = MongoClient('localhost', MONGO_PORT)
+        col = cli.loop_survey.log
+
+        query = {
+            'user':user,
+            'proj':proj,
+            'ver':ver,
+            #'judgment':{'$exists':True},
+            'nid':{'$exists':True},
+            'idx':{'$exists':True},
+        }
+
+        records = col.find(query).sort('time', DESCENDING)
+
+        idx_range_tbl = get_idx_range_tbl(proj, ver)
+
+        (lmi, i, _) = idx_range_tbl[str(root_fidi)]
+
+        for record in records:
+            if lmi < record['idx'] < i:
+                result = record['nid']
+                break
+
+    except Exception as e:
+        pass
+
+    return result
+
+
+###
+
+import cgi
+import cgitb
+cgitb.enable()
+
+form = cgi.FieldStorage()
+
+user = form.getvalue('user', DEFAULT_USER)
+proj = form.getvalue('proj', None)
+ver  = form.getvalue('ver', None)
+path = form.getvalue('path', None)
+fid  = form.getvalue('fid', None)
+
+node_mgr = NodeManager()
+
+def make_metrics_line_per_lv(lv, i, others, bf, perc, display):
+    lv_id = mklvid(i, lv)
+    attr = 'class="on_level %s"%s' % (lv_id, ' style="display:inline;"' if display else '')
+    others[lv].sort();
+    line = METRICS_LINE_FMT % { 'attr'   : attr,
+                                'others' : ''.join(others[lv]),
+                                'bf'     : bf[lv],
+                                'perc'   : perc[lv],
+    }
+    return line;
+
+
+tree_data = {}
+target_data = {}
+
+if proj and ver and fid:
+
+    pid = re.sub(r'_git$', '.git', proj)
+
+    proj_path = get_proj_path(proj)
+    ver_path = get_ver_path(proj, ver)
+
+    pi_tbl = get_proj_index(proj_path)
+    vi_tbl = get_ver_index(ver_path)
+
+    vkind = pi_tbl.get('ver_kind', 'REL')
+    vid = vi_tbl.get('vid', ver)
+
+    path_list = get_path_list(ver_path)
+    fid_list = get_fid_list(ver_path)
+
+    common_params = {
+        'ver'  : ver,
+    }
+
+    git_url0 = '/gitweb/?p=%s;a=blob_plain;f=' % pid
+    git_url1 = ';h='
+    git_url2 = ';hb='+vid
+
+    url0 = 'projects/' + proj + '/'
+
+    def mkurl_git(encoded_path, fid, vid):
+        u = ''.join([git_url0, encoded_path, git_url1, fid, git_url2])
+        return u
+
+    encoded_path_tbl = {}
+    def get_encoded_path(path):
+        encoded = None
+        try:
+            encoded = encoded_path_tbl[path] 
+        except KeyError:
+            encoded = quote_plus(path)
+            encoded_path_tbl[path] = encoded
+        return encoded
+
+    def get_link_form(obj):
+        path = path_list[obj['loc']]
+        encoded_path = get_encoded_path(path)
+
+        if vkind == 'GITREV':
+            url = mkurl_git(encoded_path, fid_list[obj['fid']], vid)
+        else:
+            url = url0 + path
+
+        params = common_params.copy()
+
+        params['path'] = path
+        params['src']  = url
+
+        startl = obj.get('sl', None)
+        endl   = obj.get('el', None)
+
+        if startl and endl:
+            params['startl'] = startl
+            params['endl']   = endl
+
+        aref_ranges = obj.get('aref_ranges', None)
+        if aref_ranges:
+            params['aref_ranges'] = aref_ranges
+
+        form = '<form style="display:none;" name="form_%s" method="POST" action="openviewer" target="_blank">' % obj['id']
+        for kv in params.items():
+            form += "<input type='hidden' name='%s' value='%s'>" % kv
+        form += '</form>'
+
+        return form
+
+    def get_code_style(obj):
+        style = 'code'
+
+        if 'callee' in obj:
+            m = MARKER_CALLEE_PAT.match(obj['callee'])
+            if m:
+                style = 'marker-call'
+
+        return style
+            
+
+    def hook(obj):
+        if 'id' in obj:
+            node_mgr.reg(obj)
+
+            link_form = ''
+
+            nid = obj['id']
+
+            if nid != '#':
+                link_form = get_link_form(obj)
+                obj['a_attr'] = {}
+
+            if 'code' in obj:
+                csty = get_code_style(obj)
+                unit = obj.get('pu', None)
+                text = TEXT_FMT0 % {
+                    'code'       : obj['code'],
+                    'code_style' : csty,
+                    'unit'       : '<span class="{}">{}</span>:'.format(csty, unit) if unit != None else '',
+                    'fname'      : os.path.basename(path_list[obj['loc']]),
+                    'start'      : obj['sl'],
+                    'end'        : obj['el'],
+                    'form'       : link_form,
+                }
+
+                if 'bf0' in obj or 'bf1' in obj or 'bf2' in obj:
+
+                    bf = [obj['bf0'], obj['bf1'], obj['bf2']]
+                    others_lv = [[], [], []]
+                    others = ''
+
+                    if 'other_metrics' in obj:
+                        for (m, v) in obj['other_metrics'].items():
+
+                            x = '<span class="metrics">%s</span>:%s,' % (m, v)
+
+                            if m in ('AR0', 'IAR0', 'DAR0'):
+                                others_lv[0].append(x)
+
+                            elif m in ('AR1', 'IAR1', 'DAR1'):
+                                others_lv[1].append(x);
+
+                            elif m in ('AR2', 'IAR2', 'DAR2'):
+                                others_lv[2].append(x);
+
+                            else:
+                                others += x;
+
+                        others = '<td>%s</td>' % others
+
+                    perc = [int(f * 100.0 / (f + 1.0)) for f in bf]
+                    bff = ['%3.2f' % f for f in bf]
+                    lv_id = [nid+'lv0', nid+'lv1', nid+'lv2']
+                    lvs = [
+                        make_metrics_line_per_lv(0, nid, others_lv, bff, perc, False),
+                        make_metrics_line_per_lv(1, nid, others_lv, bff, perc, False),
+                        make_metrics_line_per_lv(2, nid, others_lv, bff, perc, True),
+                    ]
+
+                    text = TEXT_FMT % { 'nid'    : nid,
+                                        'text'   : text,
+                                        'others' : others, 
+                                        'ess'    : ''.join(lvs),
+                    }
+
+                if 'nlinks' in obj:
+                    text += '<i class="jstree-icon link-icon" id="l_%s" role="presentation"></i>' % nid;
+
+                if 'ignored_callee_count' in obj:
+                    c = obj['ignored_callee_count']
+                    if c == 1:
+                        text += '&nbsp;<span class="info">(a callee ignored)</span>'
+                    elif c > 1:
+                        text += '&nbsp;<span class="info">(%d callees ignored)</span>' % c
+
+                obj['text'] = text
+
+        return obj
+
+    if path_list and fid_list:
+        try:
+            tree_data_path = os.path.join(ver_path, path, fid+'.msg')
+
+            with open(tree_data_path, 'rb') as treef:
+                st = time()
+                tree_data = msgpack.unpack(treef, object_hook=hook, raw=False, strict_map_key=False)
+
+        except Exception as e:
+            tree_data['failure'] = str(e)
+
+    if tree_data and 'failure' not in tree_data:
+        node_mgr.set_offset(tree_data.get('lmi', 1))
+        try:
+            with open(os.path.join(TARGET_DIR, proj, ver+'.json'), 'r') as targetf:
+                target_data = simplejson.load(targetf)
+
+        except Exception as e:
+            pass
+
+        try:
+            #st = time()
+
+            stat_data = compute_state(user, proj, ver)
+
+            if target_data:
+                ts = setup_target(node_mgr, target_data)
+                tree_data['targets'] = ts
+
+            if stat_data.get('node_stat', None):
+                apply_stat(node_mgr, stat_data['node_stat'])
+
+            tree_data['text'] = '%s (%d nodes)' % (tree_data.get('text', ''), len(node_mgr))
+
+            last_nid = get_last_nid(user, proj, ver, tree_data['fid'])
+            if last_nid:
+                tree_data['last_nid'] = last_nid
+
+            #tree_data['time1'] = time() - st
+
+        except Exception as e:
+            #tree_data['failure'] = str(e)
+            raise
+
+else:
+    bad = []
+    if not proj:
+        bad.append('proj')
+
+    if not ver:
+        bad.append('ver')
+
+    if not fid:
+        bad.append('fid')
+
+    tree_data['failure'] = 'not specified: %s' % ', '.join(bad)
+
+
+sys.stdout.write('Content-Type: application/json')
+sys.stdout.write('\n\n')
+sys.stdout.write(json.dumps(tree_data))

@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+
+'''
+  Tree view provider
+
+  Copyright 2013-2018 RIKEN
+  Copyright 2018-2020 Chiba Institute of Technology
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+'''
+
+__author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
+
+import os
+import sys
+from urllib.parse import urlencode
+import json
+
+from common import OUTLINE_DIR, DEFAULT_USER, BASE_URL
+
+###
+
+TEMPL = '''Content-Type: text/html
+
+%s
+'''
+
+HTML_TEMPL = '''<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>%(proj)s[%(ver)s][%(src)s] Tree</title>
+
+<link rel="stylesheet" href="%(base_url)s/jstree/dist/themes/default/style.min.css" />
+<link rel="stylesheet" href="%(base_url)s/survey.css" />
+<link rel="stylesheet" href="%(base_url)s/jquery-ui/jquery-ui.min.css" />
+</head>
+<body>
+
+<h1 id="user" style="display:none">%(user)s</h1>
+
+<h2 id="proj">%(proj)s</h2>
+
+<div id="searchPanel">
+<table style="border-radius:20px 0px 0px 20px;float:right;background:#CADFF4;">
+<tr>
+<td><label>&nbsp;&nbsp;</label></td>
+<td><button id="kernelButton">Kernel?</button></td>
+<td><label style="margin:3px;">&nbsp;&nbsp;</label></td>
+<td><input class="search" type="text" size="28" id="search" value="" /></td>
+<td>
+<div class="datasrc sel">
+<select id="datasrc" required>
+<option value="Code" selected>Code</option>
+<option value="Comment">Comment</option>
+<option value="All">All</option>
+</select>
+</div>
+</td>
+<td><button id="goButton"></button></td>
+<td style="padding-right:0px;"><button id="prevButton">&lt;</button></td>
+<td style="padding-left:0px;"><button id="nextButton">&gt;</button></td>
+<td><button id="clearButton">Clear</button></td>
+<td><div class="hit" id="cur"></div></td>
+<td><div class="hits" id="count"></div></td>
+</tr>
+</table>
+</div>
+
+<h3 id="ver">%(ver)s</h3>
+<!--
+<div id="progressbar" style="display:none">
+<div class="progressbar-label">Rendering...</div>
+</div>
+-->
+<div id="dialog"><p></p></div>
+
+<div id="outline"></div>
+
+<p style="visibility:hidden">FOOTER</p>
+<p style="visibility:hidden">FOOTER</p>
+<p style="visibility:hidden">FOOTER</p>
+<p style="visibility:hidden">FOOTER</p>
+<p style="visibility:hidden">FOOTER</p>
+
+<script src="%(base_url)s/jquery.min.js"></script>
+<script src="%(base_url)s/jquery-ui/jquery-ui.min.js"></script>
+<script src="%(base_url)s/jstree/dist/jstree.min.js"></script>
+<script src="%(base_url)s/tv.js"></script>
+<script>
+$(function () {
+  var ua = window.navigator.userAgent.toLowerCase();
+  if (ua.indexOf("safari") != -1 && ua.indexOf("chrome") == -1) {
+    console.log("detected Safari");
+    $("#search").focus().blur();
+  }
+  treeview("%(url)s", %(ver_kind)s, %(vid)s, %(hash_algo)s, %(hash_meth)s);
+});
+</script>
+</body>
+</html>
+'''
+
+###
+
+import cgi
+import cgitb
+cgitb.enable()
+
+form = cgi.FieldStorage()
+
+user = form.getvalue('user', DEFAULT_USER)
+proj = form.getvalue('proj', None)
+ver  = form.getvalue('ver', None)
+path = form.getvalue('path', None)
+fid  = form.getvalue('fid', None)
+
+content = 'FAILED'
+
+if proj and ver:
+    json_url = 'data?'+ urlencode({ 'user' : user,
+                                    'proj' : proj,
+                                    'ver'  : ver,
+                                    'path' : path,
+                                    'fid'  : fid,
+                                })
+
+    proj_dir = os.path.join(OUTLINE_DIR, proj)
+    try:
+        with open(os.path.join(proj_dir, 'index.json'), 'r') as pif:
+
+            pi_tbl = json.load(pif)
+
+            with open(os.path.join(proj_dir, 'v', ver, 'index.json'), 'r') as vif:
+                vi_tbl = json.load(vif)
+
+                fid_tbl = vi_tbl.get('fid_tbl', {}) #!!!!! obsoleted
+
+                content = HTML_TEMPL % {
+                    'user' : user,
+                    'proj' : proj,
+                    'ver'  : ver,
+                    'base_url' : BASE_URL,
+                    'src'  : path or fid_tbl.get(fid, '???'),
+                    'url'  : json_url,
+
+                    'vid' : '"'+vi_tbl.get('vid', ver)+'"',
+
+                    'ver_kind'  : '"'+pi_tbl.get('ver_kind', 'REL')+'"',
+                    'hash_algo' : '"'+pi_tbl.get('hash_algo', 'MD5')+'"',
+                    'hash_meth' : '"'+pi_tbl.get('hash_meth', 'NORMAL')+'"',
+                }
+
+    except Exception as e:
+            content = str(e)
+
+print(TEMPL % content)
