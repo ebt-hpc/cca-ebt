@@ -25,7 +25,7 @@ import os
 import sys
 import time
 from datetime import datetime, timedelta
-from subprocess import Popen, call
+from subprocess import Popen, run
 from threading import Thread
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
@@ -149,8 +149,36 @@ def get_image_name(image_name, devel=False):
     image = image_name+suffix
     return image
 
+def get_container_mem():
+    cmd = f'{CONTAINER_CMD} info --format "{{{{json .MemTotal}}}}"'
+    m = None
+    try:
+        r = run(cmd, shell=True, capture_output=True, text=True)
+        r.check_returncode()
+        m = int(r.stdout.strip())
+    except Exception as e:
+        print('[ERROR] failed to get container memory: {}'.format(str(e)))
+    return m
+
+def check_mem(mem_gb):
+    container_mem = get_container_mem()
+    b = True
+    if container_mem != None:
+        mem = mem_gb * 1000000000
+        container_mem_gb = container_mem / 1000000000
+        if mem > container_mem:
+            print(f'[WARNING] specified memory amount ({mem_gb}GB) exceeds container\'s ({container_mem_gb:.2f}GB)')
+            b = False
+    else:
+        b = False
+    return b
+
 def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
             all_roots=False, all_sps=False, image=IMAGE_NAME):
+
+    if not check_mem(mem):
+        print('aborted')
+        exit(1)
 
     dpath = check_path(dpath)
 
@@ -263,7 +291,7 @@ def restore_mongo_db(vol_name, mongo_path, dry_run=False, force=False, image=IMA
     print(run_cmd)
     if not dry_run:
         try:
-            call(run_cmd, shell=True)
+            run(run_cmd, shell=True)
         except OSError as e:
             print('execution failed: %s' % e)
 
@@ -288,7 +316,7 @@ def save_mongo_db(vol_name, mongo_path, dry_run=False, force=False, image=IMAGE_
     print(run_cmd)
     if not dry_run:
         try:
-            call(run_cmd, shell=True)
+            run(run_cmd, shell=True)
         except OSError as e:
             print('execution failed: %s' % e)
 
@@ -364,7 +392,7 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False, restore
 
     if not dry_run:
         try:
-            call(run_cmd, shell=True)
+            run(run_cmd, shell=True)
         except OSError as e:
             print('execution failed: %s' % e)
 
@@ -391,11 +419,11 @@ def stop_tv_srv(dpath, dry_run=False, devel=False, save=False):
 
     if not dry_run:
         try:
-            call(shutdown_cmd, shell=True)
+            run(shutdown_cmd, shell=True)
         except OSError as e:
             print('execution failed: %s' % e)
         try:
-            call(stop_cmd, shell=True)
+            run(stop_cmd, shell=True)
         except OSError as e:
             print('execution failed: %s' % e)
 
@@ -411,7 +439,7 @@ def update(args):
     print(cmd)
     if not args.dry_run:
         try:
-            call(cmd, shell=True)
+            run(cmd, shell=True)
         except OSError as e:
             print('execution failed: %s' % e)
 
@@ -503,6 +531,9 @@ def main():
 
 
     args = parser.parse_args()
+
+    if args.devel:
+        print('[DEVELOPMENT]')
 
     try:
         args.func(args)
