@@ -2,8 +2,8 @@
 
 import os
 
-CCA_HOME = '/opt/cca'
-VAR_DIR = '/var/lib/cca'
+CCA_HOME = os.getenv('CCA_HOME', '/opt/cca')
+VAR_DIR = os.getenv('CCA_VAR_DIR', '/var/lib/cca')
 
 VIRTUOSO_PW = 'ebt'
 VIRTUOSO_PORT = 1111
