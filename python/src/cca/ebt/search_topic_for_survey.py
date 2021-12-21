@@ -26,11 +26,10 @@ import os.path
 from itertools import chain
 import _pickle as cPickle
 import json
-import re
 from gensim import models, corpora, similarities
 import logging
 
-from .analyze_topic import get_texts, lsi, lda, rp
+from .analyze_topic import get_texts
 
 logger = logging.getLogger()
 
@@ -38,15 +37,16 @@ FNAME_PAT_FORTRAN = r'(.*readme.*)|(.+\.(f|f90|h90|f95|ftn|for|f03|f08))'
 FNAME_PAT_CPP = r'(.*readme.*)|(.+\.(c|h|cpp|hpp|cc|hh|C|H))'
 
 FNAME_PAT_TBL = {
-    'fortran' : FNAME_PAT_FORTRAN,
-    'cpp'     : FNAME_PAT_CPP,
+    'fortran': FNAME_PAT_FORTRAN,
+    'cpp':     FNAME_PAT_CPP,
 }
 
 MODEL_LOADER_TBL = {
-    'lda' : models.LdaModel.load,
-    'lsi' : models.LsiModel.load,
-    'rp'  : models.RpModel.load,
+    'lda': models.LdaModel.load,
+    'lsi': models.LsiModel.load,
+    'rp':  models.RpModel.load,
 }
+
 
 def ensure_dir(d):
     b = True
@@ -59,11 +59,12 @@ def ensure_dir(d):
     return b
 
 
-def search(index_path, mname, dpath, ntopics=32, nsims=10, lang='fortran', outfile=None):
+def search(index_path, mname, dpath, ntopics=32, nsims=10, lang='fortran',
+           outfile=None):
     try:
         ldmodel = MODEL_LOADER_TBL[mname]
     except KeyError:
-        logger.error('model not found: %s' % mname)
+        logger.error(f'model not found: "{mname}"')
 
     (a, _) = os.path.splitext(index_path)
 
@@ -91,7 +92,7 @@ def search(index_path, mname, dpath, ntopics=32, nsims=10, lang='fortran', outfi
 
     print('*** TF-IDF:')
     print(', '.join(['%s:%f' % (dictionary[i], v) for (i, v) in sorted(vec_tfidf, key=lambda x: -x[1])[0:32]]))
-    
+
     vec = model[bow]
 
     sims = sorted(enumerate(index[vec]), key=lambda x: -x[1])
@@ -103,14 +104,14 @@ def search(index_path, mname, dpath, ntopics=32, nsims=10, lang='fortran', outfi
             with open(outfile, 'w') as f:
                 data = []
                 for sim in sims[0:nsims]:
-                    data.append({'topic':classes[sim[0]], 'similarity':str(sim[1])})
+                    data.append({'topic': classes[sim[0]],
+                                 'similarity': str(sim[1])})
                 json.dump(data, f)
 
     print('*** Similarities:')
     for sim in sims[0:nsims]:
         print('%s: %f' % (classes[sim[0]], sim[1]))
 
-    
 
 if __name__ == '__main__':
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -121,11 +122,12 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='enable debug printing')
 
-    parser.add_argument('-m', '--model', dest='model', metavar='MODEL', type=str,
-                        default='lsi', help='model (lda|lsi|rp)')
+    parser.add_argument('-m', '--model', dest='model', metavar='MODEL',
+                        type=str, default='lsi', choices=['lsi', 'lsi', 'rp'],
+                        help='model')
 
-    parser.add_argument('-t', '--ntopics', dest='ntopics', metavar='N', type=int,
-                        default=32, help='number of topics')
+    parser.add_argument('-t', '--ntopics', dest='ntopics', metavar='N',
+                        type=int, default=32, help='number of topics')
 
     parser.add_argument('-n', '--nsims', dest='nsims', metavar='N', type=int,
                         default=5, help='number of topic-similarity pairs')
@@ -133,11 +135,12 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--outfile', dest='outfile', default=None,
                         metavar='FILE', type=str, help='dump JSON into FILE')
 
-    parser.add_argument('index_path', metavar='INDEX_FILE', type=str, help='index file')
+    parser.add_argument('index_path', metavar='INDEX_FILE', type=str,
+                        help='index file')
 
     parser.add_argument('dpath', metavar='PATH', type=str, help='directory')
 
     args = parser.parse_args()
 
-    search(args.index_path, args.model, args.dpath, 
+    search(args.index_path, args.model, args.dpath,
            ntopics=args.ntopics, nsims=args.nsims, outfile=args.outfile)

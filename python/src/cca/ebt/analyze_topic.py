@@ -24,7 +24,7 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 import os.path
 import re
-from gensim import corpora, models, similarities
+from gensim import corpora, models
 import logging
 
 logger = logging.getLogger()
@@ -159,11 +159,14 @@ def isfloat(s):
     b = True
     try:
         float(s)
-    except:
+    except Exception:
         b = False
     return b
 
+
 PAT = re.compile(r'^[0-9].*')
+
+
 def startswithdigit(s):
     b = False
     m = PAT.match(s)
@@ -171,9 +174,12 @@ def startswithdigit(s):
         b = True
     return b
 
+
 def filt(x):
-    b = x.isalnum() and not startswithdigit(x) and not x.isdigit() and len(x) > 1 and x not in STOP_LIST
+    b = x.isalnum() and not startswithdigit(x) and not x.isdigit() and \
+        len(x) > 1 and x not in STOP_LIST
     return b
+
 
 def extract_words(path):
     f = open(path, 'r')
@@ -200,23 +206,26 @@ def extract_words(path):
     words = []
 
     for line in lines:
-        l = filter(filt, line.split())
-        if l:
-            words += l
+        ln = filter(filt, line.split())
+        if ln:
+            words += ln
 
     return words
 
 
 def lda(corpus, dictionary, ntopics=10):
-    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=ntopics, alpha='auto', eval_every=5)
+    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary,
+                                   num_topics=ntopics, alpha='auto', eval_every=5)
     return lda
+
 
 def lsi(corpus, dictionary, ntopics=10):
     tfidf = models.TfidfModel(corpus)
     corpus_tfidf = tfidf[corpus]
     lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=ntopics)
-    #lsi = models.LsiModel(corpus, id2word=dictionary, num_topics=ntopics)
+    # lsi = models.LsiModel(corpus, id2word=dictionary, num_topics=ntopics)
     return lsi
+
 
 def rp(corpus, dictionary, ntopics=10):
     tfidf = models.TfidfModel(corpus)
@@ -227,7 +236,7 @@ def rp(corpus, dictionary, ntopics=10):
 
 def get_texts(dpath, pat):
     pat = re.compile(pat, flags=re.I)
- 
+
     texts = []
 
     logger.info('collecting documents...')
@@ -247,7 +256,7 @@ def get_texts(dpath, pat):
     logger.info('%d documents found' % len(texts))
 
     return texts
-    
+
 
 def analyze(mkmodel, dpath, pat, ntopics=10):
     texts = get_texts(dpath, pat)
@@ -255,19 +264,18 @@ def analyze(mkmodel, dpath, pat, ntopics=10):
     logger.info('analyzing...')
 
     dictionary = corpora.Dictionary(texts)
-    #dictionary.save('a.dict')
+    # dictionary.save('a.dict')
 
     corpus = [dictionary.doc2bow(text) for text in texts]
-    #corpora.MmCorpus.serialize('a.mm', corpus)
+    # corpora.MmCorpus.serialize('a.mm', corpus)
 
     m = mkmodel(corpus, dictionary, ntopics=ntopics)
 
-    return {'model':m,'corpus':corpus,'dict':dictionary}
-
+    return {'model': m, 'corpus': corpus, 'dict': dictionary}
 
 
 if __name__ == '__main__':
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    from argparse import ArgumentParser
 
     parser = ArgumentParser(description='analyze topics of documents')
 

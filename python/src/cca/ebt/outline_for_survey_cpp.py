@@ -21,19 +21,18 @@
 
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
-import os
-import sys
 import logging
 
 from .sourcecode_metrics_for_survey_cpp import get_proj_list, get_lver, Metrics
 from . import sourcecode_metrics_for_survey_cpp as metrics
-from .search_topic_for_survey import search
-from .outline_for_survey_base import NodeBase, OutlineBase, Exit, norm_callee_name
-from .outline_for_survey_base import demangle, tbl_get_list, tbl_get_set, tbl_get_dict
-from .outlining_queries_cpp import OMITTED, SUBPROGS, LOOPS, CALLS, TYPE_TBL, QUERY_TBL, get_root_entities
+from .outline_for_survey_base import (NodeBase, OutlineBase, Exit,
+                                      norm_callee_name)
+from .outline_for_survey_base import (demangle, tbl_get_list, tbl_get_set,
+                                      tbl_get_dict)
+from .outlining_queries_cpp import (OMITTED, SUBPROGS, LOOPS, CALLS, TYPE_TBL,
+                                    QUERY_TBL, get_root_entities)
 
 from cca.ccautil.cca_config import PROJECTS_DIR
-from cca.ccautil import sparql
 from cca.ccautil.siteconf import GIT_REPO_BASE
 from cca.ccautil.virtuoso import VIRTUOSO_PW, VIRTUOSO_PORT
 from cca.factutil.entity import SourceCodeEntity
@@ -42,7 +41,9 @@ from cca.factutil.entity import SourceCodeEntity
 
 logger = logging.getLogger()
 
-METRICS_ROW_HEADER = list(metrics.abbrv_tbl.keys()) + metrics.META_KEYS + ['nid','root_file']
+METRICS_ROW_HEADER = list(metrics.abbrv_tbl.keys()) \
+    + metrics.META_KEYS + ['nid', 'root_file']
+
 
 class Node(NodeBase):
     def __init__(self, ver, loc, uri, cat='',
@@ -50,14 +51,14 @@ class Node(NodeBase):
                  callee_name=None,
                  all_sps=False):
 
-        NodeBase.__init__(self, ver, loc, uri, cat, callee_name, all_sps,
-                          SUBPROGS=SUBPROGS, CALLS=CALLS, LOOPS=LOOPS)
+        super().__init__(ver, loc, uri, cat, callee_name, all_sps,
+                         SUBPROGS=SUBPROGS, CALLS=CALLS, LOOPS=LOOPS)
         self.fn = fn
 
     def get_name(self):
         return self.fn
 
-    def get_container(self): # func or main
+    def get_container(self):  # func or main
         if not self._container:
             if self.cats & SUBPROGS:
                 self._container = self
@@ -75,7 +76,6 @@ class Node(NodeBase):
                         logger.warning('multiple parents:\n%s:\nparents=[%s]' % (self, pstr))
 
         return self._container
-
 
     def score_of_chain(self, chain):
         if chain:
@@ -96,7 +96,6 @@ class Node(NodeBase):
 
     def is_main(self):
         return demangle(self.fn) == 'main'
-
 
     def get_type(self):
         ty = None
@@ -156,6 +155,7 @@ class Node(NodeBase):
                 children_l = children_l[:-1]
         return children_l
 
+
 class Outline(OutlineBase):
     def __init__(self,
                  proj_id,
@@ -168,28 +168,31 @@ class Outline(OutlineBase):
                  ver='unknown',
                  simple_layout=False,
                  all_sps=False,
-                 ):
+                 conf=None):
 
-        OutlineBase.__init__(self, proj_id, commits, method, pw, port, gitrepo, proj_dir, ver, simple_layout, all_sps,
-                             SUBPROGS=SUBPROGS, CALLS=CALLS, get_root_entities=get_root_entities,
-                             METRICS_ROW_HEADER=METRICS_ROW_HEADER)
+        super().__init__(proj_id, commits, method, pw, port, gitrepo,
+                         proj_dir, ver, simple_layout, all_sps,
+                         SUBPROGS=SUBPROGS, CALLS=CALLS,
+                         get_root_entities=get_root_entities,
+                         METRICS_ROW_HEADER=METRICS_ROW_HEADER,
+                         conf=conf)
 
-    def setup_aa_tbl(self): # assumes self._node_tbl
+    def setup_aa_tbl(self):  # assumes self._node_tbl
         if not self._aa_tbl:
             logger.info('setting up array reference table...')
 
             tbl = {}
 
-            query = QUERY_TBL['aa_in_loop'] % {'proj':self._graph_uri}
+            query = QUERY_TBL['aa_in_loop'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
-                ver  = row['ver']
-                loc  = row['loc']
+                ver = row['ver']
+                loc = row['loc']
                 loop = row['loop']
-                pe   = row['pe']
-                loop_cat  = row['loop_cat']
+                pe = row['pe']
+                loop_cat = row['loop_cat']
 
-                lver = get_lver(ver)
+                # lver = get_lver(ver)
 
                 loop_node = self.get_node(Node(ver, loc, loop, cat=loop_cat))
 
@@ -197,9 +200,9 @@ class Outline(OutlineBase):
 
                 pn_ent = SourceCodeEntity(uri=pe)
                 r = pn_ent.get_range()
-                st = {'line':r.get_start_line(),'ch':r.get_start_col()}
-                ed = {'line':r.get_end_line(),'ch':r.get_end_col()}
-                d = {'start':st,'end':ed}
+                st = {'line': r.get_start_line(), 'ch': r.get_start_col()}
+                ed = {'line': r.get_end_line(), 'ch': r.get_end_col()}
+                d = {'start': st, 'end': ed}
 
                 pns.append(d)
 
@@ -210,11 +213,11 @@ class Outline(OutlineBase):
 
             self._aa_tbl = tbl
 
-
     def extract_metrics(self):
         if not self._metrics:
             logger.info('extracting metrics...')
-            self._metrics = Metrics(self._proj_id, self._method, pw=self._pw, port=self._port)
+            self._metrics = Metrics(self._proj_id,
+                                    self._method, pw=self._pw, port=self._port)
             self._metrics.calc()
             logger.info('done.')
 
@@ -259,9 +262,9 @@ class Outline(OutlineBase):
                 bf2 = mtbl[metrics.BF[2]]
                 if bf0 or bf1 or bf2:
                     self.mark_node(c)
-                
+
             except KeyError:
-                #pass
+                # pass
                 self.mark_node(c)
 
         elif mark and self._all_sps and c.cats & SUBPROGS and p.cats & CALLS:
@@ -271,15 +274,15 @@ class Outline(OutlineBase):
         logger.info('searching for call relations...')
 
         logger.debug('fd_fd')
-        query = QUERY_TBL['fd_fd'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['fd_fd'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
             ver = row['ver']
             loc = row['loc']
-            fd  = row.get('fd', None)
-            fn  = row.get('fn', None)
+            fd = row.get('fd', None)
+            fn = row.get('fn', None)
 
-            call     = row['call']
+            call = row['call']
             call_cat = row['call_cat']
 
             callee_name = norm_callee_name(row['callee_name'])
@@ -295,20 +298,20 @@ class Outline(OutlineBase):
                 if not parent_cntnr:
                     self.add_edge(fd_node, call_node, mark=mark)
 
-            callee      = row['callee']
-            callee_loc  = row['callee_loc']
-            callee_cat  = row['callee_cat']
+            callee = row['callee']
+            callee_loc = row['callee_loc']
+            callee_cat = row['callee_cat']
 
             callee_node = Node(ver, callee_loc, callee, cat=callee_cat, fn=callee_name)
             self.add_edge(call_node, callee_node, mark=mark)
 
         logger.debug('cntnr_fd')
-        query = QUERY_TBL['cntnr_fd'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['cntnr_fd'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
-            ver       = row['ver']
-            loc       = row['loc']
-            cntnr     = row['cntnr']
+            ver = row['ver']
+            loc = row['loc']
+            cntnr = row['cntnr']
             cntnr_cat = row['cat']
 
             fd = row.get('fd', None)
@@ -316,12 +319,13 @@ class Outline(OutlineBase):
 
             cntnr_node = Node(ver, loc, cntnr, cat=cntnr_cat, fn=fn)
 
-            call     = row['call']
+            call = row['call']
             call_cat = row['call_cat']
 
             callee_name = norm_callee_name(row['callee_name'])
 
-            call_node = Node(ver, loc, call, cat=call_cat, fn=fn, callee_name=callee_name,
+            call_node = Node(ver, loc, call, cat=call_cat, fn=fn,
+                             callee_name=callee_name,
                              all_sps=self._all_sps)
 
             self.add_edge(cntnr_node, call_node, mark=mark)
@@ -329,38 +333,39 @@ class Outline(OutlineBase):
             if call_node.is_relevant():
                 self._relevant_nodes.add(call_node)
 
-            callee      = row['callee']
-            callee_loc  = row['callee_loc']
-            callee_cat  = row['callee_cat']
+            callee = row['callee']
+            callee_loc = row['callee_loc']
+            callee_cat = row['callee_cat']
 
-            callee_node = Node(ver, callee_loc, callee, cat=callee_cat, fn=callee_name)
+            callee_node = Node(ver, callee_loc, callee, cat=callee_cat,
+                               fn=callee_name)
             self.add_edge(call_node, callee_node, mark=mark)
 
         logger.info('check marks...')
         a = set()
         for marked in self._marked_nodes:
-            #print('!!! marked=%s' % marked)
+            # print('!!! marked=%s' % marked)
             ancs = marked.get_ancestors()
             a.update(ancs)
-                
+
         self._marked_nodes.update(a)
 
-
-    def construct_tree(self, callgraph=True, other_calls=True, directives=True, mark=True):
+    def construct_tree(self, callgraph=True, other_calls=True, directives=True,
+                       mark=True):
 
         self._relevant_nodes = set()
 
         logger.debug('cntnr_cntnr')
 
-        query = QUERY_TBL['cntnr_cntnr'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['cntnr_cntnr'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
-            ver    = row['ver']
-            loc    = row['loc']
-            fd     = row.get('fd', None)
-            fn     = row.get('fn', None)
-            cntnr  = row['cntnr']
-            cat    = row.get('cat', None)
+            ver = row['ver']
+            loc = row['loc']
+            fd = row.get('fd', None)
+            fn = row.get('fn', None)
+            cntnr = row['cntnr']
+            cat = row.get('cat', None)
 
             cntnr_node = Node(ver, loc, cntnr, cat=cat, fn=fn)
 
@@ -379,7 +384,7 @@ class Outline(OutlineBase):
 
             elif fd:
                 fd_node = Node(ver, loc, fd, cat=row['fd_cat'], fn=fn)
-                fd_flag = False
+                # fd_flag = False
                 self.add_edge(fd_node, cntnr_node, mark=mark)
 
         #
@@ -388,15 +393,15 @@ class Outline(OutlineBase):
 
             logger.debug('directives')
 
-            query = QUERY_TBL['directives'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['directives'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
-                ver    = row['ver']
-                loc    = row['loc']
-                fd     = row.get('fd', None)
-                fn     = row.get('fn', None)
-                dtv    = row['dtv']
-                cat    = row.get('cat', None)
+                ver = row['ver']
+                loc = row['loc']
+                fd = row.get('fd', None)
+                fn = row.get('fn', None)
+                dtv = row['dtv']
+                cat = row.get('cat', None)
 
                 dtv_node = Node(ver, loc, dtv, cat=cat, fn=fn)
 
@@ -417,14 +422,14 @@ class Outline(OutlineBase):
 
             logger.debug('other calls')
 
-            query = QUERY_TBL['other_calls'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['other_calls'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
-                ver    = row['ver']
-                loc    = row['loc']
-                fd     = row.get('fd', None)
-                fn     = row.get('fn', None)
-                call   = row['call']
+                ver = row['ver']
+                loc = row['loc']
+                fd = row.get('fd', None)
+                fn = row.get('fn', None)
+                call = row['call']
 
                 callee_name = demangle(row['callee_name'])
 
@@ -484,7 +489,7 @@ class Outline(OutlineBase):
                 fid = node.get_fid()
                 self._fid_tbl[(v, node.loc)] = fid
 
-            mkey = node.get_mkey() # register lines of definitions
+            mkey = node.get_mkey()  # register lines of definitions
             try:
                 for pn in self._aa_tbl[mkey]:
                     df = pn.get('def', None)
@@ -505,7 +510,7 @@ class Outline(OutlineBase):
 
         logger.info('%d root nodes (out of %d nodes) found' % (len(roots), count))
 
-        tree = {'node_tbl':self._node_tbl,'roots':roots}
+        tree = {'node_tbl': self._node_tbl, 'roots': roots}
 
         for nd in self._relevant_nodes:
             nd.relevant = True
@@ -523,7 +528,6 @@ class Outline(OutlineBase):
         #     self.iter_tree(root, dump)
 
         return tree
-
 
     def iter_tree(self, root, f, pre=None, post=None):
         self.__iter_tree(set(), 0, root, f, pre=pre, post=post)
@@ -551,13 +555,13 @@ class Outline(OutlineBase):
 
     def mkrow(self, lver, loc, nd, lnum, mtbl, nid):
         tbl = mtbl.copy()
-        tbl['proj']   = self._proj_id
-        tbl['ver']    = lver
-        tbl['path']   = loc
-        tbl['fn']     = nd.fn
-        tbl['lnum']   = lnum
+        tbl['proj'] = self._proj_id
+        tbl['ver'] = lver
+        tbl['path'] = loc
+        tbl['fn'] = nd.fn
+        tbl['lnum'] = lnum
         tbl['digest'] = mtbl['meta']['digest']
-        tbl['nid']    = nid
+        tbl['nid'] = nid
         row = []
         for k in METRICS_ROW_HEADER:
             if k != 'root_file':
@@ -570,12 +574,13 @@ class Outline(OutlineBase):
                 if LOOPS & x.cats:
                     raise Exit
 
+
 def test(proj):
     ol = Outline(proj)
 
     tree = ol.get_tree()
 
-    root_tbl = {} # ver -> loc -> root (contains loop)
+    root_tbl = {}  # ver -> loc -> root (contains loop)
 
     def f(lv, k):
         if LOOPS & k.cats:
@@ -596,7 +601,6 @@ def test(proj):
             roots.append(root)
 
     logger.info('%d top constructs (that contain loops) found' % count)
-
 
     def dump(lv, k):
         print('%s%s' % ('  '*lv, k))
@@ -660,7 +664,7 @@ def main():
     parser.add_argument('-t', '--ntopics', dest='ntopics', metavar='N', type=int,
                         default=32, help='number of topics')
 
-    parser.add_argument('proj_list', nargs='*', default=[], 
+    parser.add_argument('proj_list', nargs='*', default=[],
                         metavar='PROJ', type=str,
                         help='project id (default: all projects)')
 
@@ -673,9 +677,8 @@ def main():
     else:
         proj_list = get_proj_list()
 
-
     for proj in proj_list:
-        #test(proj)
+        # test(proj)
         ol = Outline(proj,
                      commits=args.commits,
                      method=args.method,
@@ -683,7 +686,7 @@ def main():
                      proj_dir=args.proj_dir,
                      ver=args.ver,
                      simple_layout=args.simple_layout,
-        )
+                     )
 
         ol.gen_data('cpp', args.outdir, omitted=set(OMITTED), all_roots=args.all_roots)
 
@@ -697,4 +700,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    pass

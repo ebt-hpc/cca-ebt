@@ -925,23 +925,23 @@ GRAPH <%%(proj)s> {
 
 
 QUERY_TBL = {
-    'loop_loop'      : Q_LOOP_LOOP_C,
-    'arrays'         : Q_ARRAYS_C,
-    'ffr_in_loop'    : Q_FFR_IN_LOOP_C,
-    'dfr_in_loop'    : Q_DFR_IN_LOOP_C,
-    'fop_in_loop'    : Q_FOP_IN_LOOP_C,
-    'in_loop'        : Q_IN_LOOP_C,
+    'loop_loop':   Q_LOOP_LOOP_C,
+    'arrays':      Q_ARRAYS_C,
+    'ffr_in_loop': Q_FFR_IN_LOOP_C,
+    'dfr_in_loop': Q_DFR_IN_LOOP_C,
+    'fop_in_loop': Q_FOP_IN_LOOP_C,
+    'in_loop':     Q_IN_LOOP_C,
 
-    'aref0_in_loop'  : { 'aa' : Q_AREF0_AA_IN_LOOP_C,
-                         'iaa': Q_AREF0_IAA_IN_LOOP_C,
-                         'daa': Q_AREF0_DAA_IN_LOOP_C,
-    },
+    'aref0_in_loop': {'aa':  Q_AREF0_AA_IN_LOOP_C,
+                      'iaa': Q_AREF0_IAA_IN_LOOP_C,
+                      'daa': Q_AREF0_DAA_IN_LOOP_C,
+                      },
 
-    'aref12_in_loop' : { 'aa' : Q_AREF12_AA_IN_LOOP_C,
-                         'iaa': Q_AREF12_IAA_IN_LOOP_C,
-                         'daa': Q_AREF12_DAA_IN_LOOP_C,
-    },
+    'aref12_in_loop': {'aa':  Q_AREF12_AA_IN_LOOP_C,
+                       'iaa': Q_AREF12_IAA_IN_LOOP_C,
+                       'daa': Q_AREF12_DAA_IN_LOOP_C,
+                       },
 
-    'loop_fd'        : Q_LOOP_FD_C,
-    'fd_fd'          : Q_FD_FD_C,
+    'loop_fd': Q_LOOP_FD_C,
+    'fd_fd':   Q_FD_FD_C,
 }

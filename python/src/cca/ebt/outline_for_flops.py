@@ -23,7 +23,6 @@
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 import os
-import sys
 import json
 from sympy import Symbol
 from io import StringIO
@@ -33,7 +32,8 @@ import logging
 
 from .common import NS_TBL
 from .outline_for_survey_fortran import Outline as OutlineFortran
-from .outline_for_survey_base import tbl_get_dict, tbl_get_list, get_lver, ensure_dir, get_proj_list
+from .outline_for_survey_base import (tbl_get_dict, tbl_get_list, get_lver,
+                                      ensure_dir, get_proj_list)
 from .outline_for_survey_base import SourceFiles
 
 from cca.factutil.entity import SourceCodeEntity
@@ -123,10 +123,10 @@ GRAPH <%%(proj)s> {
 '''
 
 fquery_tbl = {
-    'nfadd' : Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfadd', cat='f:Add'),
-    'nfsub' : Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfsub', cat='f:Subt'),
-    'nfmul' : Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfmul', cat='f:Mult'),
-    'nfdiv' : Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfdiv', cat='f:Div'),
+    'nfadd': Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfadd', cat='f:Add'),
+    'nfsub': Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfsub', cat='f:Subt'),
+    'nfmul': Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfmul', cat='f:Mult'),
+    'nfdiv': Q_FOP_IN_CONSTR_F % dict(NS_TBL, var='?nfdiv', cat='f:Div'),
 }
 
 
@@ -186,10 +186,10 @@ GRAPH <%%(proj)s> {
 '''
 
 zquery_tbl = {
-    'nzadd' : Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzadd', cat='f:Add'),
-    'nzsub' : Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzsub', cat='f:Subt'),
-    'nzmul' : Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzmul', cat='f:Mult'),
-    'nzdiv' : Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzdiv', cat='f:Div'),
+    'nzadd': Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzadd', cat='f:Add'),
+    'nzsub': Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzsub', cat='f:Subt'),
+    'nzmul': Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzmul', cat='f:Mult'),
+    'nzdiv': Q_ZOP_IN_CONSTR_F % dict(NS_TBL, var='?nzdiv', cat='f:Div'),
 }
 
 
@@ -223,10 +223,10 @@ GRAPH <%%(proj)s> {
            f:name ?fname .
 
       ?arg src:parent ?fref .
-      
+
       ?farg a f:Expr ;
             src:parent+ ?fref .
-      
+
       FILTER (?fname IN ("real", "dble") ||
               EXISTS { ?farg a f:RealLiteralConstant } ||
               EXISTS {
@@ -283,7 +283,7 @@ GRAPH <%%(proj)s> {
                   f:value ?val ;
                   src:parent+ ?fref .
             FILTER (CONTAINS(STR(?val), "d") || CONTAINS(STR(?val), "D"))
-          } || 
+          } ||
           EXISTS {
             ?farg a f:Expr ;
                   f:declarator ?dtor ;
@@ -294,8 +294,8 @@ GRAPH <%%(proj)s> {
 
             ?tspec a ?cat OPTION (INFERENCE NONE) .
 
-            FILTER (?cat = f:DoublePrecision || 
-                    (?cat = f:Real && 
+            FILTER (?cat = f:DoublePrecision ||
+                    (?cat = f:Real &&
                      EXISTS {
                        ?tspec src:children/rdf:first/src:children/rdf:first/f:value 8
                      })
@@ -535,19 +535,19 @@ GRAPH <%%(proj)s> {
 }
 ''' % NS_TBL
 
-QUERY_TBL = { 'fortran' :
-              {
-                  'fop_in_constr'    : fquery_tbl,
-                  'zop_in_constr'    : zquery_tbl,
-                  'ffr_in_constr'    : Q_FFR_IN_CONSTR_F,
-                  'dfr_in_constr'    : Q_DFR_IN_CONSTR_F,
-                  'arefl_in_constr'  : Q_AREFL_IN_CONSTR_F,
-                  'arefr_in_constr'  : Q_AREFR_IN_CONSTR_F,
-                  'iarefl_in_constr' : Q_IAREFL_IN_CONSTR_F,
-                  'iarefr_in_constr' : Q_IAREFR_IN_CONSTR_F,
-                  'lctl_of_loop'     : Q_LCTL_OF_LOOP_F,
+QUERY_TBL = {'fortran':
+             {
+                  'fop_in_constr':    fquery_tbl,
+                  'zop_in_constr':    zquery_tbl,
+                  'ffr_in_constr':    Q_FFR_IN_CONSTR_F,
+                  'dfr_in_constr':    Q_DFR_IN_CONSTR_F,
+                  'arefl_in_constr':  Q_AREFL_IN_CONSTR_F,
+                  'arefr_in_constr':  Q_AREFR_IN_CONSTR_F,
+                  'iarefl_in_constr': Q_IAREFL_IN_CONSTR_F,
+                  'iarefr_in_constr': Q_IAREFR_IN_CONSTR_F,
+                  'lctl_of_loop':     Q_LCTL_OF_LOOP_F,
               }
-}
+             }
 
 
 def iter_tree(node, pre=None, post=None):
@@ -565,8 +565,8 @@ def iter_tree(node, pre=None, post=None):
 
 def metrics_subt(m0, m1):
     def check(k):
-        if m0.has_key(k):
-            if m1.has_key(k):
+        if k in m0:
+            if k in m1:
                 m0[k] -= m1[k]
                 if m0[k] == 0:
                     del m0[k]
@@ -589,13 +589,13 @@ def metrics_subt(m0, m1):
         f1 = m1.get('nfref', None)
         if f1:
             for (fn, d0) in f0.items():
-                if f1.has_key(fn):
-                    if d0.has_key('single'):
+                if fn in f1:
+                    if 'single' in d0:
                         d0['single'] -= f1[fn].get('single', 0)
                         if d0['single'] == 0:
                             del d0['single']
 
-                    if d0.has_key('double'):
+                    if 'double' in d0:
                         d0['double'] -= f1[fn].get('double', 0)
                         if d0['double'] == 0:
                             del d0['double']
@@ -608,12 +608,11 @@ def metrics_subt(m0, m1):
             del m0['nfref']
 
 
-
 def simplify_expr(expr):
     g = generate_tokens(StringIO(expr).readline)
     repl = []
     symbols = set()
-    env = {'Symbol':Symbol}
+    env = {'Symbol': Symbol}
     for (toknum, tokval, _, _, _) in g:
         if toknum == NAME:
             if tokval not in symbols:
@@ -624,8 +623,8 @@ def simplify_expr(expr):
                     x = tokval+'_'
                     repl.append((tokval, x))
 
-                l = '%s = Symbol("%s")' % (x, tokval)
-                exec(l, env)
+                ln = '%s = Symbol("%s")' % (x, tokval)
+                exec(ln, env)
 
     for (old, new) in repl:
         expr = expr.replace(old, new)
@@ -637,6 +636,7 @@ def simplify_expr(expr):
 
 class Exit(Exception):
     pass
+
 
 class Outline(OutlineFortran):
 
@@ -651,29 +651,27 @@ class Outline(OutlineFortran):
                  ver='unknown',
                  simple_layout=False):
 
-        OutlineFortran.__init__(self,
-                                proj_id,
-                                commits=commits,
-                                method=method,
-                                pw=pw,
-                                port=port,
-                                gitrepo=gitrepo,
-                                proj_dir=proj_dir,
-                                ver=ver,
-                                simple_layout=simple_layout)
+        super().__init__(proj_id,
+                         commits=commits,
+                         method=method,
+                         pw=pw,
+                         port=port,
+                         gitrepo=gitrepo,
+                         proj_dir=proj_dir,
+                         ver=ver,
+                         simple_layout=simple_layout)
 
-        self._fop_tbl = None # key -> nfop_tbl
-        self._zop_tbl = None # key -> nzop_tbl
-        self._ffr_tbl = None # key -> hash -> fname * nargs * is_dbl
-        self._aref_tbl = None # key -> naref_tbl
-        self._iaref_tbl = None # key -> niaref_tbl
+        self._fop_tbl = None  # key -> nfop_tbl
+        self._zop_tbl = None  # key -> nzop_tbl
+        self._ffr_tbl = None  # key -> hash -> fname * nargs * is_dbl
+        self._aref_tbl = None  # key -> naref_tbl
+        self._iaref_tbl = None  # key -> niaref_tbl
 
-        self._lctl_tbl = {} # key -> (init * term * stride) list
-
+        self._lctl_tbl = {}  # key -> (init * term * stride) list
 
     def get_key(self, row):
-        ver    = row['ver']
-        loc    = row['loc']
+        ver = row['ver']
+        loc = row['loc']
         constr = row['constr']
 
         lver = get_lver(ver)
@@ -688,12 +686,11 @@ class Outline(OutlineFortran):
 
         return key
 
-
     def setup_lctl_tbl(self):
         logger.info('setting up loop control table...')
         for lang in QUERY_TBL.keys():
             try:
-                query = QUERY_TBL[lang]['lctl_of_loop'] % {'proj':self._graph_uri}
+                query = QUERY_TBL[lang]['lctl_of_loop'] % {'proj': self._graph_uri}
 
                 for qvs, row in self._sparql.query(query):
 
@@ -703,8 +700,8 @@ class Outline(OutlineFortran):
                     term = row['term']
                     stride = row.get('stride', None)
 
-                    l = tbl_get_list(self._lctl_tbl, key)
-                    l.append((init, term, stride))
+                    li = tbl_get_list(self._lctl_tbl, key)
+                    li.append((init, term, stride))
 
             except KeyError:
                 raise
@@ -712,12 +709,11 @@ class Outline(OutlineFortran):
 
         logger.info('done.')
 
-
     def count_aref_in_constr(self):
         self._aref_tbl = {}
         logger.info('counting arefs...')
         for lang in QUERY_TBL.keys():
-            query = QUERY_TBL[lang]['arefl_in_constr'] % {'proj':self._graph_uri}
+            query = QUERY_TBL[lang]['arefl_in_constr'] % {'proj': self._graph_uri}
             for qvs, row in self._sparql.query(query):
                 key = self.get_key(row)
                 narefl = int(row['narefl'] or '0')
@@ -725,25 +721,24 @@ class Outline(OutlineFortran):
                     d = self._aref_tbl[key]
                     d['narefl'] = narefl
                 except KeyError:
-                    self._aref_tbl[key] = {'narefl':narefl}
+                    self._aref_tbl[key] = {'narefl': narefl}
 
-            query = QUERY_TBL[lang]['arefr_in_constr'] % {'proj':self._graph_uri}
+            query = QUERY_TBL[lang]['arefr_in_constr'] % {'proj': self._graph_uri}
             for qvs, row in self._sparql.query(query):
                 key = self.get_key(row)
                 narefr = int(row['narefr'] or '0')
                 try:
                     self._aref_tbl[key]['narefr'] = narefr
                 except KeyError:
-                    self._aref_tbl[key] = {'narefr':narefr}
+                    self._aref_tbl[key] = {'narefr': narefr}
 
         logger.info('done.')
-
 
     def count_iaref_in_constr(self):
         self._iaref_tbl = {}
         logger.info('counting iarefs...')
         for lang in QUERY_TBL.keys():
-            query = QUERY_TBL[lang]['iarefl_in_constr'] % {'proj':self._graph_uri}
+            query = QUERY_TBL[lang]['iarefl_in_constr'] % {'proj': self._graph_uri}
             for qvs, row in self._sparql.query(query):
                 key = self.get_key(row)
                 niarefl = int(row['niarefl'] or '0')
@@ -751,19 +746,18 @@ class Outline(OutlineFortran):
                     d = self._iaref_tbl[key]
                     d['niarefl'] = niarefl
                 except KeyError:
-                    self._iaref_tbl[key] = {'niarefl':niarefl}
+                    self._iaref_tbl[key] = {'niarefl': niarefl}
 
-            query = QUERY_TBL[lang]['iarefr_in_constr'] % {'proj':self._graph_uri}
+            query = QUERY_TBL[lang]['iarefr_in_constr'] % {'proj': self._graph_uri}
             for qvs, row in self._sparql.query(query):
                 key = self.get_key(row)
                 niarefr = int(row['niarefr'] or '0')
                 try:
                     self._iaref_tbl[key]['niarefr'] = niarefr
                 except KeyError:
-                    self._iaref_tbl[key] = {'niarefr':niarefr}
+                    self._iaref_tbl[key] = {'niarefr': niarefr}
 
         logger.info('done.')
-
 
     def count_fop_in_constr(self):
         self._fop_tbl = {}
@@ -771,17 +765,16 @@ class Outline(OutlineFortran):
         for lang in QUERY_TBL.keys():
             for (v, q) in QUERY_TBL[lang]['fop_in_constr'].items():
                 logger.info('%s' % v)
-                query =  q % {'proj':self._graph_uri}
+                query = q % {'proj': self._graph_uri}
                 for qvs, row in self._sparql.query(query):
                     key = self.get_key(row)
                     n = int(row[v] or '0')
                     try:
                         self._fop_tbl[key][v] = n
                     except KeyError:
-                        self._fop_tbl[key] = {v:n}
+                        self._fop_tbl[key] = {v: n}
 
         logger.info('done.')
-
 
     def count_zop_in_constr(self):
         self._zop_tbl = {}
@@ -789,37 +782,36 @@ class Outline(OutlineFortran):
         for lang in QUERY_TBL.keys():
             for (v, q) in QUERY_TBL[lang]['zop_in_constr'].items():
                 logger.info('%s' % v)
-                query = q % {'proj':self._graph_uri}
+                query = q % {'proj': self._graph_uri}
                 for qvs, row in self._sparql.query(query):
                     key = self.get_key(row)
                     n = int(row[v] or '0')
                     try:
                         self._zop_tbl[key][v] = n
                     except KeyError:
-                        self._zop_tbl[key] = {v:n}
+                        self._zop_tbl[key] = {v: n}
 
         logger.info('done.')
-
 
     def count_ffr_in_constr(self):
         self._ffr_tbl = {}
         logger.info('counting ffrs...')
         for lang in QUERY_TBL.keys():
 
-            query = QUERY_TBL[lang]['ffr_in_constr'] % {'proj':self._graph_uri}
+            query = QUERY_TBL[lang]['ffr_in_constr'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
 
                 key = self.get_key(row)
 
                 try:
-                    fref_tbl = self._ffr_tbl[key] # hash -> fname * nargs * is_dbl
+                    fref_tbl = self._ffr_tbl[key]  # hash -> fname * nargs * is_dbl
                 except KeyError:
                     fref_tbl = {}
                     self._ffr_tbl[key] = fref_tbl
 
-                #h     = row['h']
-                fref  = row['fref']
+                # h = row['h']
+                fref = row['fref']
                 fname = row['fname']
                 nargs = row['nargs']
 
@@ -827,7 +819,7 @@ class Outline(OutlineFortran):
 
             #
 
-            query = QUERY_TBL[lang]['dfr_in_constr'] % {'proj':self._graph_uri}
+            query = QUERY_TBL[lang]['dfr_in_constr'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
 
@@ -836,8 +828,8 @@ class Outline(OutlineFortran):
                 fref_tbl = self._ffr_tbl.get(key, None)
 
                 if fref_tbl:
-                    #h     = row['h']
-                    fref  = row['fref']
+                    # h = row['h']
+                    fref = row['fref']
                     fname = row['fname']
                     try:
                         (fn, na, b) = fref_tbl[fref]
@@ -850,22 +842,21 @@ class Outline(OutlineFortran):
 
         logger.info('done.')
 
-
     def get_metrics(self, lang, key):
 
-        if self._fop_tbl == None:
+        if self._fop_tbl is None:
             self.count_fop_in_constr()
 
-        if self._zop_tbl == None:
+        if self._zop_tbl is None:
             self.count_zop_in_constr()
 
-        if self._ffr_tbl == None:
+        if self._ffr_tbl is None:
             self.count_ffr_in_constr()
 
-        if self._aref_tbl == None:
+        if self._aref_tbl is None:
             self.count_aref_in_constr()
 
-        if self._iaref_tbl == None:
+        if self._iaref_tbl is None:
             self.count_iaref_in_constr()
 
         nfop_tbl = self._fop_tbl.get(key, {})
@@ -876,8 +867,8 @@ class Outline(OutlineFortran):
         narefr = naref_tbl.get('narefr', None)
 
         niaref_tbl = self._iaref_tbl.get(key, {})
-        niarefl = naref_tbl.get('niarefl', None)
-        niarefr = naref_tbl.get('niarefr', None)
+        niarefl = niaref_tbl.get('niarefl', None)
+        niarefr = niaref_tbl.get('niarefr', None)
 
         fref_tbl = self._ffr_tbl.get(key, None)
 
@@ -888,7 +879,7 @@ class Outline(OutlineFortran):
                 try:
                     c = fref_count_tbl[fn]
                 except KeyError:
-                    c = {'single':0,'double':0}
+                    c = {'single': 0, 'double': 0}
                     fref_count_tbl[fn] = c
 
                 if dbl:
@@ -921,9 +912,7 @@ class Outline(OutlineFortran):
         if niarefr:
             data['niarefr'] = niarefr
 
-        
         return data
-
 
     def get_text(self, line_text_tbl, loc, ent):
         text = None
@@ -938,7 +927,6 @@ class Outline(OutlineFortran):
             logger.warning('%s: %s %s' % (loc, type(e), str(e)))
             raise
         return text
-
 
     def get_niter_sub(self, line_text_tbl, loc, init_term_stride):
         init, term, stride = init_term_stride
@@ -979,29 +967,28 @@ class Outline(OutlineFortran):
 
         (ver, loc, _, _) = key
 
-        l = []
+        li = []
         for t in self._lctl_tbl.get(key, []):
             niter_ln = self.get_niter_sub(line_text_tbl, loc, t)
             if niter_ln:
-                l.append(niter_ln)
+                li.append(niter_ln)
 
-        l.sort(key=lambda x: x[1])
+        li.sort(key=lambda x: x[1])
 
-        niter = ' | '.join([x for (x, _) in l])
+        niter = ' | '.join([x for (x, _) in li])
 
         return niter
 
-
     def gen_data(self, lang, outdir='.', keep_rev=False, debug_flag=False):
-        
+
         tree = self.get_tree(callgraph=False,
                              other_calls=False,
                              directives=False,
                              mark=False)
 
-        root_tbl = {} # ver -> loc -> root (contains loop) list
+        root_tbl = {}  # ver -> loc -> root (contains loop) list
 
-        def f(lv, k): # filter out trees that do not contain loops
+        def f(lv, k):  # filter out trees that do not contain loops
             if k.cat == 'do-construct':
                 raise Exit
 
@@ -1019,7 +1006,8 @@ class Outline(OutlineFortran):
 
         logger.info('%d root nodes (units that contain loops) found' % count)
 
-        source_files = SourceFiles(self._conf, gitrepo=self._gitrepo, proj_dir=self._proj_dir)
+        source_files = SourceFiles(self._conf, gitrepo=self._gitrepo,
+                                   proj_dir=self._proj_dir)
 
         for ver in root_tbl.keys():
 
@@ -1034,9 +1022,10 @@ class Outline(OutlineFortran):
 
             logger.info('generating line text table for "%s"...' % lver)
 
-            line_text_tbl = self.get_line_text_tbl(source_files, ver, strip=False)
+            line_text_tbl = self.get_line_text_tbl(source_files, ver,
+                                                   strip=False)
 
-            debug_tbl = {} # path -> (start_line * metrics)
+            debug_tbl = {}  # path -> (start_line * metrics)
 
             def elaborate(node, d):
 
@@ -1053,7 +1042,8 @@ class Outline(OutlineFortran):
                         d['metrics'] = mdata
 
                         ms = tbl_get_list(debug_tbl, loc)
-                        ms.append((start_line, node.get_end_line(), node.cat, mdata))
+                        ms.append((start_line, node.get_end_line(), node.cat,
+                                   mdata))
 
                 except KeyError:
                     pass
@@ -1077,22 +1067,20 @@ class Outline(OutlineFortran):
                     ds.append(root.to_dict([root], {}, elaborate=elaborate))
 
                 loc_d = {
-                    'loc'      : loc,
-                    'children' : ds,
-                    'fid'      : fid,
+                    'loc':      loc,
+                    'children': ds,
+                    'fid':      fid,
                 }
-                
+
                 json_ds.append(loc_d)
 
             json_ds.sort(key=lambda x: x['loc'])
-
 
             if keep_rev and self._conf.ver_tbl:
                 lver_ = self._conf.ver_tbl.get(lver, lver)
                 lver_dir = os.path.join(outdir, lver_)
             else:
                 lver_dir = os.path.join(outdir, lver)
-
 
             def cleanup(d):
                 m = d.get('metrics', None)
@@ -1103,11 +1091,11 @@ class Outline(OutlineFortran):
                     f = m.get('nfref', None)
                     if f:
                         for (fn, d) in f.items():
-                            if d.has_key('single'):
+                            if 'single' in d:
                                 if d['single'] == 0:
                                     del d['single']
 
-                            if d.has_key('double'):
+                            if 'double' in d:
                                 if d['double'] == 0:
                                     del d['double']
 
@@ -1126,7 +1114,7 @@ class Outline(OutlineFortran):
 
             for json_d in json_ds:
                 iter_tree(json_d, post=cleanup)
-                #iter_tree(json_d, pre=adjust, post=cleanup)
+                # iter_tree(json_d, pre=adjust, post=cleanup)
 
             if debug_flag:
                 for json_d in json_ds:
@@ -1179,28 +1167,32 @@ def main():
                         metavar='METHOD', type=str,
                         help='execute query via METHOD (odbc|http)')
 
-    parser.add_argument('-c', '--commits', dest='commits', default=['HEAD'], nargs='+',
-                        metavar='COMMIT', type=str, help='analyze COMMIT')
+    parser.add_argument('-c', '--commits', dest='commits', default=['HEAD'],
+                        nargs='+', metavar='COMMIT', type=str,
+                        help='analyze COMMIT')
 
-    parser.add_argument('-g', '--git-repo-base', dest='gitrepo', metavar='DIR', type=str,
-                        default=GIT_REPO_BASE, help='location of git repositories')
+    parser.add_argument('-g', '--git-repo-base', dest='gitrepo', metavar='DIR',
+                        type=str, default=GIT_REPO_BASE,
+                        help='location of git repositories')
 
-    parser.add_argument('-p', '--proj-dir', dest='proj_dir', metavar='DIR', type=str,
-                        default=PROJECTS_DIR, help='location of projects')
+    parser.add_argument('-p', '--proj-dir', dest='proj_dir', metavar='DIR',
+                        type=str, default=PROJECTS_DIR,
+                        help='location of projects')
 
     parser.add_argument('--ver', dest='ver', metavar='VER', type=str,
                         default='unknown', help='version')
 
     parser.add_argument('--simple-layout', dest='simple_layout',
-                        action='store_true', help='assumes simple directory layout')
+                        action='store_true',
+                        help='assumes simple directory layout')
 
-    parser.add_argument('-k', '--keep-rev', dest='keep_rev', action='store_true',
-                        help='keep designated commit ref')
+    parser.add_argument('-k', '--keep-rev', dest='keep_rev',
+                        action='store_true', help='keep designated commit ref')
 
     parser.add_argument('-o', '--outdir', dest='outdir', default='.',
                         metavar='DIR', type=str, help='dump data into DIR')
 
-    parser.add_argument('proj_list', nargs='*', default=[], 
+    parser.add_argument('proj_list', nargs='*', default=[],
                         metavar='PROJ', type=str,
                         help='project id (default: all projects)')
 
@@ -1212,7 +1204,6 @@ def main():
         proj_list = args.proj_list
     else:
         proj_list = get_proj_list()
-
 
     for proj in proj_list:
         ol = Outline(proj,
@@ -1227,6 +1218,5 @@ def main():
             ol.gen_data(lang, outdir=args.outdir, keep_rev=args.keep_rev)
 
 
-
 if __name__ == '__main__':
-    main()
+    pass

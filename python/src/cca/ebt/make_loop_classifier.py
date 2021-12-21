@@ -25,15 +25,22 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 import os
 import csv
 import numpy as np
-import scipy as sp
-from sklearn.neighbors import KNeighborsClassifier, RadiusNeighborsClassifier
-from sklearn.svm import SVC, LinearSVC, NuSVC
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
-from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, AdaBoostClassifier
-from sklearn.feature_selection import SelectKBest, chi2, f_classif, SelectFromModel
-#from sklearn import grid_search
-#from sklearn import model_selection
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+# import scipy as sp
+from sklearn.neighbors import KNeighborsClassifier
+# from sklearn.neighbors import RadiusNeighborsClassifier
+from sklearn.svm import SVC
+# from sklearn.svm import LinearSVC
+# from sklearn.svm import NuSVC
+# from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.ensemble import ExtraTreesClassifier
+# from sklearn.ensemble import AdaBoostClassifier
+# from sklearn.feature_selection import SelectKBest, SelectFromModel
+# from sklearn.feature_selection import chi2, f_classif
+# from sklearn import grid_search
+# from sklearn import model_selection
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                             f1_score)
 from sklearn import preprocessing as pp
 import joblib
 import logging
@@ -51,11 +58,10 @@ META = [
     'digest',
 ]
 
-JUDGMENTS = [
-    'judgment_M',
-#    'judgment_T',
-#    'judgment_X',
-]
+JUDGMENTS = ['judgment_M',
+             # 'judgment_T',
+             # 'judgment_X',
+             ]
 
 N_JUDGMENTS = len(JUDGMENTS)
 
@@ -96,28 +102,30 @@ SELECTED = [
 ]
 
 DERIVED = [
-#    'br_rate',
-#    'ind_aref_rate0',
-#    'array_rank_rate',
+    # 'br_rate',
+    # 'ind_aref_rate0',
+    # 'array_rank_rate',
 ]
+
 
 def rate(x, y):
     return float(x) / float(y)
 
+
 DERIVED_F_TBL = {
-    'br_rate'        : rate,
-    'ind_aref_rate0' : rate,
+    'br_rate':         rate,
+    'ind_aref_rate0':  rate,
     'array_rank_rate': rate,
 }
 DERIVED_A_TBL = {
-    'br_rate'        : ('branches', 'stmts'),
-    'ind_aref_rate0' : ('indirect_array_refs0', 'array_refs0'),
+    'br_rate':         ('branches', 'stmts'),
+    'ind_aref_rate0':  ('indirect_array_refs0', 'array_refs0'),
     'array_rank_rate': ('max_array_rank', 7.),
 }
 
 ###
 
-# SELECTED_MINAMI = [ # CA=.832,P=.837056,R=.971948,F1=.894753
+# SELECTED_MINAMI = [  # CA=.832,P=.837056,R=.971948,F1=.894753
 #     'max_loop_level',
 #     'max_loop_depth',
 #     'max_mergeable_arrays',
@@ -126,7 +134,7 @@ DERIVED_A_TBL = {
 #     'calls',
 #     'bf0',
 # ]
-SELECTED_MINAMI = [ # CA=.85,P=.884071,R=.929341,F1=.900756
+SELECTED_MINAMI = [  # CA=.85,P=.884071,R=.929341,F1=.900756
     'max_loop_level',
     'max_loop_depth',
     'max_mergeable_arrays',
@@ -149,7 +157,7 @@ SELECTED_TERAI = [
     'dbl_array_refs0',
     'indirect_array_refs0',
 ]
-DERIVED_TERAI = [ 'ind_aref_rate0' ]
+DERIVED_TERAI = ['ind_aref_rate0']
 
 SELECTED_MIX = [
     'max_loop_level',
@@ -164,16 +172,18 @@ DERIVED_MIX = []
 
 ###
 
+
 def fromstring(s):
     x = s
     try:
         x = int(s)
-    except:
+    except Exception:
         try:
             x = float(s)
-        except:
+        except Exception:
             pass
     return x
+
 
 class Data(object):
     def __init__(self, X, y, meta):
@@ -181,11 +191,13 @@ class Data(object):
         self.y = y
         self.meta = meta
 
+
 def get_derived(k, d):
     f = DERIVED_F_TBL[k]
     args = (d.get(a, a) for a in DERIVED_A_TBL[k])
     return f(*args)
-    
+
+
 def import_training_set(path, selected=SELECTED, derived=DERIVED):
     _Xs = [[] for _ in JUDGMENTS]
     _ys = [[] for _ in JUDGMENTS]
@@ -228,8 +240,10 @@ def import_training_set(path, selected=SELECTED, derived=DERIVED):
 
     return data
 
+
 def makeMinamiClassifier(path):
-    dataset = import_training_set(path, selected=SELECTED_MINAMI, derived=DERIVED_MINAMI)
+    dataset = import_training_set(path, selected=SELECTED_MINAMI,
+                                  derived=DERIVED_MINAMI)
     data = dataset[0]
     logger.info('shape=%s |y|=%d' % (data.X.shape, len(data.y)))
     clf = SVC(C=32., kernel='rbf', gamma=8.)
@@ -237,8 +251,10 @@ def makeMinamiClassifier(path):
     clf.fit(X, data.y)
     return clf
 
+
 def makeTeraiClassifier(path):
-    dataset = import_training_set(path, selected=SELECTED_TERAI, derived=DERIVED_TERAI)
+    dataset = import_training_set(path, selected=SELECTED_TERAI,
+                                  derived=DERIVED_TERAI)
     data = dataset[1]
     logger.info('shape=%s |y|=%d' % (data.X.shape, len(data.y)))
     clf = KNeighborsClassifier(6, weights='distance', metric='hamming')
@@ -246,8 +262,10 @@ def makeTeraiClassifier(path):
     clf.fit(X, data.y)
     return clf
 
+
 def makeMixClassifier(path):
-    dataset = import_training_set(path, selected=SELECTED_MIX, derived=DERIVED_MIX)
+    dataset = import_training_set(path, selected=SELECTED_MIX,
+                                  derived=DERIVED_MIX)
     data = dataset[2]
     logger.info('shape=%s |y|=%d' % (data.X.shape, len(data.y)))
     clf = SVC(C=32., kernel='rbf', gamma=8.)
@@ -255,9 +273,11 @@ def makeMixClassifier(path):
     clf.fit(X, data.y)
     return clf
 
+
 def dump_classifier(clf, path):
     logger.info('dumping classifier into "%s"' % path)
     joblib.dump(clf, path)
+
 
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -268,13 +288,16 @@ def main():
     parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='enable debug printing')
 
-    parser.add_argument('-m', '--model', dest='model', metavar='MODEL', type=str,
-                        default='minami', help='model (minami|terai|mix)')
+    parser.add_argument('-m', '--model', dest='model', metavar='MODEL',
+                        type=str, default='minami',
+                        choices=['minami', 'terai', 'mix'], help='model')
 
-    parser.add_argument('-o', '--outfile', dest='outfile', metavar='PATH', 
-                        type=str, default='a.pkl', help='dump result into PATH')
+    parser.add_argument('-o', '--outfile', dest='outfile', metavar='PATH',
+                        type=str, default='a.pkl',
+                        help='dump result into PATH')
 
-    parser.add_argument('dpath', metavar='PATH', type=str, help='training dataset')
+    parser.add_argument('dpath', metavar='PATH', type=str,
+                        help='training dataset')
 
     args = parser.parse_args()
 
@@ -292,7 +315,7 @@ def main():
     clf = mkclf(os.path.abspath(args.dpath))
 
     dump_classifier(clf, os.path.abspath(args.outfile))
-    
+
 
 # judgment_X:
 # Mean accuracy : 0.804000
@@ -314,7 +337,7 @@ def test():
                                   selected=SELECTED_MINAMI,
                                   derived=DERIVED_MINAMI)
 
-    ### Classifiers
+    # Classifiers
 
     # clf = SVC()
     # params = {
@@ -336,35 +359,33 @@ def test():
 
     # clf = model_selection.RandomizedSearchCV(clf, params, n_iter=20)
 
-    #clf = KNeighborsClassifier(9, weights='distance', metric='hamming')
+    # clf = KNeighborsClassifier(9, weights='distance', metric='hamming')
     clf = SVC(C=32., kernel='rbf', gamma=8.)
-    #clf = SVC(C=2., kernel='rbf', gamma=8.)
-    #clf = AdaBoostClassifier(n_estimators=15)
-    #clf = SVC(C=512., kernel='rbf', gamma=0.125)
-    #clf = KNeighborsClassifier(6, weights='distance', metric='hamming')
-
+    # clf = SVC(C=2., kernel='rbf', gamma=8.)
+    # clf = AdaBoostClassifier(n_estimators=15)
+    # clf = SVC(C=512., kernel='rbf', gamma=0.125)
+    # clf = KNeighborsClassifier(6, weights='distance', metric='hamming')
 
     T = 10
 
     np.random.seed(0)
 
-    data = dataset[0] # Minami
-    #data = dataset[1] # Terai
-    #data = dataset[2] # Merged
+    data = dataset[0]  # Minami
+    # data = dataset[1] # Terai
+    # data = dataset[2] # Merged
 
     logger.info('shape=%s |y|=%d' % (data.X.shape, len(data.y)))
 
     X = data.X
 
-    ### Preprocessing
+    # Preprocessing
 
     X = pp.scale(X)
-    
-    #scaler = pp.MinMaxScaler()
-    #X = scaler.fit_transform(X)
 
+    # scaler = pp.MinMaxScaler()
+    # X = scaler.fit_transform(X)
 
-    ### Feature Selection
+    # Feature Selection
 
     # X = SelectKBest(f_classif, k=2).fit_transform(X, data.y)
 
@@ -379,8 +400,7 @@ def test():
 
     logger.info('shape=%s' % (X.shape,))
 
-
-    ### Evaluation
+    # Evaluation
 
     N = 100
 
@@ -413,10 +433,10 @@ def test():
         rec = recall_score(y_test, y_pred, pos_label='Kernel')
         f1 = f1_score(y_test, y_pred, pos_label='Kernel')
 
-        accs  += acc
+        accs += acc
         precs += prec
-        recs  += rec
-        f1s   += f1
+        recs += rec
+        f1s += f1
 
         print('[%d]' % n)
         print('  Accuracy : %f' % acc)
@@ -431,6 +451,7 @@ def test():
     print('Mean recall   : %f' % (recs/b))
     print('Mean F1       : %f' % (f1s/b))
 
+
 if __name__ == '__main__':
-    #test()
+    # test()
     main()

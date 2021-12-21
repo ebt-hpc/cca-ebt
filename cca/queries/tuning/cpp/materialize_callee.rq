@@ -35,6 +35,36 @@ INSERT {
 WHERE {
 
   {
+    SELECT DISTINCT ?callee ?call
+    WHERE {
+      ?callee a cpp:FunctionDefinition .
+
+      {
+        ?call src:child0/cpp:refersTo ?callee .
+      }
+      UNION
+      {
+        ?callee src:binding ?b .
+        ?call src:child0/src:binding ?b .
+      }
+      UNION
+      {
+        ?dtor a cpp:InitDeclarator ;
+              cpp:provides/cpp:name ?xn ;
+              src:binding ?b .
+        ?call src:child0/src:binding ?b .
+        ?callee cpp:provides/cpp:name ?xn .
+      }
+      UNION
+      {
+        ?callee cpp:provides/cpp:name ?xn .
+        ?call src:child0/cpp:requires/cpp:name ?xn .
+      }
+
+    } GROUP BY ?callee ?call
+  }
+
+  {
     ?call a cpp:PostfixExpressionFunCall .
   }
   UNION
@@ -46,40 +76,7 @@ WHERE {
     ?call a cpp:PostfixExpressionExplicitTypeConvExpr .
   }
 
-  # ?call a ?call_cat OPTION (INFERENCE NONE) .
-  # FILTER (?call_cat IN (cpp:PostfixExpressionFunCall,
-  #                       cpp:PostfixExpressionFunCallGuarded,
-  #                       cpp:PostfixExpressionExplicitTypeConvExpr))
-
-  {
-    ?callee a cpp:FunctionDefinition .
-    ?call src:child0/cpp:refersTo ?callee .
-  }
-  UNION
-  {
-    ?callee a cpp:FunctionDefinition ;
-            src:binding ?b .
-    ?call src:child0/src:binding ?b .
-  }
-  UNION
-  {
-    ?dtor a cpp:InitDeclarator ;
-          cpp:provides/cpp:name ?xn ;
-          src:binding ?b .
-    ?call src:child0/src:binding ?b .
-    ?callee a cpp:FunctionDefinition ;
-            cpp:provides/cpp:name ?xn .
-  }
-  UNION
-  {
-    ?callee a cpp:FunctionDefinition ;
-            cpp:provides/cpp:name ?xn .
-    ?call src:child0/cpp:requires/cpp:name ?xn .
-  }
-
-  FILTER EXISTS {
-    ?call cpp:inTranslationUnit/ver:version ?ver .
-    ?callee cpp:inTranslationUnit/ver:version ?ver .
-  }
+  ?callee cpp:inTranslationUnit/ver:version ?ver .
+  ?call cpp:inTranslationUnit/ver:version ?ver .
 
 }

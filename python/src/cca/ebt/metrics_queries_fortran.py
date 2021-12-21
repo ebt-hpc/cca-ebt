@@ -313,10 +313,10 @@ GRAPH <%%(proj)s> {
            f:name ?fname .
 
       ?arg src:parent ?fref .
-      
+
       ?farg a f:Expr ;
             src:parent+ ?fref .
-      
+
       FILTER (?fname IN ("real", "dble") ||
               EXISTS { ?farg a f:RealLiteralConstant } ||
               EXISTS {
@@ -383,7 +383,7 @@ GRAPH <%%(proj)s> {
                   f:value ?val ;
                   src:parent+ ?fref .
             FILTER (CONTAINS(STR(?val), "d") || CONTAINS(STR(?val), "D"))
-          } || 
+          } ||
           EXISTS {
             ?farg a f:Expr ;
                   f:declarator ?dtor ;
@@ -394,8 +394,8 @@ GRAPH <%%(proj)s> {
 
             ?tspec a ?cat OPTION (INFERENCE NONE) .
 
-            FILTER (?cat = f:DoublePrecision || 
-                    (?cat = f:Real && 
+            FILTER (?cat = f:DoublePrecision ||
+                    (?cat = f:Real &&
                      EXISTS {
                        ?tspec src:children/rdf:first/src:children/rdf:first/f:value 8
                      })
@@ -758,7 +758,7 @@ GRAPH <%%(proj)s> {
       }
 
       FILTER EXISTS {
-        ?x a ?cat ; 
+        ?x a ?cat ;
            src:parent+ ?iaa .
         FILTER (?x != ?iaa)
         FILTER (?cat IN (f:ArrayElement, f:ArraySection, f:FunctionReference))
@@ -853,7 +853,7 @@ GRAPH <%%(proj)s> {
                a ?tyc OPTION (INFERENCE NONE) .
 
         FILTER (?tyc = f:DoublePrecision || ?tyc = f:Complex || ?tyc = f:DoubleComplex ||
-                  (?tyc = f:Real && 
+                  (?tyc = f:Real &&
                      EXISTS {
                        ?tspec src:children/rdf:first/src:children/rdf:first/f:value 8
                      })
@@ -1024,7 +1024,7 @@ GRAPH <%%(proj)s> {
       }
 
       FILTER EXISTS {
-        ?x a ?cat ; 
+        ?x a ?cat ;
            src:parent+ ?iaa .
         FILTER (?x != ?iaa)
         FILTER (?cat IN (f:ArrayElement, f:ArraySection, f:FunctionReference))
@@ -1122,7 +1122,7 @@ GRAPH <%%(proj)s> {
                a ?tyc OPTION (INFERENCE NONE) .
 
         FILTER (?tyc = f:DoublePrecision || ?tyc = f:Complex || ?tyc = f:DoubleComplex ||
-                  (?tyc = f:Real && 
+                  (?tyc = f:Real &&
                      EXISTS {
                        ?tspec src:children/rdf:first/src:children/rdf:first/f:value 8
                      }) ||
@@ -1142,23 +1142,23 @@ GRAPH <%%(proj)s> {
 
 
 QUERY_TBL = {
-    'loop_loop'      : Q_LOOP_LOOP_F,
-    'arrays'         : Q_ARRAYS_F,
-    'ffr_in_loop'    : Q_FFR_IN_LOOP_F,
-    'dfr_in_loop'    : Q_DFR_IN_LOOP_F,
-    'fop_in_loop'    : Q_FOP_IN_LOOP_F,
-    'in_loop'        : Q_IN_LOOP_F,
+    'loop_loop':   Q_LOOP_LOOP_F,
+    'arrays':      Q_ARRAYS_F,
+    'ffr_in_loop': Q_FFR_IN_LOOP_F,
+    'dfr_in_loop': Q_DFR_IN_LOOP_F,
+    'fop_in_loop': Q_FOP_IN_LOOP_F,
+    'in_loop':     Q_IN_LOOP_F,
 
-    'aref0_in_loop'  : { 'aa' : Q_AREF0_AA_IN_LOOP_F,
-                         'iaa': Q_AREF0_IAA_IN_LOOP_F,
-                         'daa': Q_AREF0_DAA_IN_LOOP_F,
-    },
+    'aref0_in_loop': {'aa':  Q_AREF0_AA_IN_LOOP_F,
+                      'iaa': Q_AREF0_IAA_IN_LOOP_F,
+                      'daa': Q_AREF0_DAA_IN_LOOP_F,
+                      },
 
-    'aref12_in_loop' : { 'aa' : Q_AREF12_AA_IN_LOOP_F,
-                         'iaa': Q_AREF12_IAA_IN_LOOP_F,
-                         'daa': Q_AREF12_DAA_IN_LOOP_F,
-    },
+    'aref12_in_loop': {'aa':  Q_AREF12_AA_IN_LOOP_F,
+                       'iaa': Q_AREF12_IAA_IN_LOOP_F,
+                       'daa': Q_AREF12_DAA_IN_LOOP_F,
+                       },
 
-    'loop_sp'        : Q_LOOP_SP_F,
-    'sp_sp'          : Q_SP_SP_F,
+    'loop_sp': Q_LOOP_SP_F,
+    'sp_sp':   Q_SP_SP_F,
 }

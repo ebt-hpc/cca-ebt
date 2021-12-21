@@ -12,8 +12,8 @@ OUTDIR_NAME = '_EBT_'
 
 #
 
-ONT_DIR    = os.path.join(CCA_HOME, 'ontologies')
-
-FB_DIR     = os.path.join(VAR_DIR, 'db')
-FACT_DIR   = os.path.join(VAR_DIR, 'fact')
-WORK_DIR   = os.path.join(VAR_DIR, 'work')
+ONT_DIR = os.path.join(CCA_HOME, 'ontologies')
+FB_DIR = os.path.join(VAR_DIR, 'db')
+FACT_DIR = os.path.join(VAR_DIR, 'fact')
+WORK_DIR = os.path.join(VAR_DIR, 'work')
+QUERIES_DIR = os.path.join(CCA_HOME, 'queries')

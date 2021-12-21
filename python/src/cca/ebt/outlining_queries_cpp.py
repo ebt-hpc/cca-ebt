@@ -31,55 +31,55 @@ SUBPROGS = set([
     'function-definition',
 ])
 
-LOOPS = set(['for-statement','range-based-for-statement','do-statement','while-statement'])
+LOOPS = set(['for-statement', 'range-based-for-statement', 'do-statement',
+             'while-statement'])
 
-CALLS = set(['fun-call','fun-call-guarded','fun-call*','mpi-call','omp-call'])
+CALLS = set(['fun-call', 'fun-call-guarded', 'fun-call*', 'mpi-call',
+             'omp-call'])
 
-TYPE_TBL = { # cat -> type
-    'file'                           : 'file',
+TYPE_TBL = {  # cat -> type
+    'file': 'file',
 
-    'for-statement'                  : 'loop',
-    'range-based-for-statement'      : 'loop',
-    'do-statement'                   : 'loop',
-    'while-statement'                : 'loop',
+    'for-statement':             'loop',
+    'range-based-for-statement': 'loop',
+    'do-statement':              'loop',
+    'while-statement':           'loop',
 
-    'if-statement'                   : 'branch',
-    'else-statement'                 : 'branch',
-    'switch-statement'               : 'branch',
+    'if-statement':     'branch',
+    'else-statement':   'branch',
+    'switch-statement': 'branch',
 
-    'fun-call'                       : 'call',
-    'fun-call-guarded'               : 'call',
+    'fun-call':         'call',
+    'fun-call-guarded': 'call',
 
-    'function-definition'            : 'function',
+    'function-definition': 'function',
 
-    'compound-statement'             : 'block',
-    'function-body'                  : 'block',
-    'function-try-block'             : 'block',
+    'compound-statement': 'block',
+    'function-body':      'block',
+    'function-try-block': 'block',
 
-    'pp-group'                       : 'pp',
-    'pp-if-group'                    : 'pp',
-    'pp-elif-group'                  : 'pp',
-    'pp-else-group'                  : 'pp',
+    'pp-group':                       'pp',
+    'pp-if-group':                    'pp',
+    'pp-elif-group':                  'pp',
+    'pp-else-group':                  'pp',
+    'pp-if-section':                  'pp',
+    'pp-if-section-broken':           'pp',
+    'pp-if-section-broken-dtor-func': 'pp',
+    'pp-if-section-broken-func-def':  'pp',
+    'pp-if-section-broken-if':        'pp',
+    'pp-if-section-cond-expr':        'pp',
+    'pp-if-section-func-def':         'pp',
+    'pp-if-section-handler':          'pp',
+    'pp-if-section-templ-decl':       'pp',
+    'pp-if-section-try-block':        'pp',
+    'pp-pragma':                      'pp',
 
-    'pp-if-section'                  : 'pp',
-    'pp-if-section-broken'           : 'pp',
-    'pp-if-section-broken-dtor-func' : 'pp',
-    'pp-if-section-broken-func-def'  : 'pp',
-    'pp-if-section-broken-if'        : 'pp',
-    'pp-if-section-cond-expr'        : 'pp',
-    'pp-if-section-func-def'         : 'pp',
-    'pp-if-section-handler'          : 'pp',
-    'pp-if-section-templ-decl'       : 'pp',
-    'pp-if-section-try-block'        : 'pp',
+    'mpi-call': 'mpi',
 
-    'pp-pragma'                      : 'pp',
+    'omp-call': 'omp',
 
-    'mpi-call'                       : 'mpi',
-    'omp-call'                       : 'omp',
-
-    'fun-call*'                      : 'call*'
+    'fun-call*': 'call*'
 }
-
 
 Q_AA_IN_LOOP_C = '''DEFINE input:inference "ont.cpi"
 PREFIX cpp: <%(cpp_ns)s>
@@ -420,7 +420,7 @@ GRAPH <%%(proj)s> {
       ?callee_file a src:File ;
                    src:location ?callee_loc ;
                    ver:version ?ver .
-      
+
       GRAPH <http://codinuum.com/ont/cpi> {
         ?callee_cat0 rdfs:label ?callee_cat
       }
@@ -500,7 +500,7 @@ GRAPH <%%(proj)s> {
       ?callee_file a src:File ;
                    src:location ?callee_loc ;
                    ver:version ?ver .
-      
+
       GRAPH <http://codinuum.com/ont/cpi> {
         ?callee_cat0 rdfs:label ?callee_cat
       }
@@ -531,13 +531,14 @@ GRAPH <%%(proj)s> {
 
 
 QUERY_TBL = {
-    'aa_in_loop'  : Q_AA_IN_LOOP_C,
-    'other_calls' : Q_OTHER_CALLS_C,
-    'directives'  : Q_DIRECTIVES_C,
-    'cntnr_cntnr' : Q_CNTNR_CNTNR_C,
-    'cntnr_fd'    : Q_CNTNR_FD_C,
-    'fd_fd'       : Q_FD_FD_C,
+    'aa_in_loop':  Q_AA_IN_LOOP_C,
+    'other_calls': Q_OTHER_CALLS_C,
+    'directives':  Q_DIRECTIVES_C,
+    'cntnr_cntnr': Q_CNTNR_CNTNR_C,
+    'cntnr_fd':    Q_CNTNR_FD_C,
+    'fd_fd':       Q_FD_FD_C,
 }
+
 
 def get_root_entities(full=False):
     s = set(['function-definition'])

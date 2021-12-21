@@ -23,9 +23,14 @@
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 import os
+import logging
 
 from .common import AnalyzerBase, create_argparser
 from .outline_for_flops import Outline as OutlineForFlops
+from cca.ccautil.common import setup_logger
+
+logger = logging.getLogger()
+
 
 class Analyzer(AnalyzerBase):
     def analyze_facts(self, proj_dir, proj_id, ver, dest_root, lang='fortran'):
@@ -40,16 +45,20 @@ class Analyzer(AnalyzerBase):
         ol.gen_data(lang, outdir=dest_root, keep_rev=True)
 
 
-
 def main():
     parser = create_argparser('Count ops in Fortran programs')
 
     args = parser.parse_args()
 
+    log_level = logging.INFO
+    if args.debug:
+        log_level = logging.DEBUG
+    setup_logger(logger, log_level)
+
     a = Analyzer(mem=args.mem, pw=args.pw, port=args.port)
 
-    a.analyze_dir(args.proj_dir, proj_id=args.proj)
+    a.analyze_dir(args.proj_dir, proj_id=args.proj, ver=args.ver)
 
 
 if __name__ == '__main__':
-    main()
+    pass

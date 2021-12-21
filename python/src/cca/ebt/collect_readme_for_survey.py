@@ -23,13 +23,14 @@
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 import os
-import sys
 import re
 from urllib.parse import urlencode
 import json
 import logging
 
-from .outline_for_survey_base import gen_conf, gen_conf_a, GIT_REPO_BASE, ensure_dir, get_proj_list
+from .outline_for_survey_base import gen_conf, gen_conf_a, GIT_REPO_BASE
+from .outline_for_survey_base import ensure_dir
+from .sourcecode_metrics_for_survey_base import get_proj_list
 
 from cca.ccautil import project
 from cca.ccautil.siteconf import PROJECTS_DIR
@@ -43,24 +44,26 @@ README_PAT = re.compile(r'.*readme.*', re.I)
 
 
 class Collector(object):
-    def __init__(self, proj_id, gitrepo=GIT_REPO_BASE):
+    def __init__(self, proj_id, gitrepo=GIT_REPO_BASE, conf=None):
         self._proj_id = proj_id
 
         self._gitrepo = gitrepo
 
-        self._conf = project.get_conf(proj_id)
-        if not self._conf:
-            if proj_id.endswith('_git'):
-                self._conf = gen_conf(proj_id)
-            else:
-                self._conf = gen_conf_a(proj_id, '')
-
+        if conf is None:
+            self._conf = project.get_conf(proj_id)
+            if not self._conf:
+                if proj_id.endswith('_git'):
+                    self._conf = gen_conf(proj_id)
+                else:
+                    self._conf = gen_conf_a(proj_id, '')
+        else:
+            self._conf = conf
 
     def from_dir(self):
         projs_path = os.path.abspath(PROJECTS_DIR)
         projs_loc = os.path.dirname(projs_path)
         proj_dir = os.path.join(projs_path, self._proj_id)
-        l = []
+        li = []
         for (dpath, dns, fns) in os.walk(proj_dir):
             for fn in fns:
                 m = README_PAT.match(fn)
@@ -68,12 +71,10 @@ class Collector(object):
                     p = os.path.join(dpath, fn)
                     rpath = re.sub(r'^%s' % proj_dir, '', p).lstrip(os.sep)
                     path = re.sub(r'^%s' % projs_loc, '', p).lstrip(os.sep)
-                    url = 'getsrc?%s' % urlencode({'path':path})
-                    l.append({'url':url,'path':rpath})
+                    url = 'getsrc?%s' % urlencode({'path': path})
+                    li.append({'url': url, 'path': rpath})
 
-        return l
-
-
+        return li
 
     def from_git(self):
         repo_name = self._conf.gitweb_proj_id
@@ -87,17 +88,14 @@ class Collector(object):
                 b = True
             return b
 
-        l = []
+        li = []
 
         for d in repo.find_files('HEAD', filt):
             path = d['path']
-            url = '/gitweb/?p=%(name)s;a=blob_plain;f=%(path)s' % {'name':repo_name,
-                                                                   'path':path,
-            }
-            l.append({'url':url,'path':path})
+            url = f'/gitweb/?p={repo_name};a=blob_plain;f={path}'
+            li.append({'url': url, 'path': path})
 
-        return l
-
+        return li
 
     def collect(self):
         links = []
@@ -107,10 +105,10 @@ class Collector(object):
             links = self.from_dir()
 
         return links
-        
 
-def collect_readme(proj, outdir, gitrepo=GIT_REPO_BASE):
-    c = Collector(proj, gitrepo=gitrepo)
+
+def collect_readme(proj, outdir, gitrepo=GIT_REPO_BASE, conf=None):
+    c = Collector(proj, gitrepo=gitrepo, conf=conf)
 
     links = c.collect()
 
@@ -130,26 +128,24 @@ def collect_readme(proj, outdir, gitrepo=GIT_REPO_BASE):
     print('%d readmes found' % len(links))
 
 
-
 def main():
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    from argparse import ArgumentParser
 
     parser = ArgumentParser(description='analyze topics of documents')
 
     parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='enable debug printing')
 
-    parser.add_argument('-g', '--git-repo-base', dest='gitrepo', metavar='DIR', type=str,
-                        default=GIT_REPO_BASE, help='location of git repositories')
+    parser.add_argument('-g', '--git-repo-base', dest='gitrepo', metavar='DIR',
+                        type=str, default=GIT_REPO_BASE,
+                        help='location of git repositories')
 
     parser.add_argument('-o', '--outdir', dest='outdir', default='.',
                         metavar='DIR', type=str, help='dump data into DIR')
 
-
-    parser.add_argument('proj_list', nargs='*', default=[], 
+    parser.add_argument('proj_list', nargs='*', default=[],
                         metavar='PROJ', type=str,
                         help='project id (default: all projects)')
-
 
     args = parser.parse_args()
 

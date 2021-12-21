@@ -28,13 +28,13 @@ from .common import VIRTUOSO_PORT
 DEFAULT_BUFSIZES = (340000, 250000)
 
 BUFSIZE_TBL = {
-    2 : (170000, 130000),
-    4 : (340000, 250000),
-    8 : (680000, 500000),
-    16 : (1360000, 1000000),
-    32 : (2720000, 2000000),
-    48 : (4000000, 3000000),
-    64 : (5450000, 4000000),
+    2:  (170000, 130000),
+    4:  (340000, 250000),
+    8:  (680000, 500000),
+    16: (1360000, 1000000),
+    32: (2720000, 2000000),
+    48: (4000000, 3000000),
+    64: (5450000, 4000000),
 }
 
 INI_FMT = '''
@@ -149,14 +149,16 @@ DefaultQuery               	= select distinct ?Concept where {[] a ?Concept} LIM
 DeferInferenceRulesInit    	= 0
 '''
 
+
 def gen_ini(db_root, fact_root, ont_root, outfile, mem=4, port=VIRTUOSO_PORT):
     nbufs, mdbufs = BUFSIZE_TBL.get(mem, DEFAULT_BUFSIZES)
-    ini = INI_FMT % {'db_root':db_root,
-                     'port':port,
-                     'fact_root':fact_root,
-                     'ont_root':ont_root,
-                     'nbufs':nbufs,
-                     'mdbufs':mdbufs}
+    ini = INI_FMT % {'db_root':   db_root,
+                     'port':      port,
+                     'fact_root': fact_root,
+                     'ont_root':  ont_root,
+                     'nbufs':     nbufs,
+                     'mdbufs':    mdbufs
+                     }
 
     with open(outfile, 'w') as f:
         f.write(ini)

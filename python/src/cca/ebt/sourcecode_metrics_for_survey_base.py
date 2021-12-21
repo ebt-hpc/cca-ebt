@@ -21,7 +21,6 @@
 
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
-import sys
 import pprint
 import logging
 
@@ -32,54 +31,54 @@ from cca.ccautil.virtuoso import VIRTUOSO_PW, VIRTUOSO_PORT
 
 logger = logging.getLogger()
 
-LINES_OF_CODE        = 'lines_of_code'
-MAX_LOOP_DEPTH       = 'max_loop_depth'
-MAX_FUSIBLE_LOOPS    = 'max_fusible_loops'
+LINES_OF_CODE = 'lines_of_code'
+MAX_LOOP_DEPTH = 'max_loop_depth'
+MAX_FUSIBLE_LOOPS = 'max_fusible_loops'
 MAX_MERGEABLE_ARRAYS = 'max_mergeable_arrays'
-MAX_ARRAY_RANK       = 'max_array_rank'
-MAX_LOOP_LEVEL       = 'max_loop_level'
+MAX_ARRAY_RANK = 'max_array_rank'
+MAX_LOOP_LEVEL = 'max_loop_level'
 
-N_BRANCHES   = 'branches'
-N_STMTS      = 'stmts'
-N_FP_OPS     = 'fp_ops'
-N_OPS        = 'ops'
-N_CALLS      = 'calls'
+N_BRANCHES = 'branches'
+N_STMTS = 'stmts'
+N_FP_OPS = 'fp_ops'
+N_OPS = 'ops'
+N_CALLS = 'calls'
 
-N_A_REFS     = ['array_refs0','array_refs1','array_refs2']
-N_IND_A_REFS = ['indirect_array_refs0','indirect_array_refs1','indirect_array_refs2']
-N_DBL_A_REFS = ['dbl_array_refs0','dbl_array_refs1','dbl_array_refs2']
+N_A_REFS = ['array_refs0', 'array_refs1', 'array_refs2']
+N_IND_A_REFS = ['indirect_array_refs0', 'indirect_array_refs1', 'indirect_array_refs2']
+N_DBL_A_REFS = ['dbl_array_refs0', 'dbl_array_refs1', 'dbl_array_refs2']
 
-BF = ['bf0','bf1','bf2']
+BF = ['bf0', 'bf1', 'bf2']
 
 abbrv_tbl = {
-    LINES_OF_CODE        : 'LOC',
-    MAX_LOOP_DEPTH       : 'LpD',
-    MAX_FUSIBLE_LOOPS    : 'FLp',
-    MAX_MERGEABLE_ARRAYS : 'MA',
-    MAX_ARRAY_RANK       : 'ARk',
-    MAX_LOOP_LEVEL       : 'LLv',
+    LINES_OF_CODE:        'LOC',
+    MAX_LOOP_DEPTH:       'LpD',
+    MAX_FUSIBLE_LOOPS:    'FLp',
+    MAX_MERGEABLE_ARRAYS: 'MA',
+    MAX_ARRAY_RANK:       'ARk',
+    MAX_LOOP_LEVEL:       'LLv',
 
-    N_BRANCHES   : 'Br',
-    N_STMTS      : 'St',
-    N_FP_OPS     : 'FOp',
-    N_OPS        : 'Op',
-    N_CALLS      : 'Ca',
+    N_BRANCHES: 'Br',
+    N_STMTS:    'St',
+    N_FP_OPS:   'FOp',
+    N_OPS:      'Op',
+    N_CALLS:    'Ca',
 
-    N_A_REFS[0]     : 'AR0',
-    N_IND_A_REFS[0] : 'IAR0',
-    N_DBL_A_REFS[0] : 'DAR0',
+    N_A_REFS[0]:     'AR0',
+    N_IND_A_REFS[0]: 'IAR0',
+    N_DBL_A_REFS[0]: 'DAR0',
 
-    N_A_REFS[1]     : 'AR1',
-    N_IND_A_REFS[1] : 'IAR1',
-    N_DBL_A_REFS[1] : 'DAR1',
+    N_A_REFS[1]:     'AR1',
+    N_IND_A_REFS[1]: 'IAR1',
+    N_DBL_A_REFS[1]: 'DAR1',
 
-    N_A_REFS[2]     : 'AR2',
-    N_IND_A_REFS[2] : 'IAR2',
-    N_DBL_A_REFS[2] : 'DAR2',
+    N_A_REFS[2]:     'AR2',
+    N_IND_A_REFS[2]: 'IAR2',
+    N_DBL_A_REFS[2]: 'DAR2',
 
-    BF[0] : 'BF0',
-    BF[1] : 'BF1',
-    BF[2] : 'BF2',
+    BF[0]: 'BF0',
+    BF[1]: 'BF1',
+    BF[2]: 'BF2',
 }
 
 ###
@@ -87,7 +86,6 @@ abbrv_tbl = {
 
 def ent_to_str(uri_str):
     return uri_str.replace(NS_TBL['ent_ns'], '')
-
 
 
 Q_PROJ_LIST = '''
@@ -102,6 +100,7 @@ GRAPH ?g {
 
 
 GITREV_PREFIX = NS_TBL['gitrev_ns']
+
 
 def get_lver(uri):
     v = get_localname(uri)
@@ -123,7 +122,7 @@ def get_proj_list(method='odbc'):
 
 
 def ftbl_list_to_orange(ftbl_list, outfile, META_KEYS):
-    
+
     if not ftbl_list:
         return
 
@@ -146,7 +145,7 @@ def ftbl_list_to_orange(ftbl_list, outfile, META_KEYS):
         add_meta(k)
 
     data = Orange.data.Table(domain)
-    
+
     for ftbl in ftbl_list:
         vs = [ftbl[item] for item in items]
         inst = Orange.data.Instance(domain, vs)
@@ -155,12 +154,11 @@ def ftbl_list_to_orange(ftbl_list, outfile, META_KEYS):
             inst[k] = m[k]
 
         data.append(inst)
-    
+
     try:
         data.save(outfile)
     except Exception as e:
         logger.error(str(e))
-
 
 
 class Ent:
@@ -173,7 +171,6 @@ class Ent:
 
     def __eq__(self, other):
         return self.ent == other.ent and self.is_loop == other.is_loop
-        
 
 
 class MetricsBase(object):
@@ -186,17 +183,17 @@ class MetricsBase(object):
 
         self._tree = None
 
-        self._result_tbl = {} # item name -> (ver * loc * lnum) -> value
+        self._result_tbl = {}  # item name -> (ver * loc * lnum) -> value
 
-        self._metadata_tbl = {} # (ver * loc * lnum) -> {'sub','digest'}
+        self._metadata_tbl = {}  # (ver * loc * lnum) -> {'sub','digest'}
 
-        self._ipp_tbl = {} # uri -> uri (inter-procedural parent tbl)
+        self._ipp_tbl = {}  # uri -> uri (inter-procedural parent tbl)
 
-        self._ent_tbl = {} # uri -> is_loop
+        self._ent_tbl = {}  # uri -> is_loop
 
-        self._loop_digest_tbl = {} # (ver * loc * sub * loop) -> digest set
+        self._loop_digest_tbl = {}  # (ver * loc * sub * loop) -> digest set
 
-        self._max_loop_level_tbl = {} # uri -> lv
+        self._max_loop_level_tbl = {}  # uri -> lv
 
     def get_loop_digest(self, key):
         digest = None
@@ -222,7 +219,6 @@ class MetricsBase(object):
     def set_tree(self, tree):
         self._tree = tree
 
-
     def get_item_tbl(self, name):
         return self._result_tbl[name]
 
@@ -236,7 +232,7 @@ class MetricsBase(object):
 
         return v
 
-    def search(self, _key): # VER:PATH:LNUM
+    def search(self, _key):  # VER:PATH:LNUM
 
         key = tuple(_key.split(':'))
 
@@ -256,10 +252,8 @@ class MetricsBase(object):
         pp = pprint.PrettyPrinter(indent=2)
         pp.pprint(self._result_tbl)
 
-
     def find_ftbl(self, key):
         raise KeyError
-        
 
     def get_ftbl_list(self):
         keys = set()
@@ -275,7 +269,6 @@ class MetricsBase(object):
             ftbl_list.append(ftbl)
 
         return ftbl_list
-
 
     def key_to_string(self, key):
         return '<KEY>'
@@ -293,13 +286,11 @@ class MetricsBase(object):
         self._ent_tbl[parent] = is_loop
         s.add(parent)
 
-
     def finalize_ipp(self):
         pass
 
     def build_tree(self, f=None):
         return {}
-
 
     def iter_tree(self, tree, root, f):
         children_tbl = tree['children']
@@ -314,15 +305,15 @@ class MetricsBase(object):
         try:
             tree = self.build_tree()
             children_tbl = tree['children']
-            parent_tbl   = tree['parent']
-            top_loops    = tree['roots']
+            # parent_tbl = tree['parent']
+            top_loops = tree['roots']
 
             #
 
             def get_max_depth(depth, key):
                 children = filter(lambda c: c != key, children_tbl.get(key, []))
-                l = [depth]+[get_max_depth(depth+1, k) for k in children]
-                return max(l)
+                li = [depth]+[get_max_depth(depth+1, k) for k in children]
+                return max(li)
 
             for key in top_loops:
 
@@ -344,9 +335,7 @@ class MetricsBase(object):
                     max_fusible_loops = max(fusible_tbl.values())
 
                 logger.debug('key=%s' % (self.key_to_string(key)))
-                logger.debug('max_loop_depth=%d max_fusible_loops=%d' % (max_loop_depth,
-                                                                       max_fusible_loops,
-                                                                   ))
+                logger.debug(f'max_loop_depth={max_loop_depth} max_fusible_loops={max_fusible_loops}')
 
                 self.set_metrics(MAX_LOOP_DEPTH, key, max_loop_depth)
                 self.set_metrics(MAX_FUSIBLE_LOOPS, key, max_fusible_loops)
@@ -356,7 +345,6 @@ class MetricsBase(object):
 
         logger.info('done.')
 
-
     def get_key(self, row):
         key = ('', '', '', '', '')
         return key
@@ -365,19 +353,23 @@ class MetricsBase(object):
         (lver, loc, sub, loop, vname) = key
         return loop
 
-
     def calc_max_loop_level(self):
         logger.info('calculating loop level...')
         tree = self.get_tree()
+        mx = 0
         for key in tree['roots']:
             loop = self.get_loop_of_key(key)
             lv = self.get_max_loop_level(loop)
+            if mx < lv:
+                mx = lv
+            logger.debug(f'{key}: {lv}')
             self.set_metrics(MAX_LOOP_LEVEL, key, lv)
+        logger.info(f'max loop level: {mx}')
 
     def get_max_loop_level(self, ent):
         lv = self._get_max_loop_level([], ent)
         return lv
-            
+
     def _get_max_loop_level(self, traversed, ent):
         max_lv = 0
         try:
@@ -402,14 +394,12 @@ class MetricsBase(object):
 
             if lvs:
                 max_lv = max(lvs)
-            
+
             self._max_loop_level_tbl[ent] = max_lv
 
             logger.debug('%s%d' % (indent, max_lv))
 
         return max_lv
-
-
 
 
 if __name__ == '__main__':

@@ -22,18 +22,19 @@
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 import os
-import sys
 import logging
 
-from .sourcecode_metrics_for_survey_fortran import get_proj_list, get_lver, Metrics
+from .sourcecode_metrics_for_survey_fortran import (get_proj_list, get_lver,
+                                                    Metrics)
 from . import sourcecode_metrics_for_survey_fortran as metrics
-from .search_topic_for_survey import search
-from .outline_for_survey_base import QN_SEP, remove_leading_digits, Exit, norm_callee_name
-from .outline_for_survey_base import NodeBase, OutlineBase, tbl_get_list, tbl_get_set, tbl_get_dict
-from .outlining_queries_fortran import OMITTED, SUBPROGS, LOOPS, CALLS, TYPE_TBL, QUERY_TBL, get_root_entities
+from .outline_for_survey_base import (QN_SEP, remove_leading_digits, Exit,
+                                      norm_callee_name)
+from .outline_for_survey_base import (NodeBase, OutlineBase, tbl_get_list,
+                                      tbl_get_set, tbl_get_dict)
+from .outlining_queries_fortran import (OMITTED, SUBPROGS, LOOPS, CALLS,
+                                        TYPE_TBL, QUERY_TBL, get_root_entities)
 
 from cca.ccautil.cca_config import PROJECTS_DIR
-from cca.ccautil import sparql
 from cca.ccautil.siteconf import GIT_REPO_BASE
 from cca.ccautil.virtuoso import VIRTUOSO_PW, VIRTUOSO_PORT
 from cca.factutil.entity import SourceCodeEntity
@@ -42,7 +43,9 @@ from cca.factutil.entity import SourceCodeEntity
 
 logger = logging.getLogger()
 
-METRICS_ROW_HEADER = list(metrics.abbrv_tbl.keys()) + metrics.META_KEYS + ['nid','root_file']
+METRICS_ROW_HEADER = list(metrics.abbrv_tbl.keys()) \
+    + metrics.META_KEYS + ['nid', 'root_file']
+
 
 class Node(NodeBase):
     def __init__(self, ver, loc, uri, cat='',
@@ -50,19 +53,19 @@ class Node(NodeBase):
                  callee_name=None, pu_name=None, vpu_name=None,
                  all_sps=False):
 
-        NodeBase.__init__(self, ver, loc, uri, cat, callee_name, all_sps=all_sps,
-                          SUBPROGS=SUBPROGS, CALLS=CALLS, LOOPS=LOOPS)
+        super().__init__(ver, loc, uri, cat, callee_name,
+                         all_sps=all_sps,
+                         SUBPROGS=SUBPROGS, CALLS=CALLS, LOOPS=LOOPS)
 
         self.prog = prog
         self.sub = sub
-        
+
         if pu_name:
             self.pu_names = [pu_name]
         else:
             self.pu_names = []
 
         self.vpu_name = vpu_name
-
 
     def __str__(self):
         pu = self.get_pu()
@@ -77,7 +80,7 @@ class Node(NodeBase):
 
         return s
 
-    def get_container(self): # subprog or main
+    def get_container(self):  # subprog or main
         if not self._container:
             if self.cats & SUBPROGS or 'main-program' in self.cats:
                 self._container = self
@@ -95,7 +98,6 @@ class Node(NodeBase):
                         logger.warning('multiple parents:\n%s:\nparents=[%s]' % (self, pstr))
 
         return self._container
-
 
     def score_of_chain(self, chain):
         if chain:
@@ -119,12 +121,12 @@ class Node(NodeBase):
 
     def get_record(self, children):
         d = {
-            'cat'      : self.cat,
-            'loc'      : self.loc,
-            'pu'       : self.get_pu(),
-            'sl'       : self.get_start_line(),
-            'el'       : self.get_end_line(),
-            'children' : children,
+            'cat':      self.cat,
+            'loc':      self.loc,
+            'pu':       self.get_pu(),
+            'sl':       self.get_start_line(),
+            'el':       self.get_end_line(),
+            'children': children,
         }
         return d
 
@@ -219,9 +221,9 @@ class Node(NodeBase):
         return children_l
 
 
-
 def chkpu(key, obj):
-    if obj.pu_names and key.pu_names and all([n not in obj.pu_names for n in key.pu_names]):
+    if obj.pu_names and key.pu_names \
+       and all([n not in obj.pu_names for n in key.pu_names]):
         obj.pu_names += key.pu_names
 
 
@@ -236,36 +238,40 @@ class Outline(OutlineBase):
                  proj_dir=PROJECTS_DIR,
                  ver='unknown',
                  simple_layout=False,
-                 all_sps=False):
+                 all_sps=False,
+                 conf=None):
 
-        OutlineBase.__init__(self, proj_id, commits, method, pw, port, gitrepo, proj_dir, ver, simple_layout, all_sps,
-                             SUBPROGS=SUBPROGS, CALLS=CALLS, get_root_entities=get_root_entities,
-                             METRICS_ROW_HEADER=METRICS_ROW_HEADER, add_root=True)
+        super().__init__(proj_id, commits, method, pw, port, gitrepo,
+                         proj_dir, ver, simple_layout, all_sps,
+                         SUBPROGS=SUBPROGS, CALLS=CALLS,
+                         get_root_entities=get_root_entities,
+                         METRICS_ROW_HEADER=METRICS_ROW_HEADER,
+                         add_root=True, conf=conf)
 
-        self._qspn_tbl = {} # (ver * loc * start_line) -> name list
+        self._qspn_tbl = {}  # (ver * loc * start_line) -> name list
 
     def get_node(self, key):
         return OutlineBase.get_node(self, key, check=chkpu)
 
-    def setup_aa_tbl(self): # assumes self._node_tbl
+    def setup_aa_tbl(self):  # assumes self._node_tbl
         if not self._aa_tbl:
             logger.info('setting up array reference table...')
 
             tbl = {}
 
-            query = QUERY_TBL['aa_in_loop'] % {'proj':self._graph_uri}
+            query = QUERY_TBL['aa_in_loop'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
-                ver  = row['ver']
-                loc  = row['loc']
+                ver = row['ver']
+                loc = row['loc']
                 loop = row['loop']
-                pn   = row['pn']
+                pn = row['pn']
 
                 pu_name = row.get('pu_name', None)
                 vpu_name = row.get('vpu_name', None)
                 dtor = row.get('dtor', None)
 
-                lver = get_lver(ver)
+                # lver = get_lver(ver)
 
                 loop_node = self.get_node(Node(ver, loc, loop,
                                                cat='do-construct',
@@ -276,15 +282,15 @@ class Outline(OutlineBase):
 
                 pn_ent = SourceCodeEntity(uri=pn)
                 r = pn_ent.get_range()
-                st = {'line':r.get_start_line(),'ch':r.get_start_col()}
-                ed = {'line':r.get_end_line(),'ch':r.get_end_col()}
-                d = {'start':st,'end':ed}
+                st = {'line': r.get_start_line(), 'ch': r.get_start_col()}
+                ed = {'line': r.get_end_line(), 'ch': r.get_end_col()}
+                d = {'start': st, 'end': ed}
 
                 if dtor:
                     dtor_ent = SourceCodeEntity(uri=dtor)
                     dtor_fid = dtor_ent.get_file_id()
 
-                    df = {'line':dtor_ent.get_range().get_start_line()}
+                    df = {'line': dtor_ent.get_range().get_start_line()}
 
                     if dtor_fid != pn_ent.get_file_id():
                         df['fid'] = dtor_fid.get_value()
@@ -301,43 +307,42 @@ class Outline(OutlineBase):
 
             self._aa_tbl = tbl
 
-
     def setup_qspn_tbl(self):
         if not self._qspn_tbl:
             logger.info('setting up qualified subprogram name table...')
 
             tbl = {}
 
-            query = QUERY_TBL['constr_qspn'] % {'proj':self._graph_uri}
+            query = QUERY_TBL['constr_qspn'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
-                ver  = row['ver']
-                loc  = row['loc']
+                ver = row['ver']
+                loc = row['loc']
                 constr = row['constr']
                 qspn = row['qspn']
 
                 pu_name = row.get('pu_name', None)
-                #vpu_name = row.get('vpu_name', None)
+                # vpu_name = row.get('vpu_name', None)
 
-                lver = get_lver(ver)
+                # lver = get_lver(ver)
 
                 constr_node = self.get_node(Node(ver, loc, constr))
 
-                l = [remove_leading_digits(x) for x in qspn.split(QN_SEP)]
-                l.reverse()
-                if l[0] == pu_name:
-                    del l[0]
-                l.insert(0, pu_name)
+                li = [remove_leading_digits(x) for x in qspn.split(QN_SEP)]
+                li.reverse()
+                if li[0] == pu_name:
+                    del li[0]
+                li.insert(0, pu_name)
 
-                tbl[constr_node.get_mkey()] = l
+                tbl[constr_node.get_mkey()] = li
 
             self._qspn_tbl = tbl
 
-
     def extract_metrics(self):
-        if self._metrics == None:
+        if self._metrics is None:
             logger.info('extracting metrics...')
-            self._metrics = Metrics(self._proj_id, self._method, pw=self._pw, port=self._port)
+            self._metrics = Metrics(self._proj_id, self._method,
+                                    pw=self._pw, port=self._port)
             self._metrics.calc()
             logger.info('done.')
 
@@ -379,35 +384,34 @@ class Outline(OutlineBase):
                 bf2 = mtbl[metrics.BF[2]]
                 if bf0 or bf1 or bf2:
                     self.mark_node(c)
-                
+
             except KeyError:
                 pass
 
         elif mark and self._all_sps and c.cats & SUBPROGS and p.cats & CALLS:
             self.mark_node(c)
 
-
     def setup_cg(self, mark=True):
         logger.info('searching for call relations...')
 
         logger.debug('sp_sp')
-        query = QUERY_TBL['sp_sp'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['sp_sp'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
-            ver    = row['ver']
-            loc    = row['loc']
-            sp     = row.get('sp', None)
-            sub    = row.get('sub', None)
+            ver = row['ver']
+            loc = row['loc']
+            sp = row.get('sp', None)
+            sub = row.get('sub', None)
 
             pu_name = row.get('pu_name', None)
             vpu_name = row.get('vpu_name', None)
 
-            main  = row.get('main', None)
-            prog  = None
+            main = row.get('main', None)
+            prog = None
             if main:
-                prog  = row.get('prog', '<main>')
+                prog = row.get('prog', '<main>')
 
-            call     = row['call']
+            call = row['call']
             call_cat = row['call_cat']
 
             callee_name = norm_callee_name(row['callee_name'])
@@ -430,9 +434,9 @@ class Outline(OutlineBase):
                 if not parent_constr and not sp:
                     self.add_edge(main_node, call_node, mark=mark)
 
-            callee      = row['callee']
-            callee_loc  = row['callee_loc']
-            callee_cat  = row['callee_cat']
+            callee = row['callee']
+            callee_loc = row['callee_loc']
+            callee_cat = row['callee_cat']
             callee_pu_name = row.get('callee_pu_name', None)
 
             callee_node = Node(ver, callee_loc, callee, cat=callee_cat,
@@ -440,29 +444,29 @@ class Outline(OutlineBase):
             self.add_edge(call_node, callee_node, mark=mark)
 
         logger.debug('constr_sp')
-        query = QUERY_TBL['constr_sp'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['constr_sp'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
-            ver    = row['ver']
-            loc    = row['loc']
+            ver = row['ver']
+            loc = row['loc']
             constr = row['constr']
             constr_cat = row['cat']
 
             pu_name = row.get('pu_name', None)
             vpu_name = row.get('vpu_name', None)
 
-            sp    = row.get('sp', None)
-            sub   = row.get('sub', None)
-            main  = row.get('main', None)
-            prog  = None
+            sp = row.get('sp', None)
+            sub = row.get('sub', None)
+            main = row.get('main', None)
+            prog = None
             if main:
-                prog  = row.get('prog', '<main>')
+                prog = row.get('prog', '<main>')
 
             constr_node = Node(ver, loc, constr, cat=constr_cat,
                                prog=prog, sub=sub,
                                pu_name=pu_name, vpu_name=vpu_name)
 
-            call     = row['call']
+            call = row['call']
             call_cat = row['call_cat']
 
             callee_name = norm_callee_name(row['callee_name'])
@@ -477,9 +481,9 @@ class Outline(OutlineBase):
             if call_node.is_relevant():
                 self._relevant_nodes.add(call_node)
 
-            callee      = row['callee']
-            callee_loc  = row['callee_loc']
-            callee_cat  = row['callee_cat']
+            callee = row['callee']
+            callee_loc = row['callee_loc']
+            callee_cat = row['callee_cat']
             callee_pu_name = row.get('callee_pu_name', None)
 
             callee_node = Node(ver, callee_loc, callee, cat=callee_cat,
@@ -489,36 +493,36 @@ class Outline(OutlineBase):
         logger.info('check marks...')
         a = set()
         for marked in self._marked_nodes:
-            #print('!!! marked=%s' % marked)
+            # print('!!! marked=%s' % marked)
             ancs = marked.get_ancestors()
             a.update(ancs)
-                
+
         self._marked_nodes.update(a)
 
-
-    def construct_tree(self, callgraph=True, other_calls=True, directives=True, mark=True):
+    def construct_tree(self, callgraph=True, other_calls=True, directives=True,
+                       mark=True):
 
         self._relevant_nodes = set()
 
         logger.debug('constr_constr')
 
-        query = QUERY_TBL['constr_constr'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['constr_constr'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
-            ver    = row['ver']
-            loc    = row['loc']
-            sp     = row.get('sp', None)
-            sub    = row.get('sub', None)
+            ver = row['ver']
+            loc = row['loc']
+            sp = row.get('sp', None)
+            sub = row.get('sub', None)
             constr = row['constr']
-            cat    = row.get('cat', None)
+            cat = row.get('cat', None)
 
             pu_name = row.get('pu_name', None)
             vpu_name = row.get('vpu_name', None)
 
-            main  = row.get('main', None)
-            prog  = None
+            main = row.get('main', None)
+            prog = None
             if main:
-                prog  = row.get('prog', '<main>')
+                prog = row.get('prog', '<main>')
 
             constr_node = Node(ver, loc, constr, cat=cat,
                                prog=prog, sub=sub,
@@ -537,7 +541,8 @@ class Outline(OutlineBase):
                 parent_cat = row.get('parent_cat', None)
                 parent_node = Node(ver, loc, parent_constr, cat=parent_cat,
                                    prog=parent_prog, sub=parent_sub,
-                                   pu_name=parent_pu_name,vpu_name=parent_vpu_name)
+                                   pu_name=parent_pu_name,
+                                   vpu_name=parent_vpu_name)
                 self.add_edge(parent_node, constr_node, mark=mark)
                 if parent_node.is_relevant():
                     self._relevant_nodes.add(parent_node)
@@ -545,12 +550,12 @@ class Outline(OutlineBase):
             elif sp:
                 sp_node = Node(ver, loc, sp, cat=row['sp_cat'],
                                sub=sub, pu_name=pu_name, vpu_name=vpu_name)
-                sp_flag = False
+                # sp_flag = False
                 self.add_edge(sp_node, constr_node, mark=mark)
 
             elif main:
                 main_node = Node(ver, loc, main, cat='main-program', prog=prog)
-                main_flag = False
+                # main_flag = False
                 self.add_edge(main_node, constr_node, mark=mark)
 
         #
@@ -559,23 +564,23 @@ class Outline(OutlineBase):
 
             logger.debug('directives')
 
-            query = QUERY_TBL['directives'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['directives'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
-                ver    = row['ver']
-                loc    = row['loc']
-                sp     = row.get('sp', None)
-                sub    = row.get('sub', None)
-                dtv    = row['dtv']
-                cat    = row.get('cat', None)
+                ver = row['ver']
+                loc = row['loc']
+                sp = row.get('sp', None)
+                sub = row.get('sub', None)
+                dtv = row['dtv']
+                cat = row.get('cat', None)
 
                 pu_name = row.get('pu_name', None)
                 vpu_name = row.get('vpu_name', None)
 
-                main  = row.get('main', None)
-                prog  = None
+                main = row.get('main', None)
+                prog = None
                 if main:
-                    prog  = row.get('prog', '<main>')
+                    prog = row.get('prog', '<main>')
 
                 dtv_node = Node(ver, loc, dtv, cat=cat,
                                 prog=prog, sub=sub,
@@ -595,7 +600,8 @@ class Outline(OutlineBase):
                         self.add_edge(sp_node, dtv_node, mark=mark)
 
                 if main:
-                    main_node = Node(ver, loc, main, cat='main-program', prog=prog)
+                    main_node = Node(ver, loc, main, cat='main-program',
+                                     prog=prog)
                     if not parent_constr and not sp:
                         self.add_edge(main_node, dtv_node, mark=mark)
 
@@ -605,24 +611,24 @@ class Outline(OutlineBase):
 
             logger.debug('other calls')
 
-            query = QUERY_TBL['other_calls'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['other_calls'] % {'proj': self._graph_uri}
 
             for qvs, row in self._sparql.query(query):
-                ver    = row['ver']
-                loc    = row['loc']
-                sp     = row.get('sp', None)
-                sub    = row.get('sub', None)
-                call   = row['call']
+                ver = row['ver']
+                loc = row['loc']
+                sp = row.get('sp', None)
+                sub = row.get('sub', None)
+                call = row['call']
 
                 callee_name = row['callee_name']
 
                 pu_name = row.get('pu_name', None)
                 vpu_name = row.get('vpu_name', None)
 
-                main  = row.get('main', None)
-                prog  = None
+                main = row.get('main', None)
+                prog = None
                 if main:
-                    prog  = row.get('prog', '<main>')
+                    prog = row.get('prog', '<main>')
 
                 cat = 'call-stmt*'
 
@@ -688,7 +694,7 @@ class Outline(OutlineBase):
                 fid = node.get_fid()
                 self._fid_tbl[(v, node.loc)] = fid
 
-            mkey = node.get_mkey() # register lines of definitions
+            mkey = node.get_mkey()  # register lines of definitions
             try:
                 for pn in self._aa_tbl[mkey]:
                     df = pn.get('def', None)
@@ -716,7 +722,7 @@ class Outline(OutlineBase):
         # for root in roots:
         #     self.iter_tree(root, dump)
 
-        tree = {'node_tbl':self._node_tbl,'roots':roots}
+        tree = {'node_tbl': self._node_tbl, 'roots': roots}
 
         for nd in self._relevant_nodes:
             nd.relevant = True
@@ -728,7 +734,6 @@ class Outline(OutlineBase):
         self._node_tbl = {}
 
         return tree
-
 
     def iter_tree(self, root, f, pre=None, post=None):
         self.__iter_tree(0, root, f, pre=pre, post=post)
@@ -751,13 +756,13 @@ class Outline(OutlineBase):
 
     def mkrow(self, lver, loc, nd, lnum, mtbl, nid):
         tbl = mtbl.copy()
-        tbl['proj']   = self._proj_id
-        tbl['ver']    = lver
-        tbl['path']   = loc
-        tbl['sub']    = nd.sub
-        tbl['lnum']   = lnum
+        tbl['proj'] = self._proj_id
+        tbl['ver'] = lver
+        tbl['path'] = loc
+        tbl['sub'] = nd.sub
+        tbl['lnum'] = lnum
         tbl['digest'] = mtbl['meta']['digest']
-        tbl['nid']    = nid
+        tbl['nid'] = nid
         row = []
         for k in METRICS_ROW_HEADER:
             if k != 'root_file':
@@ -778,13 +783,13 @@ class Outline(OutlineBase):
 
 
 def test(proj):
-    #proj = 'MG'
+    # proj = 'MG'
 
     ol = Outline(proj)
 
     tree = ol.get_tree()
 
-    root_tbl = {} # ver -> loc -> root (contains loop)
+    root_tbl = {}  # ver -> loc -> root (contains loop)
 
     def f(lv, k):
         if 'do-construct' in k.cats:
@@ -804,7 +809,7 @@ def test(proj):
 
             roots.append(root)
 
-    logger.info('%d top constructs (that contain loops) found' % count)
+    logger.info(f'{count} top constructs (that contain loops) found')
 
     def dump(lv, k):
         print('%s%s' % ('  '*lv, k))
@@ -840,7 +845,6 @@ def test2(proj):
         print(len(sub.get_children()))
         for c in sub.get_children():
             print('%s %s' % (c, c != sub))
-
 
 
 def main():
@@ -889,7 +893,7 @@ def main():
     parser.add_argument('-t', '--ntopics', dest='ntopics', metavar='N', type=int,
                         default=32, help='number of topics')
 
-    parser.add_argument('proj_list', nargs='*', default=[], 
+    parser.add_argument('proj_list', nargs='*', default=[],
                         metavar='PROJ', type=str,
                         help='project id (default: all projects)')
 
@@ -902,9 +906,8 @@ def main():
     else:
         proj_list = get_proj_list()
 
-
     for proj in proj_list:
-        #test(proj)
+        # test(proj)
         ol = Outline(proj,
                      commits=args.commits,
                      method=args.method,
@@ -912,7 +915,7 @@ def main():
                      proj_dir=args.proj_dir,
                      ver=args.ver,
                      simple_layout=args.simple_layout,
-        )
+                     )
 
         ol.gen_data('fortran', args.outdir, omitted=set(OMITTED), all_roots=args.all_roots)
 
@@ -926,4 +929,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    pass

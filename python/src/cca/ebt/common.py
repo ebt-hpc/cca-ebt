@@ -24,27 +24,25 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 import sys
 import os
-import re
 import tarfile
 import shutil
-from subprocess import call
-import time
 from datetime import datetime
-from collections import namedtuple
 import psutil
 from uuid import uuid4
 import traceback
+import logging
 
 from .conf import CCA_HOME, FB_DIR, WORK_DIR, FACT_DIR, ONT_DIR
 from .conf import OUTDIR_NAME, VIRTUOSO_PW, VIRTUOSO_PORT
-
-try:
-    from conf import *
-    print('local conf imported')
-except:
-    pass
+from cca.ccautil import (virtuoso, load_into_virtuoso, load_ont_into_virtuoso,
+                         proc)
+from . import materialize_fact_for_tuning
+import cca.ccautil.ns
+from . import virtuoso_ini
 
 ###
+
+logger = logging.getLogger()
 
 TEMP_DIRS = [
     WORK_DIR,
@@ -53,46 +51,44 @@ TEMP_DIRS = [
 
 STAT_FILE_NAME = 'status'
 
-###
-
-QUERY_DIR = os.path.join(CCA_HOME, 'queries', 'tuning')
-
 CMD_PATH = os.path.join(CCA_HOME, 'bin')
-PARSESRC_CMD  = os.path.join(CMD_PATH, 'parsesrc')
 
-FB_FILES = [ os.path.join(FB_DIR, 'virtuoso'+x) for x in ['-temp.db',
-                                                          '.db',
-                                                          '.log',
-                                                          '.pxa',
-                                                          '.trx',
-                                                          '.ini',
-                                                      ]]
+PARSESRC_CMD = os.path.join(CMD_PATH, 'parsesrc')
 
-from cca.ccautil import virtuoso, proc, load_into_virtuoso, load_ont_into_virtuoso
-from cca.ccautil.ns import NS_TBL
-from . import materialize_fact_for_tuning
-from . import virtuoso_ini
+FB_FILES = [os.path.join(FB_DIR, 'virtuoso'+x) for x in ['-temp.db',
+                                                         '.db',
+                                                         '.log',
+                                                         '.pxa',
+                                                         '.trx',
+                                                         '.ini',
+                                                         ]]
 
+
+NS_TBL = cca.ccautil.ns.NS_TBL
 
 ###
+
 
 def get_timestamp():
     ts = datetime.now().isoformat()
     return ts
 
+
 def get_custom_timestamp():
     ts = datetime.now().strftime('%Y%m%dT%H%M%S')
     return ts
 
+
 def gen_password():
     return 'x'+uuid4().hex[0:7]
+
 
 def log(mes, out=sys.stdout):
     s = traceback.extract_stack()
     sf = s[-3]
     mname = sf[2]
     fname = sf[0]
-    #l = sf[1]
+    # l = sf[1]
 
     mstr = ''
     if mname != '<module>':
@@ -100,8 +96,8 @@ def log(mes, out=sys.stdout):
 
     m = os.path.basename(fname)
 
-    out.write('[%s][%s]%s %s\n' % (get_timestamp(), m, mstr, mes))
-    #out.flush()
+    out.write('[{}][{}]{} {}\n'.format(get_timestamp(), m, mstr, mes))
+    # out.flush()
 
 
 def mktar(path, tarname, dirname):
@@ -118,7 +114,7 @@ def mktar(path, tarname, dirname):
         return 0
 
     except Exception as e:
-        log('failed to tar: %s' % str(e))
+        logger.error(f'failed to tar: {e}')
         return 1
 
 
@@ -128,7 +124,7 @@ def touch(path):
         with open(path, 'w') as f:
             f.write(os.path.basename(path))
             p = path
-    except Exception as e:
+    except Exception:
         pass
     return p
 
@@ -138,8 +134,8 @@ def rm(path):
     if os.path.exists(path):
         try:
             os.remove(path)
-        except Exception as e:
-            log('failed to remove "%s"' % path)
+        except Exception:
+            logger.error(f'failed to remove "{path}"')
             stat = 1
     return stat
 
@@ -152,8 +148,8 @@ def rmdir(path):
                 os.remove(path)
             else:
                 shutil.rmtree(path)
-        except Exception as e:
-            log('failed to remove "%s"' % path)
+        except Exception:
+            logger.error(f'failed to remove "{path}"')
             stat = 1
     return stat
 
@@ -164,7 +160,7 @@ def ensure_dir(d):
         try:
             os.makedirs(d)
         except Exception as e:
-            log('%s' % str(e))
+            logger.error(f'failed to make "{d}": {e}')
             b = False
     return b
 
@@ -185,7 +181,7 @@ def is_virtuoso_running():
 def start_virtuoso(mem=4, pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
     stat = 0
     if is_virtuoso_running():
-        log('virtuoso is already running')
+        logger.info('virtuoso is already running')
         stat = 1
     else:
         if ensure_dir(FB_DIR):
@@ -201,6 +197,7 @@ def start_virtuoso(mem=4, pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
                 stat = 1
     return stat
 
+
 def load_fact(proj_id, pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
     fdir = os.path.join(FACT_DIR, proj_id)
     rc = load_into_virtuoso.load(proj_id,
@@ -211,21 +208,25 @@ def load_fact(proj_id, pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
                                  port=port)
     return rc
 
+
 def load_ont(pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
     return load_ont_into_virtuoso.load(FB_DIR, ONT_DIR, pw=pw, port=port)
 
+
 def materialize(proj_id, pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
     return materialize_fact_for_tuning.materialize(proj_id, pw=pw, port=port)
+
 
 def clear_fb():
     stat = 0
     for f in FB_FILES:
         if os.path.exists(f):
-            log('removing "%s"...' % f)
+            logger.info(f'removing "{f}"...')
             rc = rm(f)
             if rc != 0:
                 stat = rc
     return stat
+
 
 def clear_dir(dpath, exclude=[]):
     stat = 0
@@ -234,7 +235,7 @@ def clear_dir(dpath, exclude=[]):
             if fn not in exclude:
                 p = os.path.join(dpath, fn)
                 rc = 0
-                log('removing "%s"...' % p)
+                logger.info(f'removing "{p}"...')
                 if os.path.isdir(p):
                     rc = rmdir(p)
                 else:
@@ -242,6 +243,7 @@ def clear_dir(dpath, exclude=[]):
                 if rc != 0:
                     stat = rc
     return stat
+
 
 def clear_temp():
     stat = 0
@@ -263,13 +265,13 @@ def reset_virtuoso(pw=VIRTUOSO_PW, port=VIRTUOSO_PORT, backup_fb=None):
     if backup_fb:
         try:
             shutil.copytree(FB_DIR, backup_fb, symlinks=True)
-        except:
+        except Exception:
             return 1
 
     stat = clear_fb()
 
     return stat
-        
+
 
 def parse(proj_dir, proj_id, ver):
     args = ' -fact -fact:ast'
@@ -279,12 +281,12 @@ def parse(proj_dir, proj_id, ver):
     args += ' -fact:project-root %s' % proj_dir
     args += ' -fact:version VARIANT:%s -fact:add-versions' % ver
     args += ' -fact:encoding:FDLCO -fact:size-thresh 100000'
-    #args += ' -parser:cpp'
-    #args += ' -parser:fortran'
+    # args += ' -parser:cpp'
+    # args += ' -parser:fortran'
     args += ' %s' % proj_dir
 
-    cmd = '%s%s' % (PARSESRC_CMD, args)
-    log('cmd={}'.format(cmd))
+    cmd = '{}{}'.format(PARSESRC_CMD, args)
+    logger.info(f'cmd={cmd}')
 
     rc = proc.system(cmd)
 
@@ -294,8 +296,9 @@ def parse(proj_dir, proj_id, ver):
 def build_fb(proj_dir, proj_id, mem=4, pw=VIRTUOSO_PW, port=VIRTUOSO_PORT,
              set_status=None, skip_materialize=False):
 
-    if set_status == None:
-        set_status = lambda mes: log(mes)
+    if set_status is None:
+        def set_status(mes):
+            log(mes)
 
     # start virtuoso
     set_status('starting virtuoso...')
@@ -344,6 +347,13 @@ def create_argparser(desc):
     parser.add_argument('-k', '--keep-fb', dest='keep_fb', action='store_true',
                         help='keep FB')
 
+    parser.add_argument('--ignore-cpp', dest='ignore_cpp', action='store_true',
+                        help='ignore C/C++ code')
+
+    parser.add_argument('--ignore-fortran', dest='ignore_fortran',
+                        action='store_true',
+                        help='ignore Fortran code')
+
     parser.add_argument('-m', '--mem', dest='mem', metavar='GB', type=int,
                         choices=[2, 4, 8, 16, 32, 48, 64], default=4,
                         help='set available memory (GB)')
@@ -352,22 +362,27 @@ def create_argparser(desc):
                         metavar='PORT', type=int, help='set port number')
 
     parser.add_argument('--proj', dest='proj', metavar='PROJ_ID', default=None,
-                        help='set project id (generated from proj_dir by default)')
+                        help='set project ID (proj_dir name by default)')
 
     parser.add_argument('--pw', dest='pw', metavar='PASSWORD', default=None,
-                        help='set password to access FB (generated by default)')
+                        help='set password for FB (generated by default)')
+
+    parser.add_argument('--ver', dest='ver', metavar='VER', type=str,
+                        default=None, help='version')
 
     return parser
 
+
 def make_status_setter(path):
     def set_status(mes):
-        log(mes)
+        log('[STATUS] '+mes)
         try:
             with open(path, 'w') as f:
                 f.write(mes)
         except Exception as e:
             log(str(e))
     return set_status
+
 
 def get_dest_root(proj_dir):
     dest_root = os.path.join(proj_dir, OUTDIR_NAME)
@@ -379,75 +394,93 @@ class AnalyzerBase(object):
         self._mem = mem
         self._port = port
 
-        if pw == None:
+        if pw is None:
             self._pw = gen_password()
         else:
             self._pw = pw
 
-        log('pw=%s port=%d' % (self._pw, self._port))
+        logger.info('pw={} port={}'.format(self._pw, self._port))
 
-    def analyze_facts(self, proj_dir, proj_id, ver, dest_root):
+    def analyze_facts(self, proj_dir, proj_id, ver, dest_root, langs=[]):
         pass
 
-    def analyze_dir(self, proj_dir, proj_id=None, keep_fb=False,
-                    skip_build=False, skip_materialize=False, skip_outline=False, cleanup=False):
-        log('analyzing "%s"...' % proj_dir)
+    def analyze_dir(self, proj_dir, proj_id=None, ver=None,
+                    keep_fb=False, langs=['cpp', 'fortran'],
+                    skip_build=False, skip_materialize=False,
+                    skip_outline=False, cleanup=False):
+
+        logger.info(f'analyzing "{proj_dir}"...')
 
         dest_root = get_dest_root(proj_dir)
 
-        log('dest_root: "%s"' % dest_root)
+        logger.info(f'dest_root: "{dest_root}"')
 
         stat_path = os.path.join(dest_root, STAT_FILE_NAME)
 
         set_status = make_status_setter(stat_path)
 
         if not ensure_dir(dest_root):
-            set_status('failed to create directory: "%s"' % dest_root)
+            set_status(f'failed to create directory: "{dest_root}"')
+            logger.error(f'failed to create directory: "{dest_root}"')
             return
 
-        if proj_id == None:
+        if proj_id is None:
             proj_id = os.path.basename(os.path.abspath(proj_dir))
+            logger.info(f'proj_id="{proj_id}"')
 
-        set_status('analysis started for "%s"' % proj_id)
+        set_status(f'analysis started for "{proj_id}"')
 
-        ver = get_custom_timestamp()
+        if ver is None:
+            ver = get_custom_timestamp()
+            logger.info(f'ver="{ver}"')
 
         clear_dir(dest_root, exclude=['log'])
 
         # parse
         set_status('parsing source files...')
+        logger.info('parsing source files...')
         rc = parse(proj_dir, proj_id, ver)
         if rc != 0:
             set_status('faild to parse source files')
+            logger.error('faild to parse source files')
             return
 
         if not skip_build:
             # build FB
             set_status('building FB...')
+            logger.info('building FB...')
             rc = build_fb(proj_dir, proj_id,
                           mem=self._mem, pw=self._pw, port=self._port,
-                          set_status=set_status, skip_materialize=skip_materialize)
+                          set_status=set_status,
+                          skip_materialize=skip_materialize)
             if rc != 0:
+                logger.error('failed to build FB')
                 return
 
         backup_fb = None
         if keep_fb:
+            logger.info('backing up FB...')
             backup_fb = os.path.join(dest_root, 'fb')
 
         if not skip_outline:
             # analyze facts
             set_status('analyzing facts...')
+            logger.info('analyzing facts...')
             try:
-                self.analyze_facts(proj_dir, proj_id, ver, dest_root)
+                self.analyze_facts(proj_dir, proj_id, ver, dest_root, langs=langs)
             except Exception as e:
-                set_status('failed to analyze facts: %s' % e)
-                reset_virtuoso(pw=self._pw, port=self._port, backup_fb=backup_fb)
+                set_status(f'failed to analyze facts: {e}')
+                logger.error(f'failed to analyze facts: {e}')
+                reset_virtuoso(pw=self._pw, port=self._port,
+                               backup_fb=backup_fb)
                 return
 
         if cleanup:
             # cleanup
             set_status('cleaning up temporary files...')
+            logger.info('cleaning up temporary files...')
             reset_virtuoso(pw=self._pw, port=self._port, backup_fb=backup_fb)
             clear_temp()
 
         set_status('finished.')
+        logger.info('finished.')

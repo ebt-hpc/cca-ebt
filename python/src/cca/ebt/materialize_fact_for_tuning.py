@@ -22,15 +22,16 @@
 
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
-import sys
 import os.path
 
-from cca.ccautil.materialize_fact import Materializer, main
-from .common import QUERY_DIR, VIRTUOSO_PW, VIRTUOSO_PORT
+from cca.ccautil.materialize_fact import Materializer
+from .common import VIRTUOSO_PORT
+from .conf import QUERIES_DIR
 
+QUERY_DIR = os.path.join(QUERIES_DIR, 'tuning')
 
 QUERIES = {
-    'fortran' : [
+    'fortran': [
         'materialize_expr_sig_in_loop.rq',
         'materialize_program_unit_in_srctree.rq',
         'materialize_module_ref.rq',
@@ -54,7 +55,7 @@ QUERIES = {
         'materialize_c_func_req.rq',
         'materialize_callee.rq',
     ],
-    'cpp' : [
+    'cpp': [
         'materialize_expr_sig_in_loop.rq',
         'materialize_translation_unit_in_srctree.rq',
         'materialize_reference.rq',
@@ -73,10 +74,12 @@ QUERIES = {
     ],
 }
 
-def materialize(proj_id, pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
+
+def materialize(proj_id, pw=None, port=VIRTUOSO_PORT):
     m = Materializer(QUERY_DIR, QUERIES, proj_id, pw=pw, port=port)
     rc = m.materialize()
     return rc
 
+
 if __name__ == '__main__':
-    main(QUERY_DIR, QUERIES, 'materialize facts for tuning')
+    pass

@@ -24,8 +24,7 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 import os
 import sys
 import json
-from urllib.request import pathname2url, urlopen
-from urllib.parse import urlencode
+from urllib.request import pathname2url
 import re
 import csv
 import codecs
@@ -33,7 +32,7 @@ from time import time
 import msgpack
 import logging
 
-from .sourcecode_metrics_for_survey_base import get_proj_list, get_lver
+from .sourcecode_metrics_for_survey_base import get_lver
 from . import sourcecode_metrics_for_survey_base as metrics
 from .search_topic_for_survey import search
 
@@ -53,7 +52,7 @@ logger = logging.getLogger()
 
 MARKER_CALLEE_PAT = re.compile('^.*(dgemm|timer|start|begin).*$')
 
-PP_IFX_SET = set(['pp-if','pp-ifdef','pp-ifndef','pp-elif','pp-else','pp-endif'])
+PP_IFX_SET = set(['pp-if', 'pp-ifdef', 'pp-ifndef', 'pp-elif', 'pp-else', 'pp-endif'])
 
 QN_SEP = ','
 
@@ -61,9 +60,11 @@ NID_SEP = '_'
 
 LEADING_DIGITS_PAT = re.compile(r'^\d+')
 
+
 def remove_leading_digits(s):
     r = LEADING_DIGITS_PAT.sub('', s)
     return r
+
 
 GITREV_PREFIX = NS_TBL['gitrev_ns']
 
@@ -80,7 +81,6 @@ METRICS_FILE_FMT = '{}-{}.csv'
 def demangle(s):
     return remove_leading_digits(s)
 
-#
 
 def is_compiler_directive(cats):
     b = False
@@ -90,7 +90,6 @@ def is_compiler_directive(cats):
             break
     return b
 
-#
 
 def ensure_dir(d):
     b = True
@@ -108,7 +107,6 @@ def get_url(x):
     return u
 
 
-
 class IdGenerator(object):
     def __init__(self, prefix=''):
         self._prefix = prefix
@@ -119,6 +117,7 @@ class IdGenerator(object):
         self._count += 1
         return i
 
+
 class IndexGenerator(object):
     def __init__(self, init=0):
         self._count = init
@@ -128,8 +127,10 @@ class IndexGenerator(object):
         self._count += 1
         return i
 
-def node_list_to_string(l):
-    return '\n'.join(['{}: {}'.format(i, x) for i, x in enumerate(l)])
+
+def node_list_to_string(li):
+    return '\n'.join(['{}: {}'.format(i, x) for i, x in enumerate(li)])
+
 
 def index(idx_gen, data, callees_tbl):
 
@@ -155,6 +156,7 @@ def index(idx_gen, data, callees_tbl):
 
     scan(data)
 
+
 class NodeBase(object):
     def __init__(self, ver, loc, uri, cat='', callee_name=None, all_sps=False,
                  SUBPROGS=set(), CALLS=set(), LOOPS=set()):
@@ -168,10 +170,11 @@ class NodeBase(object):
         self.loc = loc
         self.uri = uri
         self.cat = cat
-        if cat != None:
+        if cat is not None:
             self.cats = set(cat.split('&'))
         else:
-            logger.warning('None cat: %s:%s:%s' % (get_localname(ver), loc, get_localname(uri)))
+            logger.warning('None cat: %s:%s:%s' % (get_localname(ver), loc,
+                                                   get_localname(uri)))
             self.cats = set()
 
         self._callee_name = callee_name
@@ -192,12 +195,11 @@ class NodeBase(object):
         self._mkey = None
 
         self._container = None
-        self._parents_in_container = set() # exclude self
+        self._parents_in_container = set()  # exclude self
         self._nparent_loops_in_container = None
         self._max_chain = None
 
         self._all_sps = all_sps
-
 
     def __eq__(self, other):
         if isinstance(other, NodeBase):
@@ -253,14 +255,17 @@ class NodeBase(object):
                 if m:
                     b = True
                 else:
-                    b = any([self._callee_name.startswith(h) for h in ['mpi_','MPI_','omp_']])
+                    b = any([self._callee_name.startswith(h) for h in ['mpi_',
+                                                                       'MPI_',
+                                                                       'omp_']]
+                            )
         return b
 
     def get_container(self):
         return self._container
 
     def count_parent_loops_in_container(self):
-        if self._nparent_loops_in_container == None:
+        if self._nparent_loops_in_container is None:
             ps = self.get_parents_in_container()
             count = 0
             for p in ps:
@@ -282,12 +287,12 @@ class NodeBase(object):
     def is_main(self):
         return False
 
-    def get_max_chain(self, visited_containers=[]): # chain of call or subprog
-        if self._max_chain == None:
+    def get_max_chain(self, visited_containers=[]):  # chain of call or subprog
+        if self._max_chain is None:
 
             container = self.get_container()
 
-            if container == None:
+            if container is None:
                 pass
 
             elif container is self:
@@ -330,13 +335,15 @@ class NodeBase(object):
 
                                 start_line_ = call.get_start_line()
 
-                                score_ =  self.score_of_chain(chain_)
+                                score_ = self.score_of_chain(chain_)
 
                                 max_score = self.score_of_chain(max_chain)
 
                                 cond0 = score_ > max_score
-                                cond1 = score_ == max_score and in_file_call_ and not in_file_call
-                                cond2 = score_ == max_score and loc == loc_ and start_line_ < start_line
+                                cond1 = score_ == max_score and in_file_call_ \
+                                    and not in_file_call
+                                cond2 = score_ == max_score and loc == loc_ \
+                                    and start_line_ < start_line
 
                                 logger.debug('cond0:%s, cond1:%s, cond2:%s' % (cond0, cond1, cond2))
 
@@ -351,14 +358,13 @@ class NodeBase(object):
                     else:
                         return []
 
-                else: # another root (e.g. pp-directive)
+                else:  # another root (e.g. pp-directive)
                     pass
 
-            else: # container is not self
+            else:  # container is not self
                 self._max_chain = container.get_max_chain()
 
         return self._max_chain
-        
 
     def get_mkey(self):
         if not self._mkey:
@@ -394,7 +400,7 @@ class NodeBase(object):
         if not self._fid:
             try:
                 self._fid = self.get_ent().get_file_id().get_value()
-            except:
+            except Exception:
                 logger.debug('!!! uri={}'.format(self.uri))
         return self._fid
 
@@ -440,11 +446,11 @@ class NodeBase(object):
 
     def get_record(self, children):
         d = {
-            'cat'      : self.cat,
-            'loc'      : self.loc,
-            'sl'       : self.get_start_line(),
-            'el'       : self.get_end_line(),
-            'children' : children,
+            'cat':      self.cat,
+            'loc':      self.loc,
+            'sl':       self.get_start_line(),
+            'el':       self.get_end_line(),
+            'children': children,
         }
         return d
 
@@ -513,11 +519,13 @@ class NodeBase(object):
             ancl_ = [self] + ancl
             if lv > 0:
                 ntbl[(ancl[0].get_name(), self, lv)] = True
-                logger.debug('[REG] %s:%s:%d' % (ancl[0].get_name(), self.get_name(), lv))
+                logger.debug('[REG] %s:%s:%d' % (ancl[0].get_name(),
+                                                 self.get_name(), lv))
 
         _children_l = sorted(list(self._children))
 
-        children_l = list(filter(lambda c: c not in ancl and c.relevant, _children_l))
+        children_l = list(filter(lambda c: c not in ancl and c.relevant,
+                                 _children_l))
 
         children_l = self.check_children(children_l)
 
@@ -537,7 +545,7 @@ class NodeBase(object):
             def filt(c):
                 max_chain = c.get_max_chain()
 
-                if max_chain == None:
+                if max_chain is None:
                     return False
 
                 max_lv = len(max_chain)
@@ -561,11 +569,11 @@ class NodeBase(object):
                 b = b and (not hit)
 
                 logger.debug('[FILT] (%s->)%s (lv=%d) --> %s (hit=%s, max_lv=%d)' % (self.get_name(),
-                                                                                   c.get_name(),
-                                                                                   lv_,
-                                                                                   b,
-                                                                                   hit,
-                                                                                   max_lv))
+                                                                                     c.get_name(),
+                                                                                     lv_,
+                                                                                     b,
+                                                                                     hit,
+                                                                                     max_lv))
                 return b
 
             before = len(children_l)
@@ -601,7 +609,7 @@ class NodeBase(object):
                           omitted=omitted)
 
             if omitted & c.cats:
-                #print('!!! %s (%d)' % (c, len(c.get_children())))
+                # print('!!! %s (%d)' % (c, len(c.get_children())))
                 children += x.get('children', [])
             else:
                 children.append(x)
@@ -613,8 +621,8 @@ class NodeBase(object):
 
         if is_caller and children != []:
             try:
-                l = expanded_callee_tbl[self._callee_name]
-                expanded_callee_tbl[self._callee_name] = l + [x for x in children if x not in l]
+                li = expanded_callee_tbl[self._callee_name]
+                expanded_callee_tbl[self._callee_name] = li + [x for x in children if x not in li]
             except KeyError:
                 expanded_callee_tbl[self._callee_name] = children
 
@@ -636,10 +644,10 @@ class NodeBase(object):
             nid = idgen.gen()
             d['id'] = nid
 
-            if parent_tbl != None:
+            if parent_tbl is not None:
                 for c in d.get('children', []):
                     cid = c['id']
-                    #print('!!! parent_tbl: %s(%s) -> %s(%s)' % (cid, c['cat'], nid, d['cat']))
+                    # print('!!! parent_tbl: %s(%s) -> %s(%s)' % (cid, c['cat'], nid, d['cat']))
                     parent_tbl[cid] = nid
 
             if is_caller and self._children != [] and children == [] and is_filtered_out:
@@ -658,17 +666,18 @@ class NodeBase(object):
         return d
 
 
-
 class Exit(Exception):
     pass
 
+
 def tbl_get_list(tbl, key):
     try:
-        l = tbl[key]
+        li = tbl[key]
     except KeyError:
-        l = []
-        tbl[key] = l
-    return l
+        li = []
+        tbl[key] = li
+    return li
+
 
 def tbl_get_set(tbl, key):
     try:
@@ -678,6 +687,7 @@ def tbl_get_set(tbl, key):
         tbl[key] = s
     return s
 
+
 def tbl_get_dict(tbl, key):
     try:
         d = tbl[key]
@@ -686,8 +696,9 @@ def tbl_get_dict(tbl, key):
         tbl[key] = d
     return d
 
+
 def gen_conf_a(proj_id, ver, proj_dir=PROJECTS_DIR):
-    logger.debug('generating conf for "%s" (ver=%s)' % (proj_id, ver))
+    logger.info(f'generating conf for "{proj_id}" (ver="{ver}")')
     conf = Config()
     conf.proj_id = proj_id
     conf.proj_path = os.path.join(proj_dir, proj_id)
@@ -698,10 +709,11 @@ def gen_conf_a(proj_id, ver, proj_dir=PROJECTS_DIR):
     conf.finalize()
     return conf
 
-    
+
 def gen_conf(proj_id, commits=['HEAD'], proj_dir=None):
-    logger.debug('generating conf for "%s" (commits=[%s])' % (proj_id,
-                                                          ','.join(commits)))
+    logger.info('generating conf for "%s" (commits=[%s])' % (proj_id,
+                                                             ','.join(commits)
+                                                             ))
     conf = Config()
     conf.proj_id = proj_id
 
@@ -717,7 +729,6 @@ def gen_conf(proj_id, commits=['HEAD'], proj_dir=None):
     return conf
 
 
-
 class SourceFiles(object):
     def __init__(self, conf, gitrepo=GIT_REPO_BASE, proj_dir=PROJECTS_DIR):
 
@@ -725,19 +736,19 @@ class SourceFiles(object):
 
         self.repo = None
         self.proj_dir = None
-        
+
         if conf.is_vkind_gitrev():
-            repo_path = os.path.normpath(os.path.join(gitrepo, conf.gitweb_proj_id))
+            repo_path = os.path.normpath(os.path.join(gitrepo,
+                                                      conf.gitweb_proj_id))
             try:
                 self.repo = Git2.Repository(repo_path)
-            except:
+            except Exception:
                 pid = re.sub(r'_git$', '', proj_id)
                 repo_path = os.path.normpath(os.path.join(gitrepo, pid))
                 self.repo = Git2.Repository(repo_path)
 
         else:
             self.proj_dir = os.path.join(proj_dir, proj_id)
-
 
     def get_file(self, file_spec):
         lines = []
@@ -750,7 +761,8 @@ class SourceFiles(object):
                 lines = decoded.splitlines()
 
             elif self.proj_dir:
-                path = os.path.join(self.proj_dir, file_spec['ver_dir_name'], file_spec['path'])
+                path = os.path.join(self.proj_dir, file_spec['ver_dir_name'],
+                                    file_spec['path'])
                 with codecs.open(path, encoding='utf-8', errors='replace') as f:
                     lines = f.readlines()
 
@@ -766,6 +778,7 @@ def norm_callee_name(orig):
         norm = ':'.join(sorted(orig.split(':')))
     return norm
 
+
 def is_x_dict(s, d):
     b = False
     cat = d.get('cat', None)
@@ -773,6 +786,7 @@ def is_x_dict(s, d):
         if set(cat.split('&')) & s:
             b = True
     return b
+
 
 class OutlineBase(object):
     def __init__(self,
@@ -790,13 +804,14 @@ class OutlineBase(object):
                  CALLS=set(),
                  get_root_entities=None,
                  METRICS_ROW_HEADER=[],
-                 add_root=False
+                 add_root=False,
+                 conf=None
                  ):
 
         self.SUBPROGS = SUBPROGS
         self.CALLS = CALLS
         self.get_root_entities = get_root_entities
-        self.METRICS_ROW_HEADER=METRICS_ROW_HEADER
+        self.METRICS_ROW_HEADER = METRICS_ROW_HEADER
         self.add_root = add_root
 
         self._proj_id = proj_id
@@ -814,34 +829,37 @@ class OutlineBase(object):
         self._simple_layout = simple_layout
         self._all_sps = all_sps
 
-        self._conf = project.get_conf(proj_id)
-        if not self._conf:
-            if proj_id.endswith('_git'):
-                self._conf = gen_conf(proj_id, commits=commits, proj_dir=gitrepo)
-            else:
-                self._conf = gen_conf_a(proj_id, ver, proj_dir)
+        if conf is None:
+            self._conf = project.get_conf(proj_id)
+            if not self._conf:
+                if proj_id.endswith('_git'):
+                    self._conf = gen_conf(proj_id, commits=commits,
+                                          proj_dir=gitrepo)
+                else:
+                    self._conf = gen_conf_a(proj_id, ver, proj_dir)
+        else:
+            self._conf = conf
 
         self._hash_algo = self._conf.hash_algo
 
         self._tree = None
 
-        self._node_tbl = {} # (ver * loc * uri) -> node
+        self._node_tbl = {}  # (ver * loc * uri) -> node
 
-        self._lines_tbl = {} # ver -> loc -> line set
-        self._fid_tbl = {} # (ver * loc) -> fid
+        self._lines_tbl = {}  # ver -> loc -> line set
+        self._fid_tbl = {}  # (ver * loc) -> fid
 
         self._metrics = None
 
         self._marked_nodes = set()
 
-        self._aa_tbl = {} # (ver * loc * start_line) -> range list
-
+        self._aa_tbl = {}  # (ver * loc * start_line) -> range list
 
     def setup_aa_tbl(self):
         return
 
     def get_aref_ranges(self, mkey):
-        #self.setup_aa_tbl()
+        # self.setup_aa_tbl()
         rs = None
         try:
             rs = self._aa_tbl[mkey]
@@ -870,7 +888,7 @@ class OutlineBase(object):
         return lv
 
     def get_metrics(self):
-        if self._metrics == None:
+        if self._metrics is None:
             self.extract_metrics()
         return self._metrics
 
@@ -878,7 +896,7 @@ class OutlineBase(object):
         return
 
     def get_metrics_tbl(self, key):
-        if self._metrics == None:
+        if self._metrics is None:
             self.extract_metrics()
 
         ftbl = self._metrics.find_ftbl(key)
@@ -898,23 +916,23 @@ class OutlineBase(object):
         return spec
 
     def get_line_text_tbl(self, source_files, verURI, strip=True):
-        line_text_tbl = {} # loc -> line -> text
+        line_text_tbl = {}  # loc -> line -> text
 
         lines_tbl = self._lines_tbl.get(verURI, {})
 
         for (loc, lines) in lines_tbl.items():
 
-            logger.debug('scanning "%s"...' % loc)
+            logger.debug(f'scanning "{loc}"...')
 
             max_line = max(lines)
 
-            text_tbl = tbl_get_dict(line_text_tbl, loc) # line -> text
+            text_tbl = tbl_get_dict(line_text_tbl, loc)  # line -> text
 
             file_spec = self.get_file_spec(verURI, loc)
 
             ln = 0
 
-            for l in source_files.get_file(file_spec):
+            for _line in source_files.get_file(file_spec):
                 ln += 1
 
                 if ln > max_line:
@@ -922,18 +940,17 @@ class OutlineBase(object):
 
                 if ln in lines:
                     if strip:
-                        text_tbl[ln] = l.strip()
+                        text_tbl[ln] = _line.strip()
                     else:
-                        text_tbl[ln] = l
+                        text_tbl[ln] = _line
 
         return line_text_tbl
-
 
     def get_vindex(self, uri):
         vi = None
         try:
             vi = self._conf.versionURIs.index(uri)
-        except:
+        except Exception:
             pass
         return vi
 
@@ -953,7 +970,7 @@ class OutlineBase(object):
 
     def mark_node(self, nd):
         self._marked_nodes.add(nd)
-    
+
     def add_edge(self, parent, child, mark=True):
         return
 
@@ -1011,7 +1028,7 @@ class OutlineBase(object):
         if index and docsrc:
             proj = re.sub(r'_git$', '', self._proj_id)
             dpath = os.path.join(docsrc, proj)
-            logger.info('reading from "%s"' % dpath)
+            logger.info(f'reading from "{dpath}"')
             opath = os.path.join(topic_dir, self.gen_topic_file_name())
             search(index, model, dpath, ntopics=ntopics, lang=lang, outfile=opath)
 
@@ -1019,11 +1036,11 @@ class OutlineBase(object):
         return []
 
     def gen_index_tables(self):
-        path_list_tbl = {} # ver -> path list
-        fid_list_tbl = {}  # ver -> fid list
+        path_list_tbl = {}  # ver -> path list
+        fid_list_tbl = {}   # ver -> fid list
 
-        path_idx_tbl_tbl = {} # ver -> path -> idx
-        fid_idx_tbl_tbl = {}  # ver -> fid -> idx
+        path_idx_tbl_tbl = {}  # ver -> path -> idx
+        fid_idx_tbl_tbl = {}   # ver -> fid -> idx
 
         vers = set()
 
@@ -1075,7 +1092,8 @@ class OutlineBase(object):
     def set_extra2(self, d, mkey):
         return
 
-    def gen_data(self, lang, outdir='.', extract_metrics=True, omitted=set(), all_roots=False, debug_flag=False):
+    def gen_data(self, lang, outdir='.', extract_metrics=True, omitted=set(),
+                 all_roots=False, debug_flag=False):
 
         outline_dir = os.path.join(outdir, self._outline_dir)
         outline_v_dir = os.path.join(outline_dir, 'v')
@@ -1090,11 +1108,11 @@ class OutlineBase(object):
 
         self.gen_index_tables()
 
-        root_tbl = {} # ver -> loc -> root (contains loop) list
+        root_tbl = {}  # ver -> loc -> root (contains loop) list
 
         count = 0
 
-        if self.get_root_entities != None:
+        if self.get_root_entities is not None:
             root_entities = self.get_root_entities(full=all_roots)
 
         # filter out trees that do not contain loops
@@ -1110,7 +1128,7 @@ class OutlineBase(object):
 
                 roots.append(root)
 
-        logger.info('%d root nodes found' % count)
+        logger.info(f'{count} root nodes found')
 
         metrics_dir = None
 
@@ -1118,7 +1136,8 @@ class OutlineBase(object):
             self.extract_metrics()
             metrics_dir = os.path.join(outdir, self._metrics_dir)
 
-        source_files = SourceFiles(self._conf, gitrepo=self._gitrepo, proj_dir=self._proj_dir)
+        source_files = SourceFiles(self._conf, gitrepo=self._gitrepo,
+                                   proj_dir=self._proj_dir)
 
         for ver in root_tbl.keys():
 
@@ -1136,12 +1155,12 @@ class OutlineBase(object):
             loc_tbl = root_tbl[ver]
 
             json_ds = []
-     
+
             logger.info('generating line text table for "%s"...' % lver)
 
             line_text_tbl = self.get_line_text_tbl(source_files, ver)
 
-            relevant_node_tbl = {} # loc -> lnum -> nid list
+            relevant_node_tbl = {}  # loc -> lnum -> nid list
             nodes = set()
             csv_rows = []
 
@@ -1209,7 +1228,11 @@ class OutlineBase(object):
                     bf2 = round(mtbl[metrics.BF[2]], 2)
 
                     if bf0 > 0 or bf1 > 0 or bf2 > 0:
-                        logger.debug('%s: %s -> %3.2f|%3.2f|%3.2f' % (node.cat, mkey, bf0, bf1, bf2))
+                        logger.debug('%s: %s -> %3.2f|%3.2f|%3.2f' % (node.cat,
+                                                                      mkey,
+                                                                      bf0,
+                                                                      bf1,
+                                                                      bf2))
 
                         md = self.get_measurement(mtbl, [
                             metrics.N_BRANCHES,
@@ -1231,13 +1254,14 @@ class OutlineBase(object):
                         reg_nid(d['loc'], d['sl'], nid)
 
                         if node not in nodes:
-                            row = self.mkrow(lver, loc, node, start_line, mtbl, nid)
+                            row = self.mkrow(lver, loc, node, start_line, mtbl,
+                                             nid)
                             csv_rows.append(row)
-                        
+
                         nodes.add(node)
 
                 except KeyError:
-                    #print('!!! not found: {}'.format(mkey))
+                    # print('!!! not found: {}'.format(mkey))
                     pass
 
             idgen = IdGenerator()
@@ -1250,15 +1274,16 @@ class OutlineBase(object):
 
             d_tbl = {}
 
-            logger.info('converting trees into JSON for "%s"...' % lver)
+            logger.info(f'converting trees into JSON for "{lver}"...')
 
             for loc in loc_tbl.keys():
-
+                logger.debug(f'loc={loc}')
                 ds = []
 
                 fid = None
 
                 for root in loc_tbl[loc]:
+                    logger.debug(f'root={root}')
                     if not fid:
                         fid = root.get_fid()
 
@@ -1288,21 +1313,22 @@ class OutlineBase(object):
                     parent_tbl[d['id']] = nid
 
                 loc_d = {
-                    'id'          : nid,
-                    'text'        : loc,
-                    'loc'         : path_idx_tbl[loc],
-                    'children'    : ds,
-                    'fid'         : fid_idx_tbl[fid],
-                    'cat'         : 'file',
-                    'type'        : 'file',
+                    'id':       nid,
+                    'text':     loc,
+                    'loc':      path_idx_tbl[loc],
+                    'children': ds,
+                    'fid':      fid_idx_tbl[fid],
+                    'cat':      'file',
+                    'type':     'file',
                 }
 
                 nid_tbl[nid] = loc
 
                 json_ds.append(loc_d)
 
-            def copy_dict(d, hook=(lambda x: x), info={}):
-                children = [copy_dict(c, hook=hook, info=info) for c in d['children']]
+            def copy_dict(d, hook=(lambda x: None), info={}):
+                children = [copy_dict(c, hook=hook, info=info)
+                            for c in d['children']]
                 try:
                     info['count'] += 1
                 except KeyError:
@@ -1316,7 +1342,7 @@ class OutlineBase(object):
 
             logger.debug('* root_collapsed_caller_tbl:')
             for (r, collapsed_caller_tbl) in root_collapsed_caller_tbl.items():
-                logger.debug('root=%s:' % r)
+                logger.debug(f'root={r}:')
 
                 while collapsed_caller_tbl:
                     new_collapsed_caller_tbl = {}
@@ -1326,13 +1352,18 @@ class OutlineBase(object):
 
                     for (callee, d_lv_list) in collapsed_caller_tbl.items():
 
-                        logger.debug(' callee=%s' % callee)
+                        logger.debug(f' callee="{callee}"')
 
-                        expanded_callee_tbl = root_expanded_callee_tbl.get(r, {})
+                        expanded_callee_tbl = \
+                            root_expanded_callee_tbl.get(r, {})
+
                         callee_dl = expanded_callee_tbl.get(callee, [])
                         if callee_dl:
                             callees_tbl[callee] = [d['id'] for d in callee_dl]
-                            logger.debug('callees_tbl: %s -> [%s]' % (callee, ','.join(callees_tbl[callee])))
+                            logger.debug('callees_tbl: {} -> [{}]'
+                                         .format(callee,
+                                                 ','.join(callees_tbl[callee]))
+                                         )
                             logger.debug(' -> skip')
                             continue
 
@@ -1342,8 +1373,10 @@ class OutlineBase(object):
                         for (r_, tbl) in root_expanded_callee_tbl.items():
                             callee_dl = tbl.get(callee, [])
                             if callee_dl:
-                                logger.debug('%d callee dicts found in %s' % (len(callee_dl), r_))
-                                collapsed_caller_tbl_ = root_collapsed_caller_tbl.get(r_, {})
+                                logger.debug('{} callee dicts found in {}'
+                                             .format(len(callee_dl), r_))
+                                collapsed_caller_tbl_ \
+                                    = root_collapsed_caller_tbl.get(r_, {})
                                 break
 
                         if callee_dl:
@@ -1353,13 +1386,16 @@ class OutlineBase(object):
                                 def chk(lv_, d):
                                     callee_ = d.get('callee', None)
                                     if callee_ and d.get('children', []) == []:
-                                        d_lv_list_ = collapsed_caller_tbl_.get(callee_, [])
+                                        d_lv_list_ = collapsed_caller_tbl_\
+                                            .get(callee_, [])
                                         for (d_, _) in d_lv_list_:
                                             nid_ = d_['id']
                                             try:
-                                                nid_callee_lv_tbl[nid_].append((callee_, lv_))
+                                                nid_callee_lv_tbl[nid_]\
+                                                    .append((callee_, lv_))
                                             except KeyError:
-                                                nid_callee_lv_tbl[nid_] = [(callee_, lv_)]
+                                                nid_callee_lv_tbl[nid_] \
+                                                    = [(callee_, lv_)]
                                 self.iter_d(chk, callee_d)
 
                             max_lv = 0
@@ -1368,7 +1404,8 @@ class OutlineBase(object):
                                 if lv > max_lv:
                                     max_lv = lv
                                     selected = d
-                                logger.debug('    nid=%s lv=%d' % (d['id'], lv))
+                                logger.debug('    nid={} lv={}'.format(d['id'],
+                                                                       lv))
 
                             selected_id = selected['id']
                             logger.debug('    -> selected %s' % selected_id)
@@ -1376,32 +1413,39 @@ class OutlineBase(object):
                             copied_dl = []
 
                             try:
-                                base = '%s%s' % (selected_id, NID_SEP)
+                                base = '{}{}'.format(selected_id, NID_SEP)
+                                idl = selected_id.split(NID_SEP)
 
                                 def conv_id(i):
                                     return base+i
 
                                 def hook(x):
                                     xid = x['id']
+                                    if xid in idl:
+                                        return
                                     for (c, lv) in nid_callee_lv_tbl.get(xid, []):
                                         lv_ = max_lv + lv + 1
                                         try:
-                                            l = new_collapsed_caller_tbl[c]
-                                            if not any([x_['id'] == xid and lv_ == lv__ for (x_, lv__) in l]):
-                                                l.append((x, lv_))
+                                            li = new_collapsed_caller_tbl[c]
+                                            if not any([x_['id'] == xid
+                                                        and lv_ == lv__
+                                                        for (x_, lv__) in li]):
+                                                li.append((x, lv_))
                                         except KeyError:
                                             new_collapsed_caller_tbl[c] = [(x, lv_)]
                                     x['id'] = conv_id(xid)
 
                                 for callee_d in callee_dl:
-                                    info = {'count':0}
+                                    info = {'count': 0}
                                     copied = copy_dict(callee_d, hook=hook, info=info)
                                     copied_dl.append(copied)
                                     logger.debug('%d nodes copied' % info['count'])
 
                                 selected['children'] = copied_dl
                                 callees_tbl[callee] = [d['id'] for d in copied_dl]
-                                logger.debug('callees_tbl: %s -> [%s]' % (callee, ','.join(callees_tbl[callee])))
+                                logger.debug('callees_tbl: {} -> [{}]'
+                                             .format(callee,
+                                                     ','.join(callees_tbl[callee])))
                             except Exception as e:
                                 logger.warning(str(e))
 
@@ -1421,8 +1465,8 @@ class OutlineBase(object):
                     metrics_file_name = self.gen_metrics_file_name(lver, lang)
                     metrics_path = os.path.join(metrics_dir, metrics_file_name)
 
-                    logger.info('dumping metrics into "%s"...' % metrics_path)
-                    logger.info('%d rows found' % len(csv_rows))
+                    logger.info(f'dumping metrics into "{metrics_path}"...')
+                    logger.info('{} rows found'.format(len(csv_rows)))
 
                     try:
                         with open(metrics_path, 'w') as metricsf:
@@ -1447,7 +1491,6 @@ class OutlineBase(object):
                     except Exception as e:
                         logger.warning(str(e))
 
-
             # clean up relevant_node_tbl
             p_to_be_del = []
             for (p, ltbl) in relevant_node_tbl.items():
@@ -1468,9 +1511,9 @@ class OutlineBase(object):
 
             lver_dir = os.path.join(outline_v_dir, lver)
 
-            path_tbl = {} # path -> fid
+            path_tbl = {}  # path -> fid
 
-            idx_range_tbl = {} # fidi -> (lmi * idx)
+            idx_range_tbl = {}  # fidi -> (lmi * idx)
 
             if ensure_dir(lver_dir):
                 try:
@@ -1491,7 +1534,7 @@ class OutlineBase(object):
 
                 for json_d in json_ds:
                     json_d['node_tbl'] = relevant_node_tbl
-                    json_d['state'] = { 'opened' : True }
+                    json_d['state'] = {'opened': True}
 
                     callees_tbl = None
 
@@ -1530,15 +1573,15 @@ class OutlineBase(object):
 
                         idx = json_d.get('idx', None)
                         lmi = json_d.get('lmi', None)
-                        logger.debug('idx={}'.format(idx))
-                        logger.debug('lmi={}'.format(lmi))
+                        logger.debug(f'idx={idx}')
+                        logger.debug(f'lmi={lmi}')
                         if idx and lmi:
                             idx_range_tbl[fidi] = (lmi, idx, loci)
 
                         if debug_flag:
                             logger.debug('done. (%0.3f sec)' % (time() - st))
 
-                        logger.info('dumping object into "%s"...' % data_path)
+                        logger.info(f'dumping object into "{data_path}"...')
 
                         try:
                             with open(data_path, 'wb') as f:
@@ -1555,7 +1598,7 @@ class OutlineBase(object):
 
             vitbl = {
                 'path_tbl': path_tbl,
-                'vid'     : vid,
+                'vid':      vid,
             }
             try:
                 with open(os.path.join(lver_dir, 'index.json'), 'w') as vif:
@@ -1574,8 +1617,8 @@ class OutlineBase(object):
         #
 
         pitbl = {
-            'hash_algo' : self._hash_algo,
-            'ver_kind'  : self._conf.vkind,
+            'hash_algo': self._hash_algo,
+            'ver_kind':  self._conf.vkind,
         }
         try:
             with open(os.path.join(outline_dir, 'index.json'), 'w') as pif:

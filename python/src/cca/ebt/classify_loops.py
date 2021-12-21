@@ -22,7 +22,6 @@
 
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
-import os
 import csv
 import numpy as np
 from sklearn import preprocessing as pp
@@ -36,7 +35,11 @@ from .make_loop_classifier import SELECTED_MIX, DERIVED_MIX
 
 logger = logging.getLogger()
 
-def import_test_set(path, selected=SELECTED_MINAMI, derived=DERIVED_MINAMI, filt={}):
+
+def import_test_set(path,
+                    selected=SELECTED_MINAMI,
+                    derived=DERIVED_MINAMI,
+                    filt={}):
     _X = []
     meta = []
     try:
@@ -54,7 +57,8 @@ def import_test_set(path, selected=SELECTED_MINAMI, derived=DERIVED_MINAMI, filt
                 for k0, f in filt.items():
                     v0 = d[k0]
                     b0 = f(v0)
-                    logger.debug('k0=%s d[k0]=%s f(d[k0])=%s sub=%s' % (k0, v0, b0, row['sub']))
+                    sub = row['sub']
+                    logger.debug(f'k0={k0} d[k0]={v0} f(d[k0])={b0} sub={sub}')
                     if not b0:
                         skip = True
 
@@ -67,7 +71,7 @@ def import_test_set(path, selected=SELECTED_MINAMI, derived=DERIVED_MINAMI, filt
                         f = filt[k]
                         if not f(v):
                             skip = True
-                    except:
+                    except Exception:
                         pass
 
                     x.append(v)
@@ -94,6 +98,7 @@ def import_test_set(path, selected=SELECTED_MINAMI, derived=DERIVED_MINAMI, filt
 
     return data
 
+
 def classify(path, clf_path, model='minami', filt={}, verbose=True):
 
     clf = joblib.load(clf_path)
@@ -112,9 +117,8 @@ def classify(path, clf_path, model='minami', filt={}, verbose=True):
     elif model == 'mix':
         selected = SELECTED_MIX
         derived = DERIVED_MIX
-        
     else:
-        logger.warning('"%s" is not supported. using default model' % model)
+        logger.warning(f'"{model}" is not supported. using default model')
 
     data = import_test_set(path, selected=selected, derived=derived, filt=filt)
 
@@ -132,9 +136,11 @@ def classify(path, clf_path, model='minami', filt={}, verbose=True):
             for i in range(len(y_pred)):
                 m = data.meta[i]
                 m['pred'] = y_pred[i]
-                print('[%(proj)s][%(ver)s][%(path)s:%(lnum)s][%(sub)s] --> %(pred)s' % m)
+                print('[{proj}][{ver}][{path}:{lnum}][{sub}] --> {pred}'.format(**m))
+                logger.info('[{proj}][{ver}][{path}:{lnum}][{sub}] --> {pred}'.format(**m))
 
     return data_pred
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -145,13 +151,15 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='enable debug printing')
 
-    parser.add_argument('-m', '--model', dest='model', metavar='MODEL', type=str,
-                        default='minami', help='model (minami|terai|mix)')
+    parser.add_argument('-m', '--model', dest='model', metavar='MODEL',
+                        type=str, default='minami',
+                        help='model (minami|terai|mix)')
 
-    parser.add_argument('clf', metavar='CLF_PATH', 
+    parser.add_argument('clf', metavar='CLF_PATH',
                         type=str, default='a.pkl', help='dumped classifier')
 
-    parser.add_argument('dpath', metavar='DATA_PATH', type=str, help='test dataset')
+    parser.add_argument('dpath', metavar='DATA_PATH', type=str,
+                        help='test dataset')
 
     args = parser.parse_args()
 

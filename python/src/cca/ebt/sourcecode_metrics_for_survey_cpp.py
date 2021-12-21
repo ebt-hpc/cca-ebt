@@ -21,110 +21,110 @@
 
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
-import sys
 import logging
 
-from .sourcecode_metrics_for_survey_base import get_lver, get_proj_list, ftbl_list_to_orange, MetricsBase
+from .sourcecode_metrics_for_survey_base import (get_lver, get_proj_list,
+                                                 ftbl_list_to_orange,
+                                                 MetricsBase)
 from .metrics_queries_cpp import QUERY_TBL
 
-from cca.ccautil import sparql
 from cca.ccautil.virtuoso import VIRTUOSO_PW, VIRTUOSO_PORT
 from cca.factutil.entity import SourceCodeEntity
 
 logger = logging.getLogger()
 
-FOP_TBL = { # number of FP operations (for SPARC64 VIIIfx)
-    'nint'  : 2,
-    'jnint' : 2,
-    'cos'   : 29,
-    'dcos'  : 31,
-    'exp'   : 19,
-    'dexp'  : 23,
-    'log'   : 19,
-    'alog'  : 19,
-    'dlog'  : 23,
-    'mod'   : 8,
-    'amod'  : 8,
-    'dmod'  : 8,
-    'sign'  : 2,
-    'dsign' : 2,
-    'sin'   : 29,
-    'dsin'  : 31,
-    'sqrt'  : 11,
-    'dsqrt' : 21,
-    'tan'   : 58,
-    'dtan'  : 64,
+FOP_TBL = {  # number of FP operations (for SPARC64 VIIIfx)
+    'nint':  2,
+    'jnint': 2,
+    'cos':   29,
+    'dcos':  31,
+    'exp':   19,
+    'dexp':  23,
+    'log':   19,
+    'alog':  19,
+    'dlog':  23,
+    'mod':   8,
+    'amod':  8,
+    'dmod':  8,
+    'sign':  2,
+    'dsign': 2,
+    'sin':   29,
+    'dsin':  31,
+    'sqrt':  11,
+    'dsqrt': 21,
+    'tan':   58,
+    'dtan':  64,
 }
 FOP_TBL_DBL_EXTRA = {
-    'cos'  : 2,
-    'exp'  : 4,
-    'log'  : 4,
-    'sin'  : 2,
-    'sqrt' : 10,
-    'tan'  : 6,
+    'cos':  2,
+    'exp':  4,
+    'log':  4,
+    'sin':  2,
+    'sqrt': 10,
+    'tan':  6,
 }
 FOP_TBL_VA = {
-    'max'   : lambda n: n-1,
-    'amax1' : lambda n: n-1,
-    'dmax1' : lambda n: n-1,
-    'min'   : lambda n: n-1,
-    'amin1' : lambda n: n-1,
-    'dmin1' : lambda n: n-1,
+    'max':   (lambda n: n - 1),
+    'amax1': (lambda n: n - 1),
+    'dmax1': (lambda n: n - 1),
+    'min':   (lambda n: n - 1),
+    'amin1': (lambda n: n - 1),
+    'dmin1': (lambda n: n - 1),
 }
-
-LINES_OF_CODE        = 'lines_of_code'
-MAX_LOOP_DEPTH       = 'max_loop_depth'
-MAX_FUSIBLE_LOOPS    = 'max_fusible_loops'
+LINES_OF_CODE = 'lines_of_code'
+MAX_LOOP_DEPTH = 'max_loop_depth'
+MAX_FUSIBLE_LOOPS = 'max_fusible_loops'
 MAX_MERGEABLE_ARRAYS = 'max_mergeable_arrays'
-MAX_ARRAY_RANK       = 'max_array_rank'
-MAX_LOOP_LEVEL       = 'max_loop_level'
+MAX_ARRAY_RANK = 'max_array_rank'
+MAX_LOOP_LEVEL = 'max_loop_level'
 
-N_BRANCHES   = 'branches'
-N_STMTS      = 'stmts'
-N_FP_OPS     = 'fp_ops'
-N_OPS        = 'ops'
-N_CALLS      = 'calls'
+N_BRANCHES = 'branches'
+N_STMTS = 'stmts'
+N_FP_OPS = 'fp_ops'
+N_OPS = 'ops'
+N_CALLS = 'calls'
 
-N_A_REFS     = ['array_refs0','array_refs1','array_refs2']
-N_IND_A_REFS = ['indirect_array_refs0','indirect_array_refs1','indirect_array_refs2']
-N_DBL_A_REFS = ['dbl_array_refs0','dbl_array_refs1','dbl_array_refs2']
+N_A_REFS = ['array_refs0', 'array_refs1', 'array_refs2']
+N_IND_A_REFS = ['indirect_array_refs0', 'indirect_array_refs1',
+                'indirect_array_refs2']
+N_DBL_A_REFS = ['dbl_array_refs0', 'dbl_array_refs1', 'dbl_array_refs2']
 
-BF = ['bf0','bf1','bf2']
+BF = ['bf0', 'bf1', 'bf2']
 
 META_KEYS = ['proj', 'ver', 'path', 'sub', 'lnum', 'digest']
 
 abbrv_tbl = {
-    LINES_OF_CODE        : 'LOC',
-    MAX_LOOP_DEPTH       : 'LpD',
-    MAX_FUSIBLE_LOOPS    : 'FLp',
-    MAX_MERGEABLE_ARRAYS : 'MA',
-    MAX_ARRAY_RANK       : 'ARk',
-    MAX_LOOP_LEVEL       : 'LLv',
+    LINES_OF_CODE:        'LOC',
+    MAX_LOOP_DEPTH:       'LpD',
+    MAX_FUSIBLE_LOOPS:    'FLp',
+    MAX_MERGEABLE_ARRAYS: 'MA',
+    MAX_ARRAY_RANK:       'ARk',
+    MAX_LOOP_LEVEL:       'LLv',
 
-    N_BRANCHES   : 'Br',
-    N_STMTS      : 'St',
-    N_FP_OPS     : 'FOp',
-    N_OPS        : 'Op',
-    N_CALLS      : 'Ca',
+    N_BRANCHES: 'Br',
+    N_STMTS:    'St',
+    N_FP_OPS:   'FOp',
+    N_OPS:      'Op',
+    N_CALLS:    'Ca',
 
-    N_A_REFS[0]     : 'AR0',
-    N_IND_A_REFS[0] : 'IAR0',
-    N_DBL_A_REFS[0] : 'DAR0',
+    N_A_REFS[0]:     'AR0',
+    N_IND_A_REFS[0]: 'IAR0',
+    N_DBL_A_REFS[0]: 'DAR0',
 
-    N_A_REFS[1]     : 'AR1',
-    N_IND_A_REFS[1] : 'IAR1',
-    N_DBL_A_REFS[1] : 'DAR1',
+    N_A_REFS[1]:     'AR1',
+    N_IND_A_REFS[1]: 'IAR1',
+    N_DBL_A_REFS[1]: 'DAR1',
 
-    N_A_REFS[2]     : 'AR2',
-    N_IND_A_REFS[2] : 'IAR2',
-    N_DBL_A_REFS[2] : 'DAR2',
+    N_A_REFS[2]:     'AR2',
+    N_IND_A_REFS[2]: 'IAR2',
+    N_DBL_A_REFS[2]: 'DAR2',
 
-    BF[0] : 'BF0',
-    BF[1] : 'BF1',
-    BF[2] : 'BF2',
+    BF[0]: 'BF0',
+    BF[1]: 'BF1',
+    BF[2]: 'BF2',
 }
-
 ###
+
 
 def count_aas(aas):
     c = 0
@@ -134,6 +134,7 @@ def count_aas(aas):
         else:
             c += 1
     return c
+
 
 def get_nfops(name, nargs, double=False):
     nfop = 1
@@ -151,42 +152,42 @@ def get_nfops(name, nargs, double=False):
 
 
 def make_feature_tbl():
-    v = { 'meta' : {'proj' : '',
-                    'ver'  : '', 
-                    'path' : '',
-                    'sub'  : '',
-                    'lnum' : '',
-                },
-          
-          BF[0]                : 0.0,
-          BF[1]                : 0.0,
-          BF[2]                : 0.0,
+    v = {
+        'meta': {
+            'proj': '',
+            'ver':  '',
+            'path': '',
+            'sub':  '',
+            'lnum': '',
+        },
 
-          N_FP_OPS             : 0,
-          N_OPS                : 0,
+        BF[0]: 0.0,
+        BF[1]: 0.0,
+        BF[2]: 0.0,
 
-          N_A_REFS[0]          : 0,
-          N_IND_A_REFS[0]      : 0,
-          N_DBL_A_REFS[0]      : 0,
-          N_A_REFS[1]          : 0,
-          N_IND_A_REFS[1]      : 0,
-          N_DBL_A_REFS[1]      : 0,
-          N_A_REFS[2]          : 0,
-          N_IND_A_REFS[2]      : 0,
-          N_DBL_A_REFS[2]      : 0,
+        N_FP_OPS:        0,
+        N_OPS:           0,
+        N_A_REFS[0]:     0,
+        N_IND_A_REFS[0]: 0,
+        N_DBL_A_REFS[0]: 0,
+        N_A_REFS[1]:     0,
+        N_IND_A_REFS[1]: 0,
+        N_DBL_A_REFS[1]: 0,
+        N_A_REFS[2]:     0,
+        N_IND_A_REFS[2]: 0,
+        N_DBL_A_REFS[2]: 0,
+        N_BRANCHES:      0,
+        N_STMTS:         0,
+        N_CALLS:         0,
 
-          N_BRANCHES           : 0,
-          N_STMTS              : 0,
-          N_CALLS              : 0,
+        LINES_OF_CODE: 0,
 
-          LINES_OF_CODE        : 0,
-
-          MAX_LOOP_LEVEL       : 0,
-          MAX_ARRAY_RANK       : 0,
-          MAX_LOOP_DEPTH       : 0,
-          MAX_FUSIBLE_LOOPS    : 0,
-          MAX_MERGEABLE_ARRAYS : 0,
-      }
+        MAX_LOOP_LEVEL:       0,
+        MAX_ARRAY_RANK:       0,
+        MAX_LOOP_DEPTH:       0,
+        MAX_FUSIBLE_LOOPS:    0,
+        MAX_MERGEABLE_ARRAYS: 0,
+    }
     return v
 
 
@@ -197,7 +198,7 @@ def ftbl_to_string(ftbl):
 
     ks = ftbl.keys()
     ks.remove('meta')
-    
+
     fmt = '%(meta)s ('
 
     fmt += ','.join(['%s:%%(%s)s' % (abbrv_tbl[k], k) for k in ks])
@@ -209,13 +210,11 @@ def ftbl_to_string(ftbl):
     return s
 
 
-
 class Metrics(MetricsBase):
     def __init__(self, proj_id, method='odbc',
                  pw=VIRTUOSO_PW, port=VIRTUOSO_PORT):
 
-        MetricsBase.__init__(self, proj_id, method, pw, port)
-
+        super().__init__(proj_id, method, pw, port)
 
     def find_ftbl(self, key):
         md = self.get_metadata(key)
@@ -227,12 +226,12 @@ class Metrics(MetricsBase):
         ftbl = make_feature_tbl()
 
         ftbl['meta'] = {
-            'proj'   : self._proj_id,
-            'ver'    : ver,
-            'path'   : path,
-            'fn'     : fn,
-            'lnum'   : str(lnum),
-            'digest' : digest,
+            'proj':   self._proj_id,
+            'ver':    ver,
+            'path':   path,
+            'fn':     fn,
+            'lnum':   str(lnum),
+            'digest': digest,
         }
 
         fop = self.get_value(N_FP_OPS, key)
@@ -240,13 +239,13 @@ class Metrics(MetricsBase):
         if fop > 0:
             for lv in range(3):
                 if BF[lv] in ftbl:
-                    aa  = self.get_value(N_A_REFS[lv], key)
+                    aa = self.get_value(N_A_REFS[lv], key)
                     daa = self.get_value(N_DBL_A_REFS[lv], key)
                     saa = aa - daa
                     bf = float(saa * 4 + daa * 8) / float(fop)
-                    print('!!! {} -> fop={} aa[{}]={} daa[{}]={} bf[{}]={}'.format(key, fop, lv, aa, lv, daa, lv, bf))
+                    # print('!!! {} -> fop={} aa[{}]={} daa[{}]={} bf[{}]={}'.format(key, fop, lv, aa, lv, daa, lv, bf))
                     ftbl[BF[lv]] = bf
-            
+
         for item in ftbl.keys():
             try:
                 ftbl[item] = self._result_tbl[item][key]
@@ -254,7 +253,6 @@ class Metrics(MetricsBase):
                 pass
 
         return ftbl
-        
 
     def key_to_string(self, key):
         (ver, loc, fn, loop, vname) = key
@@ -263,9 +261,8 @@ class Metrics(MetricsBase):
         s = '%s:%s:%s:%s' % (ver, loc, fn, lnum)
         return s
 
-
     def set_metrics(self, name, _key, value, add=False):
-        #print('!!! set_metrics: name={} key={} value={} add={}'.format(name, _key, value, add))
+        # print('!!! set_metrics: name={} key={} value={} add={}'.format(name, _key, value, add))
 
         (ver, loc, fn, loop, vname) = _key
 
@@ -275,11 +272,12 @@ class Metrics(MetricsBase):
         key = (ver, loc, str(lnum))
         key_str = '%s:%s:%s' % key
 
-        logger.debug('%s(%s): %s -> %s' % (self.key_to_string(_key), key_str, name, value))
+        logger.debug('%s(%s): %s -> %s' % (self.key_to_string(_key),
+                                           key_str, name, value))
 
         loop_d = self.get_loop_digest(_key)
 
-        self._metadata_tbl[key] = {'fn':fn,'digest':loop_d}
+        self._metadata_tbl[key] = {'fn': fn, 'digest': loop_d}
 
         try:
             tbl = self._result_tbl[name]
@@ -293,36 +291,34 @@ class Metrics(MetricsBase):
         else:
             tbl[key] = value
 
-
     def finalize_ipp(self):
         logger.info('finalizing call graph...')
 
-        query = QUERY_TBL['fd_fd'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['fd_fd'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
             callee = row['callee']
-            fd     = row['fd']
+            fd = row['fd']
             self.ipp_add(callee, fd)
 
-        query = QUERY_TBL['loop_fd'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['loop_fd'] % {'proj': self._graph_uri}
 
         for qvs, row in self._sparql.query(query):
             callee = row['callee']
-            loop   = row['loop']
+            loop = row['loop']
             self.ipp_add(callee, loop, is_loop=True)
 
-
     def build_tree(self, f=None):
-        query = QUERY_TBL['loop_loop'] % { 'proj' : self._graph_uri }
+        query = QUERY_TBL['loop_loop'] % {'proj': self._graph_uri}
 
         children_tbl = {}
         parent_tbl = {}
 
         for qvs, row in self._sparql.query(query):
-            ver   = row['ver']
-            loc   = row['loc']
-            fn    = row.get('fn', '')
-            loop  = row['loop']
+            ver = row['ver']
+            loc = row['loc']
+            fn = row.get('fn', '')
+            loop = row['loop']
             loop_d = row['loop_d']
             vname = ''
 
@@ -362,31 +358,29 @@ class Metrics(MetricsBase):
                 self.set_metrics(LINES_OF_CODE, k, lines)
 
         logger.info('%d top loops found' % len(roots))
-                
-        tree = {'children':children_tbl,'parent':parent_tbl,'roots':roots}
+
+        tree = {'children': children_tbl, 'parent': parent_tbl, 'roots': roots}
 
         self.set_tree(tree)
 
         return tree
 
-
     def get_key(self, row):
-        ver    = row['ver']
-        loc    = row['loc']
-        fn     = row.get('fn', '')
-        loop   = row['loop']
-        vname  = ''
+        ver = row['ver']
+        loc = row['loc']
+        fn = row.get('fn', '')
+        loop = row['loop']
+        vname = ''
 
         lver = get_lver(ver)
         key = (lver, loc, fn, loop, vname)
         return key
 
-
     def calc_array_metrics(self):
         logger.info('calculating array metrics...')
 
         try:
-            query = QUERY_TBL['arrays'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['arrays'] % {'proj': self._graph_uri}
 
             tbl = {}
 
@@ -394,8 +388,8 @@ class Metrics(MetricsBase):
                 key = self.get_key(row)
 
                 array = row['dtor']
-                tyc   = row['tyc']
-                rank  = int(row['rank'])
+                tyc = row['tyc']
+                rank = int(row['rank'])
                 try:
                     arrays = tbl[key]
                 except KeyError:
@@ -403,7 +397,6 @@ class Metrics(MetricsBase):
                     tbl[key] = arrays
 
                 arrays.append((array, (tyc, rank)))
-
 
             def get(key):
                 arrays = tbl.get(key, [])
@@ -423,14 +416,13 @@ class Metrics(MetricsBase):
                     if t[spec] > max_mergeable_arrays:
                         max_mergeable_arrays = t[spec]
 
-                return {'max_rank':max_rank, 'max_mergeable_arrays':max_mergeable_arrays}
-
+                return {'max_rank': max_rank, 'max_mergeable_arrays': max_mergeable_arrays}
 
             tree = self.get_tree()
 
             for key in tree['roots']:
 
-                data = {'max_rank':0, 'max_mergeable_arrays':0}
+                data = {'max_rank': 0, 'max_mergeable_arrays': 0}
 
                 def f(k):
                     d = get(k)
@@ -452,19 +444,18 @@ class Metrics(MetricsBase):
 
         logger.info('done.')
 
-
     def calc_in_loop_metrics(self):
         logger.info('calculating other in_loop metrics...')
 
         try:
-            query = QUERY_TBL['in_loop'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['in_loop'] % {'proj': self._graph_uri}
 
             def make_data():
-                return { 'nbr'  : 0,
-                         'nes'  : 0,
-                         'nop'  : 0,
-                         'nc'   : 0,
-                     }
+                return {'nbr': 0,
+                        'nes': 0,
+                        'nop': 0,
+                        'nc':  0,
+                        }
 
             tbl = {}
 
@@ -473,10 +464,10 @@ class Metrics(MetricsBase):
                 key = self.get_key(row)
 
                 data = make_data()
-                data['nbr']  = int(row['nbr'] or '0')
-                data['nes']  = int(row['nes'] or '0')
-                data['nop']  = int(row['nop'] or '0')
-                data['nc']   = int(row['nc'] or '0')
+                data['nbr'] = int(row['nbr'] or '0')
+                data['nes'] = int(row['nes'] or '0')
+                data['nop'] = int(row['nop'] or '0')
+                data['nc'] = int(row['nc'] or '0')
 
                 tbl[key] = data
 
@@ -493,17 +484,17 @@ class Metrics(MetricsBase):
                 def f(k):
                     d = tbl.get(k, None)
                     if d:
-                        data['nbr']   += d['nbr']
-                        data['nes']   += d['nes']
-                        data['nop']   += d['nop']
-                        data['nc']    += d['nc']
+                        data['nbr'] += d['nbr']
+                        data['nes'] += d['nes']
+                        data['nop'] += d['nop']
+                        data['nc'] += d['nc']
 
                 self.iter_tree(tree, key, f)
 
-                self.set_metrics(N_BRANCHES,   key, data['nbr'])
-                self.set_metrics(N_STMTS,      key, data['nes'])
-                self.set_metrics(N_OPS,        key, data['nop'])
-                self.set_metrics(N_CALLS,      key, data['nc'])
+                self.set_metrics(N_BRANCHES, key, data['nbr'])
+                self.set_metrics(N_STMTS,    key, data['nes'])
+                self.set_metrics(N_OPS,      key, data['nop'])
+                self.set_metrics(N_CALLS,    key, data['nc'])
 
         except KeyError:
             raise
@@ -511,8 +502,7 @@ class Metrics(MetricsBase):
         logger.info('done.')
     # end of calc_in_loop_metrics
 
-
-    def calc_aref_in_loop_metrics(self, lv): # level: 0, 1, 2
+    def calc_aref_in_loop_metrics(self, lv):  # level: 0, 1, 2
         logger.info('calculating other aref_in_loop metrics (lv=%d)...' % lv)
 
         try:
@@ -521,12 +511,12 @@ class Metrics(MetricsBase):
             elif lv == 1 or lv == 2:
                 qtbl = QUERY_TBL['aref12_in_loop']
             else:
-                logger.warning('illegal level: %d' % lv)
+                logger.warning(f'illegal level: {lv}')
                 return
 
             tbl = {}
 
-            kinds = ['aa','iaa','daa']
+            kinds = ['aa', 'iaa', 'daa']
 
             def make_data():
                 d = {}
@@ -536,7 +526,7 @@ class Metrics(MetricsBase):
 
             for kind in kinds:
 
-                query = qtbl[kind] % {'proj':self._graph_uri,'level':lv}
+                query = qtbl[kind] % {'proj': self._graph_uri, 'level': lv}
 
                 for qvs, row in self._sparql.query(query):
 
@@ -552,7 +542,6 @@ class Metrics(MetricsBase):
                             tbl[key] = data
 
                         data[kind].add(sig)
-
 
             tree = self.get_tree()
 
@@ -578,16 +567,15 @@ class Metrics(MetricsBase):
         logger.info('done.')
     # end of calc_aref_in_loop_metrics
 
-
     def calc_fop_in_loop_metrics(self):
         logger.info('calculating fop metrics...')
 
         try:
-            query = QUERY_TBL['fop_in_loop'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['fop_in_loop'] % {'proj': self._graph_uri}
 
             def make_data():
-                return { 
-                         'nfop' : 0,
+                return {
+                    'nfop': 0,
                      }
 
             tbl = {}
@@ -626,26 +614,25 @@ class Metrics(MetricsBase):
         logger.info('done.')
     # end of calc_fop_in_loop_metrics
 
-
     def calc_ffr_in_loop_metrics(self):
         logger.info('calculating ffr metrics...')
 
         try:
-            query = QUERY_TBL['ffr_in_loop'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['ffr_in_loop'] % {'proj': self._graph_uri}
 
-            tbl = {} # key -> hash -> fname * nargs * is_dbl
+            tbl = {}  # key -> hash -> fname * nargs * is_dbl
 
             for qvs, row in self._sparql.query(query):
 
                 key = self.get_key(row)
 
                 try:
-                    fref_tbl = tbl[key] # hash -> fname * nargs * is_dbl
+                    fref_tbl = tbl[key]  # hash -> fname * nargs * is_dbl
                 except KeyError:
                     fref_tbl = {}
                     tbl[key] = fref_tbl
 
-                h     = row['h']
+                h = row['h']
                 fname = row['fname']
                 nargs = row['nargs']
 
@@ -657,29 +644,29 @@ class Metrics(MetricsBase):
 
             #
 
-            query = QUERY_TBL['dfr_in_loop'] % { 'proj' : self._graph_uri }
+            query = QUERY_TBL['dfr_in_loop'] % {'proj': self._graph_uri}
             for qvs, row in self._sparql.query(query):
                 key = self.get_key(row)
                 fref_tbl = tbl.get(key, None)
                 if fref_tbl:
-                    h     = row['h']
+                    h = row['h']
                     fname = row['fname']
                     try:
                         (fn, na, b) = fref_tbl[h]
                         if fn == fname:
                             fref_tbl[h] = (fn, na, True)
                         else:
-                            logger.warning('function name mismatch (%s != %s)' % (fname, fn))
+                            logger.warning(f'function name mismatch ({fname} != {fn})')
                     except KeyError:
-                        logger.warning('reference of %s not found (hash=%s)' % (fname, h))
+                        logger.warning(f'reference of {fname} not found (hash={h})')
 
             #
 
             tree = self.get_tree()
 
             def make_data():
-                return { 
-                         'nfop' : 0,
+                return {
+                         'nfop': 0,
                      }
 
             for key in tree['roots']:
@@ -702,7 +689,6 @@ class Metrics(MetricsBase):
         logger.info('done.')
     # end of calc_ffr_in_loop_metrics
 
-
     def filter_results(self):
         logger.info('filtering results...')
 
@@ -716,7 +702,6 @@ class Metrics(MetricsBase):
         for (item, tbl) in self._result_tbl.items():
             for k in to_be_removed:
                 del tbl[k]
-        
 
     def calc(self):
         logger.info('calculating for "%s"...' % self._proj_id)
@@ -733,50 +718,53 @@ class Metrics(MetricsBase):
         self.calc_max_loop_level()
         self.filter_results()
 
-        #self.dump()
+        # self.dump()
 
 
 if __name__ == '__main__':
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    from argparse import ArgumentParser
 
     parser = ArgumentParser(description='get source code metrics')
 
-    parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='enable debug printing')
+    parser.add_argument('-d', '--debug', dest='debug', action='store_true',
+                        help='enable debug printing')
 
     parser.add_argument('-k', '--key', dest='key', default=None,
-                        metavar='KEY', type=str, help='show metrics for KEY=VER:PATH:LNUM')
+                        metavar='KEY', type=str,
+                        help='show metrics for KEY=VER:PATH:LNUM')
 
     parser.add_argument('-o', '--outfile', dest='outfile', default=None,
-                        metavar='FILE', type=str, help='dump feature vector into FILE')
+                        metavar='FILE', type=str,
+                        help='dump feature vector into FILE')
 
     parser.add_argument('-m', '--method', dest='method', default='odbc',
-                        metavar='METHOD', type=str, help='execute query via METHOD (odbc|http)')
+                        metavar='METHOD', type=str,
+                        help='execute query via METHOD (odbc|http)')
 
-    parser.add_argument('proj_list', nargs='*', default=[], 
-                        metavar='PROJ', type=str, help='project id (default: all projects)')
+    parser.add_argument('proj_list', nargs='*', default=[],
+                        metavar='PROJ', type=str,
+                        help='project id (default: all projects)')
 
     args = parser.parse_args()
 
     proj_list = []
 
     if args.key:
-        l = args.key.split(':')
-        if len(l) != 3:
+        li = args.key.split(':')
+        if len(li) != 3:
             print('invalid key: %s' % args.key)
             exit(1)
         else:
             try:
-                int(l[2])
-            except:
+                int(li[2])
+            except Exception:
                 print('invalid key: %s' % args.key)
                 exit(1)
-                
 
     if args.proj_list:
         proj_list = args.proj_list
     else:
         proj_list = get_proj_list()
-
 
     ftbl_list = []
 

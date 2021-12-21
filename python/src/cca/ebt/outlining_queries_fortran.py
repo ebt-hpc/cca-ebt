@@ -25,7 +25,7 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 from .common import NS_TBL
 
 
-OMITTED = ['execution-part','do-block']
+OMITTED = ['execution-part', 'do-block']
 
 SUBPROGS = set([
     'subroutine-external-subprogram',
@@ -36,71 +36,70 @@ SUBPROGS = set([
     'function-module-subprogram',
 ])
 
-LOOPS = set(['do-construct','do-stmt','end-do-stmt','do-block'])
+LOOPS = set(['do-construct', 'do-stmt', 'end-do-stmt', 'do-block'])
 
-CALLS = set(['call-stmt','function-reference','part-name','call-stmt*','mpi-call'])
+CALLS = set(['call-stmt', 'function-reference', 'part-name', 'call-stmt*',
+             'mpi-call'])
 
-TYPE_TBL = { # cat -> type
-    'file'                           : 'file',
+TYPE_TBL = {  # cat -> type
+    'file': 'file',
 
-    'do-construct'                   : 'loop',
-    'if-construct'                   : 'branch',
-    'case-construct'                 : 'branch',
-    'select-type-construct'          : 'branch',
-    'where-construct'                : 'branch',
+    'do-construct':          'loop',
+    'if-construct':          'branch',
+    'case-construct':        'branch',
+    'select-type-construct': 'branch',
+    'where-construct':       'branch',
 
-    'call-stmt'                      : 'call',
-    'function-reference'             : 'call',
-    'part-name'                      : 'call',
+    'call-stmt':          'call',
+    'function-reference': 'call',
+    'part-name':          'call',
 
-    'main-program'                   : 'main',
-    'subroutine-external-subprogram' : 'subroutine',
-    'subroutine-internal-subprogram' : 'subroutine',
-    'subroutine-module-subprogram'   : 'subroutine',
-    'function-external-subprogram'   : 'function',
-    'function-internal-subprogram'   : 'function',
-    'function-module-subprogram'     : 'function',
+    'main-program':                   'main',
+    'subroutine-external-subprogram': 'subroutine',
+    'subroutine-internal-subprogram': 'subroutine',
+    'subroutine-module-subprogram':   'subroutine',
+    'function-external-subprogram':   'function',
+    'function-internal-subprogram':   'function',
+    'function-module-subprogram':     'function',
 
-    'execution-part'                 : 'part',
+    'execution-part': 'part',
 
-    'if-then-block'                  : 'block',
-    'else-if-block'                  : 'block',
-    'else-block'                     : 'block',
-    'case-block'                     : 'block',
-    'type-guard-block'               : 'block',
-    'where-block'                    : 'block',
-    'do-block'                       : 'block',
-    'block-construct'                : 'block',
+    'if-then-block':    'block',
+    'else-if-block':    'block',
+    'else-block':       'block',
+    'case-block':       'block',
+    'type-guard-block': 'block',
+    'where-block':      'block',
+    'do-block':         'block',
+    'block-construct':  'block',
 
-    'pp-branch'                      : 'pp',
-    'pp-branch-do'                   : 'pp',
-    'pp-branch-end-do'               : 'pp',
-    'pp-branch-if'                   : 'pp',
-    'pp-branch-end-if'               : 'pp',
-    'pp-branch-forall'               : 'pp',
-    'pp-branch-end-forall'           : 'pp',
-    'pp-branch-select'               : 'pp',
-    'pp-branch-end-select'           : 'pp',
-    'pp-branch-where'                : 'pp',
-    'pp-branch-end-where'            : 'pp',
-    'pp-branch-pu'                   : 'pp',
-    'pp-branch-end-pu'               : 'pp',
-    'pp-branch-function'             : 'pp',
-    'pp-branch-end-function'         : 'pp',
-    'pp-branch-subroutine'           : 'pp',
-    'pp-branch-end-subroutine'       : 'pp',
+    'pp-branch':                'pp',
+    'pp-branch-do':             'pp',
+    'pp-branch-end-do':         'pp',
+    'pp-branch-if':             'pp',
+    'pp-branch-end-if':         'pp',
+    'pp-branch-forall':         'pp',
+    'pp-branch-end-forall':     'pp',
+    'pp-branch-select':         'pp',
+    'pp-branch-end-select':     'pp',
+    'pp-branch-where':          'pp',
+    'pp-branch-end-where':      'pp',
+    'pp-branch-pu':             'pp',
+    'pp-branch-end-pu':         'pp',
+    'pp-branch-function':       'pp',
+    'pp-branch-end-function':   'pp',
+    'pp-branch-subroutine':     'pp',
+    'pp-branch-end-subroutine': 'pp',
+    'pp-section-elif':          'pp',
+    'pp-section-else':          'pp',
+    'pp-section-if':            'pp',
+    'pp-section-ifdef':         'pp',
+    'pp-section-ifndef':        'pp',
 
-    'pp-section-elif'                : 'pp',
-    'pp-section-else'                : 'pp',
-    'pp-section-if'                  : 'pp',
-    'pp-section-ifdef'               : 'pp',
-    'pp-section-ifndef'              : 'pp',
+    'mpi-call': 'mpi',
 
-    'mpi-call'                       : 'mpi',
-
-    'call-stmt*'                     : 'call*'
+    'call-stmt*': 'call*'
 }
-
 Q_AA_IN_LOOP_F = '''DEFINE input:inference "ont.cpi"
 PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
@@ -248,6 +247,100 @@ GRAPH <%%(proj)s> {
 }
 ''' % NS_TBL
 
+Q_GOTOS_F = '''DEFINE input:inference "ont.cpi"
+PREFIX f:   <%(f_ns)s>
+PREFIX ver: <%(ver_ns)s>
+PREFIX src: <%(src_ns)s>
+SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog ?goto ?label ?constr
+WHERE {
+GRAPH <%%(proj)s> {
+
+  {
+    SELECT DISTINCT ?ver ?loc ?pu ?pu_name ?vpu_name ?goto ?label
+    WHERE {
+
+      ?goto a f:GotoStmt ;
+            ?p [] OPTION (INFERENCE NONE) ;
+            f:inProgramUnitOrSubprogram ?pu_or_sp ;
+            f:inProgramUnit ?pu .
+
+      ?pu_or_sp src:inFile/src:location ?loc .
+
+      ?pu a f:ProgramUnit ;
+          src:inFile/src:location ?pu_loc ;
+          ver:version ?ver .
+
+      OPTIONAL {
+        ?pu f:name ?pu_name
+      }
+
+      OPTIONAL {
+        ?pu f:includedInProgramUnit ?vpu .
+        ?vpu f:name ?vpu_name .
+      }
+
+      OPTIONAL {
+        ?goto src:children/rdf:first ?x .
+        ?x a f:Label ;
+           f:label ?label .
+      }
+
+    } GROUP BY ?ver ?loc ?pu ?pu_name ?vpu_name ?goto ?label
+  }
+
+  OPTIONAL {
+    ?goto f:inSubprogram ?sp .
+    ?sp a f:Subprogram ;
+        a ?sp_cat0 OPTION (INFERENCE NONE) ;
+        f:name ?sub .
+
+    FILTER NOT EXISTS {
+      ?goto f:inSubprogram ?sp0 .
+      ?sp0 f:inSubprogram ?sp .
+      FILTER (?sp != ?sp0)
+    }
+
+    GRAPH <http://codinuum.com/ont/cpi> {
+      ?sp_cat0 rdfs:label ?sp_cat
+    }
+  }
+
+  OPTIONAL {
+    ?goto f:inContainerUnit ?constr .
+    ?constr a f:ContainerUnit .
+    FILTER EXISTS {
+      {
+        ?constr f:inProgramUnit ?pu .
+        FILTER NOT EXISTS {
+          ?goto f:inSubprogram/f:inContainerUnit ?constr .
+        }
+      }
+      UNION
+      {
+        ?goto f:inSubprogram ?sp0 .
+        ?constr f:inSubprogram ?sp0 .
+      }
+    }
+    FILTER NOT EXISTS {
+      ?c a f:ContainerUnit ;
+         f:inContainerUnit ?constr .
+      ?goto f:inContainerUnit ?c .
+      FILTER (?c != ?constr)
+    }
+  }
+
+  OPTIONAL {
+    ?goto f:inMainProgram ?main .
+    ?main a f:MainProgram .
+    OPTIONAL {
+      ?main f:name ?prog .
+    }
+  }
+
+}
+}
+''' % NS_TBL
+
 Q_DIRECTIVES_F = '''DEFINE input:inference "ont.cpi"
 PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
@@ -344,7 +437,7 @@ Q_CONSTR_CONSTR_F = '''DEFINE input:inference "ont.cpi"
 PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
-SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog 
+SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog
 ?constr ?cat
 ?parent_constr ?parent_cat ?parent_sub ?parent_prog ?parent_pu_name ?parent_vpu_name
 WHERE {
@@ -415,7 +508,7 @@ GRAPH <%%(proj)s> {
     ?main a f:MainProgram .
     OPTIONAL {
       ?main f:name ?prog .
-    }    
+    }
   }
 
   OPTIONAL {
@@ -551,7 +644,7 @@ GRAPH <%%(proj)s> {
       ?callee_file a src:File ;
                    src:location ?callee_loc ;
                    ver:version ?ver .
-      
+
       GRAPH <http://codinuum.com/ont/cpi> {
         ?callee_cat0 rdfs:label ?callee_cat
       }
@@ -559,7 +652,7 @@ GRAPH <%%(proj)s> {
       OPTIONAL {
         ?callee f:inProgramUnit/f:name ?callee_pu_name .
       }
-    
+
     } GROUP BY ?callee ?callee_cat ?callee_loc ?ver ?callee_pu_name
   }
 
@@ -585,7 +678,7 @@ GRAPH <%%(proj)s> {
     ?main a f:MainProgram .
     OPTIONAL {
       ?main f:name ?prog .
-    }    
+    }
   }
 
 }
@@ -596,7 +689,7 @@ Q_SP_SP_F = '''DEFINE input:inference "ont.cpi"
 PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
-SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog 
+SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog
 ?callee ?callee_name ?callee_loc ?callee_cat ?call ?call_cat ?constr ?callee_pu_name
 WHERE {
 GRAPH <%%(proj)s> {
@@ -651,7 +744,7 @@ GRAPH <%%(proj)s> {
       ?callee_file a src:File ;
                    src:location ?callee_loc ;
                    ver:version ?ver .
-      
+
       GRAPH <http://codinuum.com/ont/cpi> {
         ?callee_cat0 rdfs:label ?callee_cat
       }
@@ -685,7 +778,7 @@ GRAPH <%%(proj)s> {
     ?main a f:MainProgram .
     OPTIONAL {
       ?main f:name ?prog .
-    }    
+    }
   }
 
 }
@@ -756,15 +849,17 @@ GRAPH <%%(proj)s> {
 ''' % NS_TBL
 
 
-QUERY_TBL = { 
-    'aa_in_loop'    : Q_AA_IN_LOOP_F,
-    'other_calls'   : Q_OTHER_CALLS_F,
-    'directives'    : Q_DIRECTIVES_F,
-    'constr_constr' : Q_CONSTR_CONSTR_F,
-    'constr_sp'     : Q_CONSTR_SP_F,
-    'sp_sp'         : Q_SP_SP_F,
-    'constr_qspn'   : Q_CONSTR_QSPN_F,
+QUERY_TBL = {
+    'aa_in_loop':    Q_AA_IN_LOOP_F,
+    'other_calls':   Q_OTHER_CALLS_F,
+    'gotos':         Q_GOTOS_F,
+    'directives':    Q_DIRECTIVES_F,
+    'constr_constr': Q_CONSTR_CONSTR_F,
+    'constr_sp':     Q_CONSTR_SP_F,
+    'sp_sp':         Q_SP_SP_F,
+    'constr_qspn':   Q_CONSTR_QSPN_F,
 }
+
 
 def get_root_entities(full=False):
     s = set(['main-program'])
