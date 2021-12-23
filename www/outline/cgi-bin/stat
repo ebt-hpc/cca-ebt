@@ -24,7 +24,7 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 import sys
 import json
 
-from common import DEFAULT_USER, MONGO_PORT, compute_state
+from common import DEFAULT_USER, compute_state
 
 ###
 
@@ -36,7 +36,7 @@ form = cgi.FieldStorage()
 
 user = form.getvalue('user', DEFAULT_USER)
 proj = form.getvalue('proj', None)
-ver  = form.getvalue('ver', None)
+ver = form.getvalue('ver', None)
 
 data = {}
 

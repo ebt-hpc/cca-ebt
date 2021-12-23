@@ -25,13 +25,13 @@ import os
 import sys
 import json
 import simplejson
-from pymongo import MongoClient, ASCENDING, DESCENDING
+from pymongo import MongoClient, DESCENDING
 import re
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import quote_plus
 from time import time
 import msgpack
 
-from common import DEFAULT_USER, OUTLINE_DIR, TARGET_DIR, MONGO_PORT
+from common import DEFAULT_USER, TARGET_DIR, MONGO_PORT
 from common import EXPAND_TARGET_LOOPS, EXPAND_RELEVANT_LOOPS, EXPAND_ALL, COLLAPSE_ALL
 from common import NodeManager, compute_state, get_idx_range_tbl
 from common import get_proj_index, get_ver_index, get_path_list, get_fid_list
@@ -42,6 +42,7 @@ MARKER_CALLEE_PAT = re.compile('^.*(dgemm|timer).*$')
 
 ###
 
+
 def open_node(node):
     try:
         nstat = node['state']
@@ -50,6 +51,7 @@ def open_node(node):
         node['state'] = nstat
 
     nstat['opened'] = True
+
 
 def close_node(node):
     try:
@@ -60,11 +62,14 @@ def close_node(node):
 
     nstat['opened'] = False
 
+
 def expand_all(node_mgr, node):
     node_mgr.iter_subtree(node, open_node)
 
+
 def collapse_all(node_mgr, node):
     node_mgr.iter_subtree(node, close_node)
+
 
 def expand_loops(node_mgr, node, key):
 
@@ -79,35 +84,38 @@ def expand_loops(node_mgr, node, key):
 def expand_target_loops(node_mgr, node):
     expand_loops(node_mgr, node, 'target')
 
+
 def expand_relevant_loops(node_mgr, node):
     expand_loops(node_mgr, node, 'relevant')
 
+
 def check_node(node):
     node['checked'] = True
+
 
 def uncheck_node(node):
     if 'checked' in node:
         del node['checked']
 
+
 def handle_comment(node, c):
-    
     if c == '':
         if 'title' in node['a_attr']:
             del node['a_attr']['title']
     else:
         node['a_attr']['title'] = c
-        attrs = { 
-            'class' : 'jstree-icon comment-icon',
-            'role'  : 'presentation',
-            'id'    : 'c_'+node['id']
+        attrs = {
+            'class': 'jstree-icon comment-icon',
+            'role': 'presentation',
+            'id': 'c_'+node['id']
         }
         mark = '<i %s></i>' % ' '.join(['%s="%s"' % p for p in attrs.items()])
         node['text'] = node['text'] + mark
-    
+
 
 def handle_judgment(node, j):
     node['judgment'] = j
-    
+
     _x = 'value="NotYet"'
     x = 'value="%s"' % j
     node['text'] = node['text'].replace(_x+' selected', _x).replace(x, x+' selected')
@@ -117,16 +125,18 @@ def handle_judgment(node, j):
             node['text'] = node['text'].replace('class="target_node"',
                                                 'class="target_node_completed"')
 
+
 def mklvid(nid, lv):
     return '%slv%s' % (nid, lv)
 
+
 def handle_estimation_scheme(node, lv):
     node['estimation_scheme'] = lv
-    
+
     nid = node['id']
     prev_lv = 2
     prev_lv_id = mklvid(nid, prev_lv)
-    lv_id = mklvid(nid, lv);
+    lv_id = mklvid(nid, lv)
     prev = 'class="on_level %s"' % prev_lv_id
     curr = 'class="on_level %s"' % lv_id
     prev0 = prev+' style="display:inline;"'
@@ -139,7 +149,8 @@ def handle_estimation_scheme(node, lv):
     text = text.replace(prev0, prev).replace(curr, curr1)
 
     node['text'] = text
-    
+
+
 def setup_target(node_mgr, target_data):
     targets = []
     for nid in target_data:
@@ -147,7 +158,7 @@ def setup_target(node_mgr, target_data):
             nid_list = node_mgr.get_nid_list(nid)
 
             nid_list.append(nid)
-            
+
             for i in nid_list:
                 node = node_mgr.get(i)
                 node['target'] = True
@@ -159,6 +170,7 @@ def setup_target(node_mgr, target_data):
             pass
 
     return targets
+
 
 def apply_stat(node_mgr, node_stat_tbl):
 
@@ -189,7 +201,7 @@ def apply_stat(node_mgr, node_stat_tbl):
                 uncheck_node(node)
 
             if stat.get('opened', False):
-                #open_node(node)
+                # open_node(node)
                 node_mgr.iter_parents(node, open_node, itself=True)
             elif 'opened' in stat:
                 close_node(node)
@@ -207,6 +219,7 @@ def apply_stat(node_mgr, node_stat_tbl):
             pass
 
 #
+
 
 TEXT_FMT0 = '''
 <span class="%(code_style)s">%(code)s</span>
@@ -262,6 +275,7 @@ METRICS_LINE_FMT = '''
 
 #
 
+
 def get_last_nid(user, proj, ver, root_fidi):
     result = None
     try:
@@ -269,12 +283,12 @@ def get_last_nid(user, proj, ver, root_fidi):
         col = cli.loop_survey.log
 
         query = {
-            'user':user,
-            'proj':proj,
-            'ver':ver,
-            #'judgment':{'$exists':True},
-            'nid':{'$exists':True},
-            'idx':{'$exists':True},
+            'user': user,
+            'proj': proj,
+            'ver': ver,
+            # 'judgment':{'$exists':True},
+            'nid': {'$exists': True},
+            'idx': {'$exists': True},
         }
 
         records = col.find(query).sort('time', DESCENDING)
@@ -288,7 +302,7 @@ def get_last_nid(user, proj, ver, root_fidi):
                 result = record['nid']
                 break
 
-    except Exception as e:
+    except Exception:
         pass
 
     return result
@@ -312,12 +326,14 @@ node_mgr = NodeManager()
 
 def make_metrics_line_per_lv(lv, i, others, bf, perc, display):
     lv_id = mklvid(i, lv)
-    attr = 'class="on_level %s"%s' % (lv_id, ' style="display:inline;"' if display else '')
-    others[lv].sort();
-    line = METRICS_LINE_FMT % { 'attr'   : attr,
-                                'others' : ''.join(others[lv]),
-                                'bf'     : bf[lv],
-                                'perc'   : perc[lv],
+    attr = 'class="on_level %s"%s' % (lv_id,
+                                      ' style="display:inline;"'
+                                      if display else '')
+    others[lv].sort()
+    line = METRICS_LINE_FMT % {'attr': attr,
+                               'others': ''.join(others[lv]),
+                               'bf': bf[lv],
+                               'perc': perc[lv],
     }
     return line;
 
@@ -342,7 +358,7 @@ if proj and ver and fid:
     fid_list = get_fid_list(ver_path)
 
     common_params = {
-        'ver'  : ver,
+        'ver': ver,
     }
 
     git_url0 = '/gitweb/?p=%s;a=blob_plain;f=' % pid
@@ -356,6 +372,7 @@ if proj and ver and fid:
         return u
 
     encoded_path_tbl = {}
+
     def get_encoded_path(path):
         encoded = None
         try:
@@ -377,14 +394,14 @@ if proj and ver and fid:
         params = common_params.copy()
 
         params['path'] = path
-        params['src']  = url
+        params['src'] = url
 
         startl = obj.get('sl', None)
-        endl   = obj.get('el', None)
+        endl = obj.get('el', None)
 
         if startl and endl:
             params['startl'] = startl
-            params['endl']   = endl
+            params['endl'] = endl
 
         aref_ranges = obj.get('aref_ranges', None)
         if aref_ranges:
@@ -406,7 +423,6 @@ if proj and ver and fid:
                 style = 'marker-call'
 
         return style
-            
 
     def hook(obj):
         if 'id' in obj:
@@ -424,13 +440,13 @@ if proj and ver and fid:
                 csty = get_code_style(obj)
                 unit = obj.get('pu', None)
                 text = TEXT_FMT0 % {
-                    'code'       : obj['code'],
-                    'code_style' : csty,
-                    'unit'       : '<span class="{}">{}</span>:'.format(csty, unit) if unit != None else '',
-                    'fname'      : os.path.basename(path_list[obj['loc']]),
-                    'start'      : obj['sl'],
-                    'end'        : obj['el'],
-                    'form'       : link_form,
+                    'code': obj['code'],
+                    'code_style': csty,
+                    'unit': '<span class="{}">{}</span>:'.format(csty, unit) if unit is not None else '',
+                    'fname': os.path.basename(path_list[obj['loc']]),
+                    'start': obj['sl'],
+                    'end': obj['el'],
+                    'form': link_form,
                 }
 
                 if 'bf0' in obj or 'bf1' in obj or 'bf2' in obj:
@@ -448,33 +464,33 @@ if proj and ver and fid:
                                 others_lv[0].append(x)
 
                             elif m in ('AR1', 'IAR1', 'DAR1'):
-                                others_lv[1].append(x);
+                                others_lv[1].append(x)
 
                             elif m in ('AR2', 'IAR2', 'DAR2'):
-                                others_lv[2].append(x);
+                                others_lv[2].append(x)
 
                             else:
-                                others += x;
+                                others += x
 
                         others = '<td>%s</td>' % others
 
                     perc = [int(f * 100.0 / (f + 1.0)) for f in bf]
                     bff = ['%3.2f' % f for f in bf]
-                    lv_id = [nid+'lv0', nid+'lv1', nid+'lv2']
+                    # lv_id = [nid+'lv0', nid+'lv1', nid+'lv2']
                     lvs = [
                         make_metrics_line_per_lv(0, nid, others_lv, bff, perc, False),
                         make_metrics_line_per_lv(1, nid, others_lv, bff, perc, False),
                         make_metrics_line_per_lv(2, nid, others_lv, bff, perc, True),
                     ]
 
-                    text = TEXT_FMT % { 'nid'    : nid,
-                                        'text'   : text,
-                                        'others' : others, 
-                                        'ess'    : ''.join(lvs),
-                    }
+                    text = TEXT_FMT % {'nid': nid,
+                                       'text': text,
+                                       'others': others,
+                                       'ess': ''.join(lvs),
+                                       }
 
                 if 'nlinks' in obj:
-                    text += '<i class="jstree-icon link-icon" id="l_%s" role="presentation"></i>' % nid;
+                    text += '<i class="jstree-icon link-icon" id="l_%s" role="presentation"></i>' % nid
 
                 if 'ignored_callee_count' in obj:
                     c = obj['ignored_callee_count']
@@ -504,7 +520,7 @@ if proj and ver and fid:
             with open(os.path.join(TARGET_DIR, proj, ver+'.json'), 'r') as targetf:
                 target_data = simplejson.load(targetf)
 
-        except Exception as e:
+        except Exception:
             pass
 
         try:
@@ -519,16 +535,17 @@ if proj and ver and fid:
             if stat_data.get('node_stat', None):
                 apply_stat(node_mgr, stat_data['node_stat'])
 
-            tree_data['text'] = '%s (%d nodes)' % (tree_data.get('text', ''), len(node_mgr))
+            tree_data['text'] = '%s (%d nodes)' % (tree_data.get('text', ''),
+                                                   len(node_mgr))
 
             last_nid = get_last_nid(user, proj, ver, tree_data['fid'])
             if last_nid:
                 tree_data['last_nid'] = last_nid
 
-            #tree_data['time1'] = time() - st
+            # tree_data['time1'] = time() - st
 
-        except Exception as e:
-            #tree_data['failure'] = str(e)
+        except Exception:
+            # tree_data['failure'] = str(e)
             raise
 
 else:

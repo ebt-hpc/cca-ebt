@@ -44,7 +44,7 @@ try:
         src = f.read()
 
 except Exception as e:
-    src = str(e)
+    src = str(e).encode('utf-8')
 
 sys.stdout.buffer.write(HEADER)
 sys.stdout.buffer.write(src)

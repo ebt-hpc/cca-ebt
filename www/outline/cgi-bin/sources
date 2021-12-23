@@ -70,6 +70,7 @@ HTML_TEMPL = '''<html>
 
 #
 
+
 def is_target(proj, ver, path):
     b = True
     p = os.path.join(TARGET_DIR, proj, 'roots-%s.json' % ver)
@@ -79,7 +80,7 @@ def is_target(proj, ver, path):
             if path not in paths:
                 b = False
 
-    except Exception as e:
+    except Exception:
         pass
 
     return b
@@ -94,7 +95,7 @@ form = cgi.FieldStorage()
 
 user = form.getvalue('user', DEFAULT_USER)
 proj = form.getvalue('proj', None)
-ver  = form.getvalue('ver', None)
+ver = form.getvalue('ver', None)
 
 target_only = form.getvalue('target_only', False)
 if target_only:
@@ -125,9 +126,9 @@ if proj and ver:
                 vi_tbl = simplejson.load(f)
 
                 d = {
-                    'user' : user,
-                    'proj' : proj, 
-                    'ver'  : ver,
+                    'user': user,
+                    'proj': proj,
+                    'ver': ver,
                 }
                 links = []
 
@@ -151,11 +152,11 @@ if proj and ver:
                 links = [x[1] for x in links]
 
                 content = HTML_TEMPL % {
-                    'user'     : user,
-                    'proj'     : proj,
-                    'ver'      : ver,
-                    'base_url' : BASE_URL,
-                    'content'  : '\n'.join(links),
+                    'user': user,
+                    'proj': proj,
+                    'ver': ver,
+                    'base_url': BASE_URL,
+                    'content': '\n'.join(links),
                 }
 
         except Exception as e:

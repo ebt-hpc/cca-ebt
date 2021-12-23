@@ -60,7 +60,7 @@ HTML_TEMPL = '''Content-Type: text/html
 <script type="text/javascript" src="%(base_url)s/js/scv/scv.js"></script>
 
 <script type="text/javascript">
-var scv = new SourceCodeViewer();      
+var scv = new SourceCodeViewer();
 </script>
 </head>
 
@@ -115,7 +115,7 @@ GITWEB_HB_PAT = re.compile(r'/gitweb/\?.*hb=(?P<hb>[^;]+).*')
 import cgi
 form = cgi.FieldStorage()
 
-#proj = form.getvalue('proj', '???')
+# proj = form.getvalue('proj', '???')
 
 ver = form.getvalue('ver', '???')
 
@@ -134,12 +134,12 @@ endc = form.getvalue('endc', '0')
 aref_ranges = form.getvalue('aref_ranges', '[]')
 
 params = {
-    'ver'    : ver,
-    'src'    : src,
-    'startl' : startl,
-    'startc' : startc,
-    'endl'   : endl,
-    'endc'   : endc,
+    'ver': ver,
+    'src': src,
+    'startl': startl,
+    'startc': startc,
+    'endl': endl,
+    'endc': endc,
     }
 
 
@@ -167,17 +167,17 @@ m_hb = GITWEB_HB_PAT.match(src)
 
 
 if m_p and m_f and m_hb:
-    if path == None:
+    if path is None:
         path = m_f.group('f')
-    ssrc = '/gitweb/?%s' % urlencode({'p' : m_p.group('p'),
-                                      'a' : 'blob_plain',
-                                      'f' : path,
+    ssrc = '/gitweb/?%s' % urlencode({'p': m_p.group('p'),
+                                      'a': 'blob_plain',
+                                      'f': path,
                                       'hb': m_hb.group('hb'),
-    })
+                                      })
     params['src'] = ssrc
     params['path'] = path
 else:
-    if path == None:
+    if path is None:
         path = src
     params['src'] = url
     params['path'] = path
@@ -191,4 +191,4 @@ else:
 params['aref_ranges'] = aref_ranges
 params['base_url'] = BASE_URL
 
-print (HTML_TEMPL % params)
+print(HTML_TEMPL % params)

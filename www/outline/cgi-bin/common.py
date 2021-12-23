@@ -23,7 +23,6 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 from pymongo import MongoClient, ASCENDING, DESCENDING
 import os
-import sys
 import json
 import simplejson
 
@@ -32,13 +31,20 @@ import simplejson
 BASE_DIR = '/var/www/outline/treeview'
 BASE_URL = '/outline/treeview'
 
+try:
+    from debug import local
+    BASE_DIR = local.BASE_DIR
+    BASE_URL = local.BASE_URL
+except Exception:
+    pass
+
 MONGO_PORT = 27017
 
 DEFAULT_USER = 'anonymous'
 
 OUTLINE_DIR_NAME = 'outline'
-TARGET_DIR_NAME  = 'target'
-TOPIC_DIR_NAME   = 'topic'
+TARGET_DIR_NAME = 'target'
+TOPIC_DIR_NAME = 'topic'
 
 DESC_DIR_NAME = 'descriptions'
 README_LINKS_DIR_NAME = 'readme_links'
@@ -46,8 +52,8 @@ README_LINKS_DIR_NAME = 'readme_links'
 IDX_RANGE_CACHE_NAME = 'idx_range.json'
 
 OUTLINE_DIR = os.path.join(BASE_DIR, OUTLINE_DIR_NAME)
-TOPIC_DIR   = os.path.join(BASE_DIR, TOPIC_DIR_NAME)
-TARGET_DIR  = os.path.join(BASE_DIR, TARGET_DIR_NAME)
+TOPIC_DIR = os.path.join(BASE_DIR, TOPIC_DIR_NAME)
+TARGET_DIR = os.path.join(BASE_DIR, TARGET_DIR_NAME)
 
 DESC_DIR = os.path.join(BASE_DIR, DESC_DIR_NAME)
 README_LINKS_DIR = os.path.join(BASE_DIR, README_LINKS_DIR_NAME)
@@ -55,10 +61,10 @@ README_LINKS_DIR = os.path.join(BASE_DIR, README_LINKS_DIR_NAME)
 
 ###
 
-EXPAND_TARGET_LOOPS   = 'expand_target_loops'
+EXPAND_TARGET_LOOPS = 'expand_target_loops'
 EXPAND_RELEVANT_LOOPS = 'expand_relevant_loops'
-EXPAND_ALL            = 'expand_all'
-COLLAPSE_ALL          = 'collapse_all'
+EXPAND_ALL = 'expand_all'
+COLLAPSE_ALL = 'collapse_all'
 
 BAR_FMT = '''
 <table class="noframe">
@@ -85,11 +91,11 @@ NID_SEP = '_'
 
 class NodeManager(object):
     def __init__(self):
-        self._node_tbl = {} # nid -> index
+        self._node_tbl = {}  # nid -> index
         self._node_list = []
         self._node_count = 0
-        self._parent_tbl = {} # nid -> node
-        self._orig_nid_tbl = {} # nid -> nid list
+        self._parent_tbl = {}  # nid -> node
+        self._orig_nid_tbl = {}  # nid -> nid list
         self._offset = 1
 
     def __len__(self):
@@ -114,12 +120,12 @@ class NodeManager(object):
                 self._orig_nid_tbl[orig_nid] = [nid]
 
     def get_nid_list(self, nid):
-        l = []
+        li = []
         try:
-            l = self._orig_nid_tbl[nid]
+            li = self._orig_nid_tbl[nid]
         except KeyError:
             pass
-        return l
+        return li
 
     def get(self, nid):
         i = self._node_tbl[nid]
@@ -130,7 +136,7 @@ class NodeManager(object):
         node = None
         try:
             node = self._node_list[int(idx) - self._offset]
-        except:
+        except Exception:
             pass
         return node
 
@@ -141,7 +147,7 @@ class NodeManager(object):
             try:
                 nd = self._node_list[i]
                 f(nd)
-            except:
+            except Exception:
                 pass
 
     def iter_parents(self, node, f, itself=False):
@@ -159,53 +165,60 @@ class NodeManager(object):
             else:
                 break
 
+
 def get_proj_path(proj):
     return os.path.join(OUTLINE_DIR, proj)
 
+
 def get_ver_path(proj, ver):
     return os.path.join(OUTLINE_DIR, proj, 'v', ver)
+
 
 def get_path_list(ver_path):
     path_list = []
     try:
         with open(os.path.join(ver_path, 'path_list.json'), 'r') as plf:
             path_list = simplejson.load(plf)
-    except Exception as e:
+    except Exception:
         pass
     return path_list
+
 
 def get_fid_list(ver_path):
     fid_list = []
     try:
         with open(os.path.join(ver_path, 'fid_list.json'), 'r') as flf:
             fid_list = simplejson.load(flf)
-    except Exception as e:
+    except Exception:
         pass
     return fid_list
+
 
 def get_proj_index(proj_path):
     pi_tbl = {}
     try:
         with open(os.path.join(proj_path, 'index.json'), 'r') as pif:
             pi_tbl = simplejson.load(pif)
-    except Exception as e:
+    except Exception:
         pass
     return pi_tbl
+
 
 def get_ver_index(ver_path):
     vi_tbl = {}
     try:
         with open(os.path.join(ver_path, 'index.json'), 'r') as vif:
             vi_tbl = simplejson.load(vif)
-    except Exception as e:
+    except Exception:
         pass
     return vi_tbl
+
 
 def get_idx_range_tbl(proj, ver):
     dpath = get_ver_path(proj, ver)
     cache_path = os.path.join(dpath, IDX_RANGE_CACHE_NAME)
 
-    tbl = {} # fid -> (leftmost_idx, idx)
+    tbl = {}  # fid -> (leftmost_idx, idx)
 
     if os.path.exists(cache_path):
         with open(cache_path, 'r') as f:
@@ -225,13 +238,13 @@ def get_idx_range_tbl(proj, ver):
                                 if leftmost_idx and idx:
                                     fid = d.get('fid', None)
                                     tbl[fid] = (leftmost_idx, idx)
-                            except:
+                            except Exception:
                                 pass
 
             with open(cache_path, 'w') as jsonf:
                 jsonf.write(json.dumps(tbl))
 
-        except:
+        except Exception:
             pass
 
     return tbl
@@ -239,8 +252,8 @@ def get_idx_range_tbl(proj, ver):
 
 def compute_state(user, proj, ver):
     data = {}
-    leftmost_tbl = {} # idx -> leftmost_idx
-    node_stat_tbl = {} # idx -> {'judgment','checked','opened','relevant',..}
+    leftmost_tbl = {}  # idx -> leftmost_idx
+    node_stat_tbl = {}  # idx -> {'judgment','checked','opened','relevant',..}
 
     try:
         cli = MongoClient('localhost', MONGO_PORT)
@@ -248,18 +261,18 @@ def compute_state(user, proj, ver):
         col = db.log
 
         records = col.find(
-            {'$and':[
-                {'user':user,'proj':proj,'ver':ver},
-                {'$or':[ {'comment':{'$exists':True}},
-                         {'judgment':{'$exists':True}},
-                         {'estimation_scheme':{'$exists':True}},
-                         {'checked':{'$exists':True}},
-                         {'opened':{'$exists':True}},
-                         {EXPAND_TARGET_LOOPS:True},
-                         {EXPAND_RELEVANT_LOOPS:True},
-                         {EXPAND_ALL:True},
-                         {COLLAPSE_ALL:True},
-                     ]}
+            {'$and': [
+                {'user': user, 'proj': proj, 'ver': ver},
+                {'$or': [{'comment': {'$exists': True}},
+                         {'judgment': {'$exists': True}},
+                         {'estimation_scheme': {'$exists': True}},
+                         {'checked': {'$exists': True}},
+                         {'opened': {'$exists': True}},
+                         {EXPAND_TARGET_LOOPS: True},
+                         {EXPAND_RELEVANT_LOOPS: True},
+                         {EXPAND_ALL: True},
+                         {COLLAPSE_ALL: True},
+                         ]}
             ]}
         ).sort('time', ASCENDING)
 
@@ -290,7 +303,10 @@ def compute_state(user, proj, ver):
                     elif key == 'target':
                         snames = [EXPAND_TARGET_LOOPS]
                     else:
-                        snames = [EXPAND_RELEVANT_LOOPS,EXPAND_TARGET_LOOPS,EXPAND_ALL,COLLAPSE_ALL]
+                        snames = [EXPAND_RELEVANT_LOOPS,
+                                  EXPAND_TARGET_LOOPS,
+                                  EXPAND_ALL,
+                                  COLLAPSE_ALL]
 
                     for sname in snames:
                         if sname in stat:
@@ -307,11 +323,10 @@ def compute_state(user, proj, ver):
                     if key in stat:
                         del stat[key]
 
-
-        collapse_all_tbl = {} # idx -> lmi
+        collapse_all_tbl = {}  # idx -> lmi
 
         for record in records:
-            idx          = record.get('idx', None)
+            idx = record.get('idx', None)
             leftmost_idx = record.get('lmi', None)
 
             if idx and leftmost_idx:
@@ -340,7 +355,7 @@ def compute_state(user, proj, ver):
                             else:
                                 stat[key] = False
 
-                if record.get('comment', None) != None:
+                if record.get('comment', None) is not None:
                     stat['comment'] = record['comment']
 
                 if record.get('judgment', None):
@@ -348,7 +363,6 @@ def compute_state(user, proj, ver):
 
                 if record.get('estimation_scheme', None):
                     stat['estimation_scheme'] = record['estimation_scheme']
-
 
                 filt = (leftmost_idx, idx)
 
@@ -373,15 +387,14 @@ def compute_state(user, proj, ver):
 
                 if stat.get(COLLAPSE_ALL, False):
                     clear_opened(filt=filt, clear_root=True)
-                    #del stat[COLLAPSE_ALL]
-                    collapse_all_to_be_deleted = [] # idx list
+                    # del stat[COLLAPSE_ALL]
+                    collapse_all_to_be_deleted = []  # idx list
                     for (i, li) in collapse_all_tbl.items():
                         if li <= leftmost_idx and idx < i:
                             collapse_all_to_be_deleted.append(i)
                     for i in collapse_all_to_be_deleted:
                         del collapse_all_tbl[i]
                     collapse_all_tbl[idx] = leftmost_idx
-
 
         # clean up
         to_be_deleted = []
@@ -400,8 +413,8 @@ def compute_state(user, proj, ver):
     except Exception as e:
         data['failure'] = str(e)
 
-
     return data
+
 
 def get_targets(TARGET_DIR, proj, ver):
     targets = set()
@@ -409,7 +422,7 @@ def get_targets(TARGET_DIR, proj, ver):
         try:
             with open(os.path.join(TARGET_DIR, proj, ver+'.json'), 'r') as f:
                 targets = json.load(f)
-        except:
+        except Exception:
             pass
     else:
         if os.path.exists(TARGET_DIR) and os.path.isdir(TARGET_DIR):
@@ -427,10 +440,11 @@ def get_targets(TARGET_DIR, proj, ver):
                                 t = json.load(f)
                             for nid in t:
                                 targets.add('%s:%s:%s' % (proj, ver, nid))
-                        except:
+                        except Exception:
                             pass
 
     return targets
+
 
 def get_progress(TARGET_DIR, user, proj=None, ver=None, nolabel=False):
     progress = '???'
@@ -439,10 +453,10 @@ def get_progress(TARGET_DIR, user, proj=None, ver=None, nolabel=False):
         col = cli.loop_survey.log
 
         query = {
-            'user':user,
-            'target':True,
-            'judgment':{'$exists':True},
-            'nid':{'$exists':True},
+            'user': user,
+            'target': True,
+            'judgment': {'$exists': True},
+            'nid': {'$exists': True},
         }
 
         if proj and ver:
@@ -488,21 +502,22 @@ def get_progress(TARGET_DIR, user, proj=None, ver=None, nolabel=False):
 
         if ntargets > 0:
             progress = BAR_FMT % {
-                'prefix'    : prefix,
-                'width'     : width,
-                'percd'     : nfinished*100/ntargets,
-                'percf'     : float(nfinished*100)/float(ntargets),
-                'nfinished' : nfinished,
-                'ntargets'  : ntargets,
+                'prefix': prefix,
+                'width': width,
+                'percd': nfinished*100/ntargets,
+                'percf': float(nfinished*100)/float(ntargets),
+                'nfinished': nfinished,
+                'ntargets': ntargets,
             }
         else:
             progress = NO_BAR_FMT % prefix
 
-    except Exception as e:
-        #raise
+    except Exception:
+        # raise
         pass
 
     return progress
+
 
 def get_last_judged(users):
     tbl = {}
@@ -512,11 +527,11 @@ def get_last_judged(users):
 
         for user in users:
             query = {
-                'user':user,
-                'proj':{'$exists':True},
-                'ver':{'$exists':True},
-                'nid':{'$exists':True},
-                'judgment':{'$exists':True},
+                'user': user,
+                'proj': {'$exists': True},
+                'ver': {'$exists': True},
+                'nid': {'$exists': True},
+                'judgment': {'$exists': True},
             }
             records = col.find(query).sort('time', DESCENDING).limit(1)
 
@@ -525,11 +540,11 @@ def get_last_judged(users):
                 tbl[user] = time
                 break
 
-    except Exception as e:
+    except Exception:
         pass
 
     return tbl
 
 
 if __name__ == '__main__':
-    print('')
+    print(f'BASE_DIR={BASE_DIR} BASE_URL={BASE_URL}')

@@ -25,8 +25,9 @@ import os
 import sys
 import requests
 
-from common import OUTLINE_DIR, DEFAULT_USER, BASE_URL
-from common import get_proj_index, get_ver_index, get_path_list, get_proj_path, get_ver_path
+from common import DEFAULT_USER, BASE_URL
+from common import (get_proj_index, get_ver_index, get_path_list, get_proj_path,
+                    get_ver_path)
 
 ###
 
@@ -36,6 +37,7 @@ ver:  %(ver)s
 '''
 
 path_list = []
+
 
 def render(data, lv='', out=sys.stdout):
 
@@ -56,7 +58,7 @@ def render(data, lv='', out=sys.stdout):
         loci = data['loc']
         try:
             loc = path_list[loci]
-        except:
+        except Exception:
             loc = '[%d]' % loci
 
         out.write('%s\n' % loc)
@@ -81,6 +83,7 @@ def render(data, lv='', out=sys.stdout):
 
 ###
 
+
 import cgi
 import cgitb
 cgitb.enable()
@@ -95,19 +98,19 @@ fid  = form.getvalue('fid', None)
 
 content = 'FAILED'
 
-#host = os.environ['HTTP_HOST']
+# host = os.environ['HTTP_HOST']
 script = '/'.join(os.environ['SCRIPT_NAME'].split('/')[:-1]) + '/data'
 
 json_url = 'http://localhost%s' % script
 json_url_params = None
 
 if proj and ver:
-    json_url_params = { 'user' : user,
-                        'proj' : proj,
-                        'ver'  : ver,
-                        'path' : path,
-                        'fid'  : fid,
-    }
+    json_url_params = {'user': user,
+                       'proj': proj,
+                       'ver': ver,
+                       'path': path,
+                       'fid': fid,
+                       }
 
     proj_path = get_proj_path(proj)
     ver_path = get_ver_path(proj, ver)
@@ -120,18 +123,18 @@ if proj and ver:
     if pi_tbl and vi_tbl:
 
         content = TEMPL % {
-            'user' : user,
-            'proj' : proj,
-            'ver'  : ver,
-            'base_url' : BASE_URL,
-            'src'  : path,
-            'url'  : json_url,
+            'user': user,
+            'proj': proj,
+            'ver': ver,
+            'base_url': BASE_URL,
+            'src': path,
+            'url': json_url,
 
-                'vid' : '"'+vi_tbl.get('vid', ver)+'"',
+            'vid': '"'+vi_tbl.get('vid', ver)+'"',
 
-                'ver_kind'  : '"'+pi_tbl.get('ver_kind', 'REL')+'"',
-            'hash_algo' : '"'+pi_tbl.get('hash_algo', 'MD5')+'"',
-            'hash_meth' : '"'+pi_tbl.get('hash_meth', 'NORMAL')+'"',
+            'ver_kind': '"'+pi_tbl.get('ver_kind', 'REL')+'"',
+            'hash_algo': '"'+pi_tbl.get('hash_algo', 'MD5')+'"',
+            'hash_meth': '"'+pi_tbl.get('hash_meth', 'NORMAL')+'"',
         }
 
 if json_url_params:

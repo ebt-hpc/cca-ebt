@@ -38,6 +38,8 @@ SUBPROGS = set([
 
 LOOPS = set(['do-construct', 'do-stmt', 'end-do-stmt', 'do-block'])
 
+GOTOS = set(['goto-stmt', 'computed-goto-stmt', 'assigned-goto-stmt'])
+
 CALLS = set(['call-stmt', 'function-reference', 'part-name', 'call-stmt*',
              'mpi-call'])
 
@@ -53,6 +55,10 @@ TYPE_TBL = {  # cat -> type
     'call-stmt':          'call',
     'function-reference': 'call',
     'part-name':          'call',
+
+    'goto-stmt':          'goto',
+    'assigned-goto-stmt': 'goto',
+    'computed-goto-stmt': 'goto',
 
     'main-program':                   'main',
     'subroutine-external-subprogram': 'subroutine',
@@ -251,18 +257,21 @@ Q_GOTOS_F = '''DEFINE input:inference "ont.cpi"
 PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
-SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog ?goto ?label ?constr
+SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog ?goto ?goto_cat ?label ?constr
 WHERE {
 GRAPH <%%(proj)s> {
 
   {
-    SELECT DISTINCT ?ver ?loc ?pu ?pu_name ?vpu_name ?goto ?label
+    SELECT DISTINCT ?ver ?loc ?pu ?pu_name ?vpu_name ?goto ?label ?goto_cat
     WHERE {
 
-      ?goto a f:GotoStmt ;
-            ?p [] OPTION (INFERENCE NONE) ;
+      ?goto a f:ActionStmt ;
+            a ?goto_cat0 OPTION (INFERENCE NONE) ;
+            f:inDoConstruct [] ;
             f:inProgramUnitOrSubprogram ?pu_or_sp ;
             f:inProgramUnit ?pu .
+
+      FILTER (?goto_cat0 IN (f:GotoStmt, f:AssignedGotoStmt, f:ComputedGotoStmt))
 
       ?pu_or_sp src:inFile/src:location ?loc .
 
@@ -285,7 +294,11 @@ GRAPH <%%(proj)s> {
            f:label ?label .
       }
 
-    } GROUP BY ?ver ?loc ?pu ?pu_name ?vpu_name ?goto ?label
+      GRAPH <http://codinuum.com/ont/cpi> {
+        ?goto_cat0 rdfs:label ?goto_cat
+      }
+
+    } GROUP BY ?ver ?loc ?pu ?pu_name ?vpu_name ?goto ?label ?goto_cat
   }
 
   OPTIONAL {

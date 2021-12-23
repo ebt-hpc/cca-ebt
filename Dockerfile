@@ -44,16 +44,16 @@ RUN set -x && \
     cd /var/www/outline/treeview && \
     mkdir metrics outline target topic && \
     wget https://code.jquery.com/jquery-3.6.0.min.js && \
-    wget https://jqueryui.com/resources/download/jquery-ui-1.12.1.zip && \
+    wget https://jqueryui.com/resources/download/jquery-ui-1.13.0.zip && \
     wget https://codemirror.net/codemirror.zip && \
     git clone https://github.com/vakata/jstree && \
-    unzip jquery-ui-1.12.1.zip && \
+    unzip jquery-ui-1.13.0.zip && \
     unzip codemirror.zip && \
     chown www-data:www-data jquery-3.6.0.min.js && \
-    chown -R www-data:www-data jquery-ui-1.12.1 && \
+    chown -R www-data:www-data jquery-ui-1.13.0 && \
     chown -R www-data:www-data jstree metrics outline target topic && \
     ln -s jquery-3.6.0.min.js jquery.min.js && \
-    ln -s jquery-ui-1.12.1 jquery-ui && \
+    ln -s jquery-ui-1.13.0 jquery-ui && \
     ln -s codemirror-* codemirror && \
     ln -s /var/lib/cca/projects .
 

@@ -159,11 +159,12 @@ def index(idx_gen, data, callees_tbl):
 
 class NodeBase(object):
     def __init__(self, ver, loc, uri, cat='', callee_name=None, all_sps=False,
-                 SUBPROGS=set(), CALLS=set(), LOOPS=set()):
+                 SUBPROGS=set(), CALLS=set(), LOOPS=set(), GOTOS=set()):
 
         self.SUBPROGS = SUBPROGS
         self.CALLS = CALLS
         self.LOOPS = LOOPS
+        self.GOTOS = GOTOS
 
         self.relevant = False
         self.ver = ver
@@ -246,6 +247,8 @@ class NodeBase(object):
     def is_relevant(self):
         b = False
         if self.cats & self.LOOPS:
+            b = True
+        elif self.cats & self.GOTOS:
             b = True
         elif self.cats & self.CALLS:
             if self._all_sps:

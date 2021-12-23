@@ -1019,6 +1019,9 @@ function treeview(data_url, vkind, vid, algo, meth) {
       "call" : {
         "icon" : ICONS_DIR+"/call.gif",
       },
+      "goto" : {
+        "icon" : ICONS_DIR+"/goto.gif",
+      },
       "main" : {
         "icon" : ICONS_DIR+"/mainprogram.gif",
       },

@@ -67,25 +67,24 @@ if query_json:
 else:
     user = form.getvalue('user', DEFAULT_USER)
     proj = form.getvalue('proj', None)
-    ver  = form.getvalue('ver', None)
+    ver = form.getvalue('ver', None)
 
     _node_data = form.getvalue('node_data', None)
     if _node_data:
         node_data = json.loads(_node_data)
     else:
         node_data = [{}]
-    
+
     if proj and ver and node_data:
 
         ip = os.environ.get('REMOTE_ADDR', '???')
 
-        response = {'user':user,'ip':ip,'failure':{},'log':{}}
+        response = {'user': user, 'ip': ip, 'failure': {}, 'log': {}}
 
         has_comment = form.getvalue('has_comment', False)
         comment = form.getvalue('comment', '')
         judgment = form.getvalue('judgment', None)
         estimation_scheme = form.getvalue('estimation_scheme', None)
-
 
         for nd in node_data:
 
@@ -98,26 +97,26 @@ else:
             idx = nd.get('idx', None)
             leftmost_idx = nd.get('lmi', None)
 
-            time = datetime.datetime.now().isoformat() # !!! should be UTC!
-            #time = datetime.datetime.utcnow().isoformat()
+            time = datetime.datetime.now().isoformat()  # !!! should be UTC!
+            # time = datetime.datetime.utcnow().isoformat()
 
             response['time'] = time
 
             ###
 
             log = {
-                'user' : user,
-                'time' : time,
-                'ip'   : ip,
-                'proj' : proj,
-                'ver'  : ver,
+                'user': user,
+                'time': time,
+                'ip': ip,
+                'proj': proj,
+                'ver': ver,
             }
 
             def check_bool(key, true_only=False):
                 v = form.getvalue(key, nd.get(key, None))
-                if v == 'true' or v == True:
+                if v == 'true' or v is True:
                     log[key] = True
-                elif (v == 'false' or v == False) and not true_only:
+                elif (v == 'false' or v is False) and not true_only:
                     log[key] = False
 
             if nid:
@@ -140,7 +139,6 @@ else:
 
             if estimation_scheme:
                 log['estimation_scheme'] = estimation_scheme
-
 
             check_bool('checked')
             check_bool('opened')
@@ -168,15 +166,14 @@ else:
 
             ###
 
-            #log['user'] = user
+            # log['user'] = user
             log['_id'] = str(log_id)
 
-            response['log'][nid] = log #str(log_id)
+            response['log'][nid] = log  # str(log_id)
 
             if db_failure:
-                #log['failure'] = db_failure
+                # log['failure'] = db_failure
                 response['failure'][nid] = db_failure
-
 
         print(TEMPL % json.dumps(response))
 

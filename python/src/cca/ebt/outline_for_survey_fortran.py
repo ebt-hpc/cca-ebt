@@ -26,12 +26,16 @@ import logging
 
 from .sourcecode_metrics_for_survey_fortran import (get_proj_list, get_lver,
                                                     Metrics)
+
 from . import sourcecode_metrics_for_survey_fortran as metrics
+
 from .outline_for_survey_base import (QN_SEP, remove_leading_digits, Exit,
                                       norm_callee_name)
+
 from .outline_for_survey_base import (NodeBase, OutlineBase, tbl_get_list,
                                       tbl_get_set, tbl_get_dict)
-from .outlining_queries_fortran import (OMITTED, SUBPROGS, LOOPS, CALLS,
+
+from .outlining_queries_fortran import (OMITTED, SUBPROGS, LOOPS, CALLS, GOTOS,
                                         TYPE_TBL, QUERY_TBL, get_root_entities)
 
 from cca.ccautil.cca_config import PROJECTS_DIR
@@ -55,7 +59,9 @@ class Node(NodeBase):
 
         super().__init__(ver, loc, uri, cat, callee_name,
                          all_sps=all_sps,
-                         SUBPROGS=SUBPROGS, CALLS=CALLS, LOOPS=LOOPS)
+                         SUBPROGS=SUBPROGS, CALLS=CALLS, LOOPS=LOOPS,
+                         GOTOS=GOTOS
+                         )
 
         self.prog = prog
         self.sub = sub
@@ -76,7 +82,8 @@ class Node(NodeBase):
         else:
             r = '%d-%d' % (sl, el)
 
-        s = '%s[%s:%s:%s:%s]' % (self.cat, r, self.sub, pu, os.path.basename(self.loc))
+        s = '{}[{}:{}:{}:{}]'\
+            .format(self.cat, r, self.sub, pu, os.path.basename(self.loc))
 
         return s
 
@@ -500,7 +507,7 @@ class Outline(OutlineBase):
         self._marked_nodes.update(a)
 
     def construct_tree(self, callgraph=True, other_calls=True, directives=True,
-                       mark=True):
+                       mark=True, gotos=True):
 
         self._relevant_nodes = set()
 
@@ -658,6 +665,52 @@ class Outline(OutlineBase):
                     main_node = Node(ver, loc, main, cat='main-program', prog=prog)
                     if not parent_constr and not sp:
                         self.add_edge(main_node, call_node, mark=mark)
+
+        if gotos:
+            logger.debug('gotos')
+
+            query = QUERY_TBL['gotos'] % {'proj': self._graph_uri}
+
+            for qvs, row in self._sparql.query(query):
+                ver = row['ver']
+                loc = row['loc']
+                sp = row.get('sp', None)
+                sub = row.get('sub', None)
+                goto = row['goto']
+                cat = row['goto_cat']
+
+                # label = row['label']
+
+                pu_name = row.get('pu_name', None)
+                vpu_name = row.get('vpu_name', None)
+
+                main = row.get('main', None)
+                prog = None
+                if main:
+                    prog = row.get('prog', '<main>')
+
+                goto_node = Node(ver, loc, goto, cat=cat, prog=prog, sub=sub,
+                                 pu_name=pu_name,
+                                 vpu_name=vpu_name, all_sps=self._all_sps)
+
+                if goto_node.is_relevant():
+                    self._relevant_nodes.add(goto_node)
+
+                parent_constr = row.get('constr', None)
+                if parent_constr:
+                    self.add_edge(Node(ver, loc, parent_constr), goto_node,
+                                  mark=mark)
+
+                if sp:
+                    sp_node = Node(ver, loc, sp, cat=row['sp_cat'],
+                                   sub=sub, pu_name=pu_name, vpu_name=vpu_name)
+                    if not parent_constr:
+                        self.add_edge(sp_node, goto_node, mark=mark)
+
+                if main:
+                    main_node = Node(ver, loc, main, cat='main-program', prog=prog)
+                    if not parent_constr and not sp:
+                        self.add_edge(main_node, goto_node, mark=mark)
 
         #
 

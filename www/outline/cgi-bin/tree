@@ -22,7 +22,6 @@
 __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 
 import os
-import sys
 from urllib.parse import urlencode
 import json
 
@@ -112,6 +111,7 @@ $(function () {
 
 ###
 
+
 import cgi
 import cgitb
 cgitb.enable()
@@ -120,19 +120,19 @@ form = cgi.FieldStorage()
 
 user = form.getvalue('user', DEFAULT_USER)
 proj = form.getvalue('proj', None)
-ver  = form.getvalue('ver', None)
+ver = form.getvalue('ver', None)
 path = form.getvalue('path', None)
-fid  = form.getvalue('fid', None)
+fid = form.getvalue('fid', None)
 
 content = 'FAILED'
 
 if proj and ver:
-    json_url = 'data?'+ urlencode({ 'user' : user,
-                                    'proj' : proj,
-                                    'ver'  : ver,
-                                    'path' : path,
-                                    'fid'  : fid,
-                                })
+    json_url = 'data?' + urlencode({'user': user,
+                                    'proj': proj,
+                                    'ver': ver,
+                                    'path': path,
+                                    'fid': fid,
+                                    })
 
     proj_dir = os.path.join(OUTLINE_DIR, proj)
     try:
@@ -143,24 +143,24 @@ if proj and ver:
             with open(os.path.join(proj_dir, 'v', ver, 'index.json'), 'r') as vif:
                 vi_tbl = json.load(vif)
 
-                fid_tbl = vi_tbl.get('fid_tbl', {}) #!!!!! obsoleted
+                fid_tbl = vi_tbl.get('fid_tbl', {})  # !!!!! obsoleted
 
                 content = HTML_TEMPL % {
-                    'user' : user,
-                    'proj' : proj,
-                    'ver'  : ver,
-                    'base_url' : BASE_URL,
-                    'src'  : path or fid_tbl.get(fid, '???'),
-                    'url'  : json_url,
+                    'user': user,
+                    'proj': proj,
+                    'ver': ver,
+                    'base_url': BASE_URL,
+                    'src': path or fid_tbl.get(fid, '???'),
+                    'url': json_url,
 
-                    'vid' : '"'+vi_tbl.get('vid', ver)+'"',
+                    'vid': '"'+vi_tbl.get('vid', ver)+'"',
 
-                    'ver_kind'  : '"'+pi_tbl.get('ver_kind', 'REL')+'"',
-                    'hash_algo' : '"'+pi_tbl.get('hash_algo', 'MD5')+'"',
-                    'hash_meth' : '"'+pi_tbl.get('hash_meth', 'NORMAL')+'"',
+                    'ver_kind': '"'+pi_tbl.get('ver_kind', 'REL')+'"',
+                    'hash_algo': '"'+pi_tbl.get('hash_algo', 'MD5')+'"',
+                    'hash_meth': '"'+pi_tbl.get('hash_meth', 'NORMAL')+'"',
                 }
 
     except Exception as e:
-            content = str(e)
+        content = str(e)
 
 print(TEMPL % content)
