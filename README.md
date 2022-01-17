@@ -12,7 +12,7 @@ loop-nests and the call trees decorated with source code metrics.
 A docker image of CCA/EBT is available from a Docker Hub
 [repository](https://hub.docker.com/r/ebtxhpc/cca/).
 You can try it by way of a
-[helper script](https://raw.githubusercontent.com/ebt-hpc/docker-cca/master/ebt.py),
+[helper script](https://raw.githubusercontent.com/ebt-hpc/cca-ebt/master/ebt.py),
 which requires [Docker](https://www.docker.com/) and [Python](https://www.python.org/).
 When you install Docker, you should follow the instructions provided for various platforms:
 [Mac (OSX Yosemite 10.10.3 or above)](https://docs.docker.com/docker-for-mac/install/),
