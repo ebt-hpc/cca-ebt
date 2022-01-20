@@ -127,8 +127,12 @@ def main():
         log_level = logging.DEBUG
     setup_logger(logger, log_level)
 
-    from . import common
+    from . import common, outline_for_survey_base
+    from . import outline_for_survey_fortran, outline_for_survey_cpp
     common.logger = logger
+    outline_for_survey_base.logger = logger
+    outline_for_survey_fortran.logger = logger
+    outline_for_survey_cpp.logger = logger
 
     import cca.ccautil.materialize_fact
     cca.ccautil.materialize_fact.logger = logger

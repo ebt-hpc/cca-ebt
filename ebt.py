@@ -183,7 +183,7 @@ def check_mem(mem_gb):
 
 
 def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
-            all_roots=False, all_sps=False, image=IMAGE_NAME):
+            all_roots=False, all_sps=False, debug=True, image=IMAGE_NAME):
 
     if not check_mem(mem):
         print('aborted')
@@ -216,15 +216,20 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
     subcmd_path = '%s/%s' % (CCA_HOME, subcmd_name)
     subcmd = subcmd_path
     subcmd += ' -m %d' % mem
+
     if keep_fb:
         subcmd += ' -k'
-    subcmd += ' %s' % proj_path
 
     if all_roots:
         subcmd += ' -a'
 
     if all_sps:
         subcmd += ' -s'
+
+    if debug:
+        subcmd += ' -d'
+
+    subcmd += ' %s' % proj_path
 
     log_dir = os.path.join(dest_root, LOG_DIR_NAME)
     if not os.path.exists(log_dir):
