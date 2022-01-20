@@ -12,13 +12,23 @@ COPY cca /opt/cca/
 RUN set -x && \
     apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            gnupg2 && \
+    wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add - && \
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" \
+            | tee /etc/apt/sources.list.d/mongodb-org-5.0.list && \
+    apt-get update && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            mongodb-org
+
+RUN set -x && \
+    apt-get update && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             python3-sympy \
             python3-scipy \
             python3-sklearn \
             python3-psutil \
             apache2 \
-            mongodb \
-            python3-pymongo-ext && \
+            python3-pymongo && \
     pip3 install msgpack simplejson gensim supervisor
 
 COPY python /root/python
