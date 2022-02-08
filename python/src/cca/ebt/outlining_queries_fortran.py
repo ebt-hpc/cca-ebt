@@ -267,7 +267,7 @@ GRAPH <%%(proj)s> {
 
       ?goto a f:ActionStmt ;
             a ?goto_cat0 OPTION (INFERENCE NONE) ;
-            f:inDoConstruct [] ;
+            # f:inDoConstruct [] ;
             f:inProgramUnitOrSubprogram ?pu_or_sp ;
             f:inProgramUnit ?pu .
 
