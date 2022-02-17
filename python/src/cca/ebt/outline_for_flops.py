@@ -979,7 +979,7 @@ class Outline(OutlineFortran):
 
         return niter
 
-    def gen_data(self, lang, outdir='.', keep_rev=False, debug_flag=False):
+    def gen_data(self, lang, outdir='.', keep_rev=False):
 
         tree = self.get_tree(callgraph=False,
                              other_calls=False,
@@ -1116,7 +1116,7 @@ class Outline(OutlineFortran):
                 iter_tree(json_d, post=cleanup)
                 # iter_tree(json_d, pre=adjust, post=cleanup)
 
-            if debug_flag:
+            if False:
                 for json_d in json_ds:
                     loc = json_d['loc']
                     ds = debug_tbl.get(loc, None)

@@ -31,6 +31,7 @@ from .outline_for_survey_fortran import Outline as OutlineForSurveyFortran
 from .outline_for_survey_base import gen_conf_a, METRICS_DIR
 from .select_targets import predict_kernels, TARGET_DIR_NAME
 from .collect_readme_for_survey import collect_readme
+from .gen_html import HTML_DIR, gen_html
 from cca.ccautil.common import setup_logger
 
 logger = logging.getLogger()
@@ -55,10 +56,13 @@ OMIT_TBL = {
 class Analyzer(AnalyzerBase):
 
     def __init__(self, mem=4, pw=None, port=VIRTUOSO_PORT,
-                 all_roots=False, all_sps=False):
+                 all_roots=False, all_sps=False, all_calls=False,
+                 html=False):
         super().__init__(mem=mem, pw=pw, port=port)
         self._all_roots = all_roots
         self._all_sps = all_sps
+        self._all_calls = all_calls
+        self._html = html
 
     def analyze_facts(self, proj_dir, proj_id, ver, dest_root,
                       bf0l=BF0L, bf0u=BF0U,
@@ -81,6 +85,7 @@ class Analyzer(AnalyzerBase):
                                    ver=ver,
                                    simple_layout=True,
                                    all_sps=self._all_sps,
+                                   all_calls=self._all_calls,
                                    conf=conf)
 
             ol.gen_data(lang, dest_root, omitted=OMIT_TBL[lang],
@@ -109,16 +114,32 @@ class Analyzer(AnalyzerBase):
 
         collect_readme(proj_id, dest_root, conf=conf)
 
+        if self._html:
+            html_base_dir = os.path.join(dest_root, HTML_DIR)
+            outline_v_dir = ol._outline_v_dir
+            for v in os.listdir(outline_v_dir):
+                ver_dir = os.path.join(outline_v_dir, v)
+                html_dir = os.path.join(html_base_dir, v)
+                gen_html(ver_dir, html_dir)
+
 
 def main():
     parser = create_argparser('Analyze C/C++/Fortran programs for outlining')
 
-    parser.add_argument('-a', '--all-roots', dest='all_roots',
+    parser.add_argument('-r', '--all-roots', dest='all_roots',
                         action='store_true',
                         help='allow subprograms to be shown as root nodes')
 
-    parser.add_argument('-s', '--all-sps', dest='all_sps', action='store_true',
+    parser.add_argument('-s', '--all-sps', dest='all_sps',
+                        action='store_true',
                         help='allow loop-free subprograms to be shown')
+
+    parser.add_argument('-c', '--all-calls', dest='all_calls',
+                        action='store_true',
+                        help='allow all calls to be shown')
+
+    parser.add_argument('--html', dest='html', action='store_true',
+                        help='generate HTML files from outlines')
 
     args = parser.parse_args()
 
@@ -138,7 +159,10 @@ def main():
     cca.ccautil.materialize_fact.logger = logger
 
     a = Analyzer(mem=args.mem, pw=args.pw, port=args.port,
-                 all_roots=args.all_roots, all_sps=args.all_sps)
+                 all_roots=args.all_roots,
+                 all_sps=args.all_sps,
+                 all_calls=args.all_calls,
+                 html=args.html)
 
     langs = []
     if not args.ignore_cpp:

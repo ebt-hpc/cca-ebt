@@ -594,16 +594,18 @@ PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
 SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog
-?constr ?cat ?call ?call_cat
+?constr ?cat ?call ?call_cat ?call_name
 ?callee ?callee_name ?callee_loc ?callee_cat ?callee_pu_name
 WHERE {
 GRAPH <%%(proj)s> {
 
   {
-    SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?constr ?callee ?cat ?call ?call_cat
+    SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?constr ?callee ?cat
+                    ?call ?call_cat ?call_name
     WHERE {
 
       ?call a ?call_cat0 OPTION (INFERENCE NONE) ;
+            f:name ?call_name ;
             f:inContainerUnit ?constr ;
             f:mayCall ?callee .
 
@@ -641,7 +643,8 @@ GRAPH <%%(proj)s> {
         ?call_cat0 rdfs:label ?call_cat .
       }
 
-    } GROUP BY ?ver ?loc ?pu_name ?vpu_name ?constr ?callee ?cat ?call ?call_cat
+    } GROUP BY ?ver ?loc ?pu_name ?vpu_name ?constr ?callee ?cat
+               ?call ?call_cat ?call_name
   }
 
   {
@@ -703,15 +706,18 @@ PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
 SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog
-?callee ?callee_name ?callee_loc ?callee_cat ?call ?call_cat ?constr ?callee_pu_name
+?callee ?callee_name ?callee_loc ?callee_cat ?call ?call_cat ?call_name
+?constr ?callee_pu_name
 WHERE {
 GRAPH <%%(proj)s> {
 
   {
     SELECT DISTINCT ?ver ?loc ?pu ?pu_name ?vpu_name ?callee ?call ?call_cat
+                    ?call_name
     WHERE {
 
       ?call a ?call_cat0 OPTION (INFERENCE NONE) ;
+            f:name ?call_name ;
             f:inProgramUnitOrSubprogram ?pu_or_sp ;
             f:inProgramUnit ?pu ;
             f:mayCall ?callee .
@@ -742,6 +748,7 @@ GRAPH <%%(proj)s> {
       }
 
     } GROUP BY ?ver ?loc ?pu ?pu_name ?vpu_name ?callee ?call ?call_cat
+               ?call_name
   }
 
   {

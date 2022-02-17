@@ -158,13 +158,13 @@ def index(idx_gen, data, callees_tbl):
 
 
 class NodeBase(object):
-    def __init__(self, ver, loc, uri, cat='', callee_name=None, all_sps=False,
-                 SUBPROGS=set(), CALLS=set(), LOOPS=set(), GOTOS=set()):
+    SUBPROGS = set()
+    CALLS = set()
+    LOOPS = set()
+    GOTOS = set()
 
-        self.SUBPROGS = SUBPROGS
-        self.CALLS = CALLS
-        self.LOOPS = LOOPS
-        self.GOTOS = GOTOS
+    def __init__(self, ver, loc, uri, cat='', callee_name=None,
+                 all_sps=False, all_calls=False):
 
         self.relevant = False
         self.ver = ver
@@ -201,6 +201,7 @@ class NodeBase(object):
         self._max_chain = None
 
         self._all_sps = all_sps
+        self._all_calls = all_calls
 
     def __eq__(self, other):
         if isinstance(other, NodeBase):
@@ -240,7 +241,10 @@ class NodeBase(object):
         else:
             r = '%d-%d' % (sl, el)
 
-        s = '%s[%s:%s:%s]' % (self.cat, r, self.get_name(), os.path.basename(self.loc))
+        s = '{}[{}:{}:{}]'.format(self.cat,
+                                  r,
+                                  self.get_name(),
+                                  os.path.basename(self.loc))
 
         return s
 
@@ -250,8 +254,10 @@ class NodeBase(object):
             b = True
         elif self.cats & self.GOTOS:
             b = True
+        elif self._all_sps and self.cats & self.SUBPROGS:
+            b = True
         elif self.cats & self.CALLS:
-            if self._all_sps:
+            if self._all_calls:
                 b = True
             else:
                 m = MARKER_CALLEE_PAT.match(self._callee_name)
@@ -514,7 +520,9 @@ class NodeBase(object):
                 is_marked=None,
                 omitted=set()):
         # ntbl: caller_name * func node * level -> visited
+
         logger.debug('! {}'.format(self))
+
         ancl_ = ancl
         lv = len(ancl)
 
@@ -526,6 +534,8 @@ class NodeBase(object):
                                                  self.get_name(), lv))
 
         _children_l = sorted(list(self._children))
+
+        logger.debug('len(_children)={}'.format(len(self._children)))
 
         children_l = list(filter(lambda c: c not in ancl and c.relevant,
                                  _children_l))
@@ -539,6 +549,8 @@ class NodeBase(object):
         self.ignored_callee_count = 0
 
         if is_caller:
+            logger.debug('callee_name={}'.format(self._callee_name))
+
             ancl_ = [self] + ancl
 
             cand = list(filter(lambda c: c.loc == self.loc, children_l))
@@ -566,23 +578,27 @@ class NodeBase(object):
                 else:
                     b = False
 
-                logger.debug('[LOOKUP] %s:%s:%s' % (self.get_name(), c, len(ancl_)))
+                logger.debug('[LOOKUP] {}:{}:{}'.format(self.get_name(),
+                                                        c,
+                                                        len(ancl_)))
                 hit = (self.get_name(), c, len(ancl_)) in ntbl
 
                 b = b and (not hit)
 
-                logger.debug('[FILT] (%s->)%s (lv=%d) --> %s (hit=%s, max_lv=%d)' % (self.get_name(),
-                                                                                     c.get_name(),
-                                                                                     lv_,
-                                                                                     b,
-                                                                                     hit,
-                                                                                     max_lv))
+                logger.debug('[FILT] ({}->){} (lv={}) --> {} (hit={}, max_lv={})'
+                             .format(self.get_name(),
+                                     c.get_name(),
+                                     lv_,
+                                     b,
+                                     hit,
+                                     max_lv))
                 return b
 
             before = len(children_l)
             children_l = list(filter(filt, children_l))
             if before > len(children_l):
                 is_filtered_out = True
+                logger.debug('filtered_out -> True')
 
             def check_mark(nd):
                 b = is_marked(nd)
@@ -625,9 +641,16 @@ class NodeBase(object):
         if is_caller and children != []:
             try:
                 li = expanded_callee_tbl[self._callee_name]
-                expanded_callee_tbl[self._callee_name] = li + [x for x in children if x not in li]
+                expanded = li + [x for x in children if x not in li]
+                expanded_callee_tbl[self._callee_name] = expanded
+                logger.debug('expanded_callee_tbl: {} -> [{}]'
+                             .format(self._callee_name,
+                                     ';'.join([x['id'] for x in expanded])))
             except KeyError:
                 expanded_callee_tbl[self._callee_name] = children
+                logger.debug('expanded_callee_tbl: {} -> [{}]'
+                             .format(self._callee_name,
+                                     ';'.join([x['id'] for x in children])))
 
         d = self.get_record(children)
 
@@ -655,6 +678,7 @@ class NodeBase(object):
 
             if is_caller and self._children != [] and children == [] and is_filtered_out:
                 v = (d, len(ancl))
+                logger.debug('{} -> {}'.format(self._callee_name, v[1]))
                 try:
                     collapsed_caller_tbl[self._callee_name].append(v)
                 except KeyError:
@@ -803,13 +827,13 @@ class OutlineBase(object):
                  ver='unknown',
                  simple_layout=False,
                  all_sps=False,
+                 all_calls=False,
                  SUBPROGS=set(),
                  CALLS=set(),
                  get_root_entities=None,
                  METRICS_ROW_HEADER=[],
                  add_root=False,
-                 conf=None
-                 ):
+                 conf=None):
 
         self.SUBPROGS = SUBPROGS
         self.CALLS = CALLS
@@ -827,10 +851,12 @@ class OutlineBase(object):
         self._proj_dir = proj_dir
 
         self._outline_dir = os.path.join(OUTLINE_DIR, self._proj_id)
+        self._outline_v_dir = None
         self._metrics_dir = os.path.join(METRICS_DIR, self._proj_id)
 
         self._simple_layout = simple_layout
         self._all_sps = all_sps
+        self._all_calls = all_calls
 
         if conf is None:
             self._conf = project.get_conf(proj_id)
@@ -977,12 +1003,16 @@ class OutlineBase(object):
     def add_edge(self, parent, child, mark=True):
         return
 
-    def get_tree(self, callgraph=True, other_calls=True, directives=True, mark=True):
+    def get_tree(self, callgraph=True,
+                 other_calls=True, directives=True, gotos=True,
+                 mark=True):
+
         if not self._tree:
             logger.info('constructing trees...')
             self._tree = self.construct_tree(callgraph=callgraph,
                                              other_calls=other_calls,
                                              directives=directives,
+                                             gotos=gotos,
                                              mark=mark)
         return self._tree
 
@@ -992,7 +1022,9 @@ class OutlineBase(object):
     def setup_cg(self, mark=True):
         return
 
-    def construct_tree(self, callgraph=True, other_calls=True, directives=True, mark=True):
+    def construct_tree(self, callgraph=True,
+                       other_calls=True, directives=True, gotos=True,
+                       mark=True):
         return {}
 
     def iter_tree(self, root, f, pre=None, post=None):
@@ -1096,12 +1128,12 @@ class OutlineBase(object):
         return
 
     def gen_data(self, lang, outdir='.', extract_metrics=True, omitted=set(),
-                 all_roots=False, debug_flag=False):
+                 all_roots=False):
 
         outline_dir = os.path.join(outdir, self._outline_dir)
-        outline_v_dir = os.path.join(outline_dir, 'v')
+        self._outline_v_dir = os.path.join(outline_dir, 'v')
 
-        if not ensure_dir(outline_v_dir):
+        if not ensure_dir(self._outline_v_dir):
             return
 
         if extract_metrics:
@@ -1310,6 +1342,9 @@ class OutlineBase(object):
 
                     d_tbl[d['id']] = root
 
+                    logger.debug('collapsed_caller_tbl: {}'
+                                 .format(list(collapsed_caller_tbl.keys())))
+
                 nid = idgen.gen()
 
                 for d in ds:
@@ -1345,13 +1380,13 @@ class OutlineBase(object):
 
             logger.debug('* root_collapsed_caller_tbl:')
             for (r, collapsed_caller_tbl) in root_collapsed_caller_tbl.items():
-                logger.debug(f'root={r}:')
+                logger.debug(f'* root={r}:')
+
+                callees_tbl = {}
+                root_callees_tbl[r] = callees_tbl
 
                 while collapsed_caller_tbl:
                     new_collapsed_caller_tbl = {}
-
-                    callees_tbl = {}
-                    root_callees_tbl[r] = callees_tbl
 
                     for (callee, d_lv_list) in collapsed_caller_tbl.items():
 
@@ -1363,7 +1398,7 @@ class OutlineBase(object):
                         callee_dl = expanded_callee_tbl.get(callee, [])
                         if callee_dl:
                             callees_tbl[callee] = [d['id'] for d in callee_dl]
-                            logger.debug('callees_tbl: {} -> [{}]'
+                            logger.debug('  callees_tbl: {} -> [{}]'
                                          .format(callee,
                                                  ','.join(callees_tbl[callee]))
                                          )
@@ -1440,9 +1475,11 @@ class OutlineBase(object):
 
                                 for callee_d in callee_dl:
                                     info = {'count': 0}
-                                    copied = copy_dict(callee_d, hook=hook, info=info)
+                                    copied = copy_dict(callee_d, hook=hook,
+                                                       info=info)
                                     copied_dl.append(copied)
-                                    logger.debug('%d nodes copied' % info['count'])
+                                    logger.debug('{} nodes copied'
+                                                 .format(info['count']))
 
                                 selected['children'] = copied_dl
                                 callees_tbl[callee] = [d['id'] for d in copied_dl]
@@ -1457,10 +1494,17 @@ class OutlineBase(object):
                         logger.debug('new_collapsed_caller_tbl:')
                     else:
                         collapsed_caller_tbl = {}
+
                     for (callee, d_lv_list) in new_collapsed_caller_tbl.items():
                         logger.debug('callee=%s' % callee)
                         for (d, lv) in d_lv_list:
                             logger.debug('%s (lv=%d)' % (d['id'], lv))
+
+            logger.debug('* root_callees_tbl:')
+            for r, t in root_callees_tbl.items():
+                logger.debug(f' {r}:')
+                for k, v in t.items():
+                    logger.debug(f'  {k} -> {v}')
 
             if metrics_dir:
                 if ensure_dir(metrics_dir):
@@ -1512,7 +1556,7 @@ class OutlineBase(object):
 
             json_ds.sort(key=lambda x: x['text'])
 
-            lver_dir = os.path.join(outline_v_dir, lver)
+            lver_dir = os.path.join(self._outline_v_dir, lver)
 
             path_tbl = {}  # path -> fid
 
@@ -1541,13 +1585,23 @@ class OutlineBase(object):
 
                     callees_tbl = None
 
+                    logger.debug('root_callees_tbl:')
+                    for r, t in root_callees_tbl.items():
+                        logger.debug(f' {r}:')
+                        for k, v in t.items():
+                            logger.debug(f'  {k} -> {v}')
+
                     for d in json_d['children']:
                         try:
                             r = d_tbl[d['id']]
-                            logger.debug('r=%s' % r)
+                            logger.debug(f'root={r}')
                             callees_tbl = root_callees_tbl[r]
                             if callees_tbl:
                                 logger.debug('callees_tbl found')
+                                logger.debug(' keys=[{}]'
+                                             .format(','
+                                                     .join(callees_tbl
+                                                           .keys())))
                                 json_d['callees_tbl'] = callees_tbl
                         except KeyError:
                             pass
@@ -1568,9 +1622,8 @@ class OutlineBase(object):
 
                         data_path = os.path.join(lver_loc_dir, data_file_name)
 
-                        if debug_flag:
-                            logger.debug('indexing for "%s"...' % data_path)
-                            st = time()
+                        logger.debug('indexing for "%s"...' % data_path)
+                        st = time()
 
                         index(idx_gen, json_d, callees_tbl)
 
@@ -1581,8 +1634,7 @@ class OutlineBase(object):
                         if idx and lmi:
                             idx_range_tbl[fidi] = (lmi, idx, loci)
 
-                        if debug_flag:
-                            logger.debug('done. (%0.3f sec)' % (time() - st))
+                        logger.debug('done. (%0.3f sec)' % (time() - st))
 
                         logger.info(f'dumping object into "{data_path}"...')
 

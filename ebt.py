@@ -4,7 +4,7 @@
   A driver script for CCA/EBT container image
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2020 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ if time.timezone != 0:
         tzname = time.tzname[0]
         offset = STDOFFSET
 
-    TZ = '%s%s%s' % (tzname, SIGN, offset)
+    TZ = f'{tzname}{SIGN}{offset}'
 
 ###
 
@@ -103,7 +103,7 @@ def progress(proc, stat_path, timeout=TIMEOUT):
             if st.st_mtime != stat_mtime and st.st_size > 0:
                 with open(stat_path, 'r') as f:
                     mes = f.read()
-                    print('[%s]' % mes)
+                    print(f'[{mes}]')
 
                 stat_mtime = st.st_mtime
 
@@ -115,14 +115,14 @@ def progress(proc, stat_path, timeout=TIMEOUT):
 
     proc.wait()
     if proc.returncode > 0:
-        print('execution failed: %s' % proc.returncode)
+        print('execution failed: {}'.format(proc.returncode))
 
 
 def check_path(dpath):
     dpath = os.path.abspath(dpath)
 
     if not os.path.exists(dpath):
-        print('"%s": not found' % dpath)
+        print(f'"{dpath}": not found')
         return None
 
     return dpath
@@ -134,17 +134,17 @@ def get_proj_id(dpath):
 
 def get_proj_path(dpath):
     proj_id = get_proj_id(dpath)
-    proj_path = '%s/%s' % (PROJS_DIR, proj_id)
+    proj_path = f'{PROJS_DIR}/{proj_id}'
     return proj_path
 
 
 def get_container_name(subcmd_name, proj_id):
-    name = '%s_%s' % (subcmd_name, proj_id)
+    name = f'{subcmd_name}_{proj_id}'
     return name
 
 
 def get_mongo_volume_name(subcmd_name, proj_id):
-    name = 'vol_mongo_%s_%s' % (subcmd_name, proj_id)
+    name = f'vol_mongo_{subcmd_name}_{proj_id}'
     return name
 
 
@@ -183,7 +183,10 @@ def check_mem(mem_gb):
 
 
 def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
-            all_roots=False, all_sps=False, debug=True, image=IMAGE_NAME):
+            all_roots=False, all_sps=False, all_calls=False,
+            html=False,
+            debug=True,
+            image=IMAGE_NAME):
 
     if not check_mem(mem):
         print('aborted')
@@ -196,7 +199,7 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
 
     dest_root = os.path.join(dpath, DATA_DIR_NAME)
     if os.path.exists(dest_root):
-        print('You are about to overwrite "%s".' % dest_root)
+        print(f'You are about to overwrite "{dest_root}".')
         while True:
             a = input('Do you want to proceed (y/n)? ')
             if a == 'y':
@@ -208,49 +211,52 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
         try:
             os.makedirs(dest_root)
         except Exception as e:
-            print('"%s": faild to create: %s' % (dest_root, e))
+            print(f'"{dest_root}": faild to create: {e}')
             return
 
     proj_path = get_proj_path(dpath)
 
-    subcmd_path = '%s/%s' % (CCA_HOME, subcmd_name)
+    subcmd_path = f'{CCA_HOME}/{subcmd_name}'
     subcmd = subcmd_path
-    subcmd += ' -m %d' % mem
+    subcmd += f' -m {mem}'
 
     if keep_fb:
         subcmd += ' -k'
 
     if all_roots:
-        subcmd += ' -a'
+        subcmd += ' -r'
 
     if all_sps:
         subcmd += ' -s'
 
+    if html:
+        subcmd += ' --html'
+
     if debug:
         subcmd += ' -d'
 
-    subcmd += ' %s' % proj_path
+    subcmd += f' {proj_path}'
 
     log_dir = os.path.join(dest_root, LOG_DIR_NAME)
     if not os.path.exists(log_dir):
         try:
             os.makedirs(log_dir)
         except Exception as e:
-            print('"%s": faild to create: %s' % (log_dir, e))
+            print(f'"{log_dir}": faild to create: {e}')
             return
 
-    vol_opt = '-v "%s:%s"' % (dpath, proj_path)
-    vol_opt += ' -v "%s:%s"' % (log_dir, CCA_LOG_DIR)
+    vol_opt = f'-v "{dpath}:{proj_path}"'
+    vol_opt += f' -v "{log_dir}:{CCA_LOG_DIR}"'
 
-    run_cmd = '%s run' % CONTAINER_CMD
+    run_cmd = f'{CONTAINER_CMD} run'
     run_cmd += ' --rm'
     run_cmd += ' -t'
 
     if TZ:
-        run_cmd += ' -e "TZ=%s"' % TZ
+        run_cmd += f' -e "TZ={TZ}"'
 
-    run_cmd += ' %s' % vol_opt
-    run_cmd += ' %s %s' % (get_image_name(image, devel=devel), subcmd)
+    run_cmd += f' {vol_opt}'
+    run_cmd += ' {} {}'.format(get_image_name(image, devel=devel), subcmd)
 
     stat_path = os.path.join(dest_root, STAT_NAME)
 
@@ -259,7 +265,7 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
     if not dry_run:
 
         if os.path.exists(stat_path):
-            # print('removing "%s"...' % stat_path)
+            # print(f'removing "{stat_path}"...')
             os.remove(stat_path)
 
         try:
@@ -274,7 +280,7 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
             print('interrupted.')
 
         except OSError as e:
-            print('execution failed: %s' % e)
+            print(f'execution failed: {e}')
 
 
 def mongo_db_exists(mongo_path):
@@ -289,7 +295,7 @@ def restore_mongo_db(vol_name, mongo_path, dry_run=False, force=False,
         return
 
     if force:
-        print('restoring state from "%s"...' % mongo_path)
+        print(f'restoring state from "{mongo_path}"...')
     else:
         while True:
             a = input(f'Do you want to restore state from "{mongo_path}" (y/n)? ')
@@ -298,11 +304,11 @@ def restore_mongo_db(vol_name, mongo_path, dry_run=False, force=False,
             elif a == 'n':
                 return
 
-    run_cmd = '%s run --rm -t' % CONTAINER_CMD
+    run_cmd = f'{CONTAINER_CMD} run --rm -t'
     if TZ:
-        run_cmd += ' -e "TZ=%s"' % TZ
-    run_cmd += ' -v "%s:%s/mongo"' % (vol_name, CCA_VAR)
-    run_cmd += ' -v "%s:/tmp/mongo"' % mongo_path
+        run_cmd += f' -e "TZ={TZ}"'
+    run_cmd += f' -v "{vol_name}:{CCA_VAR}/mongo"'
+    run_cmd += f' -v "{mongo_path}:/tmp/mongo"'
     guest_cmd = f'/bin/bash -c "rm -rf {CCA_VAR}/mongo/db; cp -a /tmp/mongo/db {CCA_VAR}/mongo/"'
     run_cmd += ' {} {}'.format(get_image_name(image), guest_cmd)
     print(run_cmd)
@@ -310,34 +316,34 @@ def restore_mongo_db(vol_name, mongo_path, dry_run=False, force=False,
         try:
             run(run_cmd, shell=True)
         except OSError as e:
-            print('execution failed: %s' % e)
+            print(f'execution failed: {e}')
 
 
 def save_mongo_db(vol_name, mongo_path, dry_run=False, force=False,
                   image=IMAGE_NAME):
     if force:
-        print('saving state to "%s"...' % mongo_path)
+        print(f'saving state to "{mongo_path}"...')
     else:
         while True:
-            a = input('Do you want to save state to "%s" (y/n)? ' % mongo_path)
+            a = input(f'Do you want to save state to "{mongo_path}" (y/n)? ')
             if a == 'y':
                 break
             elif a == 'n':
                 return
 
-    run_cmd = '%s run --rm -t' % CONTAINER_CMD
+    run_cmd = f'{CONTAINER_CMD} run --rm -t'
     if TZ:
-        run_cmd += ' -e "TZ=%s"' % TZ
-    run_cmd += ' -v "%s:%s/mongo"' % (vol_name, CCA_VAR)
-    run_cmd += ' -v "%s:/tmp/mongo"' % mongo_path
+        run_cmd += f' -e "TZ={TZ}"'
+    run_cmd += f' -v "{vol_name}:{CCA_VAR}/mongo"'
+    run_cmd += f' -v "{mongo_path}:/tmp/mongo"'
     guest_cmd = f'/bin/bash -c "rm -rf /tmp/mongo/db; cp -a {CCA_VAR}/mongo/db /tmp/mongo/"'
-    run_cmd += ' %s %s' % (get_image_name(image), guest_cmd)
+    run_cmd += ' {} {}'.format(get_image_name(image), guest_cmd)
     print(run_cmd)
     if not dry_run:
         try:
             run(run_cmd, shell=True)
         except OSError as e:
-            print('execution failed: %s' % e)
+            print(f'execution failed: {e}')
 
 
 def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
@@ -356,7 +362,7 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
         if not os.path.exists(mongo_db_path):
             os.makedirs(mongo_db_path)
     except Exception as e:
-        print('"%s": failed to create: %s' % (mongo_db_path, e))
+        print(f'"{mongo_db_path}": failed to create: {e}')
         return
 
     proj_id = get_proj_id(dpath)
@@ -374,7 +380,7 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
         try:
             os.makedirs(log_dir)
         except Exception as e:
-            print('"%s": faild to create: %s' % (log_dir, e))
+            print(f'"{log_dir}": faild to create: {e}')
             return
 
     vol_opt = f'-v "{dpath}:{proj_path}"'
@@ -471,7 +477,11 @@ def opcount(args):
 def outline(args):
     run_cmd('outline', args.proj_dir, args.mem, dry_run=args.dry_run,
             keep_fb=args.keep_fb, devel=args.devel,
-            all_roots=args.all_roots, all_sps=args.all_sps, image=args.image)
+            all_roots=args.all_roots,
+            all_sps=args.all_sps,
+            all_calls=args.all_calls,
+            html=args.html,
+            image=args.image)
 
 
 def treeview_start(args):
@@ -532,13 +542,21 @@ def main():
     parser_outline.add_argument('-k', '--keep-fb', dest='keep_fb',
                                 action='store_true', help='keep FB')
 
-    parser_outline.add_argument('-a', '--all-roots', dest='all_roots',
+    parser_outline.add_argument('-r', '--all-roots', dest='all_roots',
                                 action='store_true',
                                 help='allow subprograms to be shown as roots')
 
     parser_outline.add_argument('-s', '--all-sps', dest='all_sps',
                                 action='store_true',
                                 help='allow loop-free subprograms to be shown')
+
+    parser_outline.add_argument('-c', '--all-calls', dest='all_calls',
+                                action='store_true',
+                                help='allow all calls to be shown')
+
+    parser_outline.add_argument('--html', dest='html',
+                                action='store_true',
+                                help='generate HTML files from outlines')
 
     parser_outline.set_defaults(func=outline)
 

@@ -46,13 +46,18 @@ METRICS_ROW_HEADER = list(metrics.abbrv_tbl.keys()) \
 
 
 class Node(NodeBase):
+    SUBPROGS = SUBPROGS
+    CALLS = CALLS
+    LOOPS = LOOPS
+    GOTOS = set()
+
     def __init__(self, ver, loc, uri, cat='',
                  fn=None,
                  callee_name=None,
-                 all_sps=False):
+                 all_sps=False, all_calls=False):
 
-        super().__init__(ver, loc, uri, cat, callee_name, all_sps,
-                         SUBPROGS=SUBPROGS, CALLS=CALLS, LOOPS=LOOPS)
+        super().__init__(ver, loc, uri, cat, callee_name, all_sps, all_calls)
+
         self.fn = fn
 
     def get_name(self):
@@ -155,6 +160,26 @@ class Node(NodeBase):
                 children_l = children_l[:-1]
         return children_l
 
+    def to_dict(self, ancl, ntbl,
+                elaborate=None,
+                idgen=None,
+                collapsed_caller_tbl={},
+                expanded_callee_tbl={},
+                parent_tbl=None,
+                is_marked=None,
+                omitted=set()):
+        d = super().to_dict(ancl, ntbl,
+                            elaborate=elaborate,
+                            idgen=idgen,
+                            collapsed_caller_tbl=collapsed_caller_tbl,
+                            expanded_callee_tbl=expanded_callee_tbl,
+                            parent_tbl=parent_tbl,
+                            is_marked=is_marked,
+                            omitted=omitted)
+        if self.fn and self.cats & SUBPROGS:
+            d['name'] = self.fn
+        return d
+
 
 class Outline(OutlineBase):
     def __init__(self,
@@ -168,10 +193,11 @@ class Outline(OutlineBase):
                  ver='unknown',
                  simple_layout=False,
                  all_sps=False,
+                 all_calls=False,
                  conf=None):
 
         super().__init__(proj_id, commits, method, pw, port, gitrepo,
-                         proj_dir, ver, simple_layout, all_sps,
+                         proj_dir, ver, simple_layout, all_sps, all_calls,
                          SUBPROGS=SUBPROGS, CALLS=CALLS,
                          get_root_entities=get_root_entities,
                          METRICS_ROW_HEADER=METRICS_ROW_HEADER,
@@ -289,7 +315,7 @@ class Outline(OutlineBase):
 
             call_node = Node(ver, loc, call, cat=call_cat, fn=fn,
                              callee_name=callee_name,
-                             all_sps=self._all_sps)
+                             all_calls=self._all_calls)
 
             parent_cntnr = row.get('cntnr', None)
 
@@ -302,7 +328,9 @@ class Outline(OutlineBase):
             callee_loc = row['callee_loc']
             callee_cat = row['callee_cat']
 
-            callee_node = Node(ver, callee_loc, callee, cat=callee_cat, fn=callee_name)
+            callee_node = Node(ver, callee_loc, callee, cat=callee_cat,
+                               fn=callee_name, all_sps=self._all_sps)
+
             self.add_edge(call_node, callee_node, mark=mark)
 
         logger.debug('cntnr_fd')
@@ -326,7 +354,7 @@ class Outline(OutlineBase):
 
             call_node = Node(ver, loc, call, cat=call_cat, fn=fn,
                              callee_name=callee_name,
-                             all_sps=self._all_sps)
+                             all_calls=self._all_calls)
 
             self.add_edge(cntnr_node, call_node, mark=mark)
 
@@ -338,7 +366,8 @@ class Outline(OutlineBase):
             callee_cat = row['callee_cat']
 
             callee_node = Node(ver, callee_loc, callee, cat=callee_cat,
-                               fn=callee_name)
+                               fn=callee_name, all_sps=self._all_sps)
+
             self.add_edge(call_node, callee_node, mark=mark)
 
         logger.info('check marks...')
@@ -350,7 +379,8 @@ class Outline(OutlineBase):
 
         self._marked_nodes.update(a)
 
-    def construct_tree(self, callgraph=True, other_calls=True, directives=True,
+    def construct_tree(self, callgraph=True,
+                       other_calls=True, directives=True, gotos=True,
                        mark=True):
 
         self._relevant_nodes = set()
@@ -440,20 +470,25 @@ class Outline(OutlineBase):
                 elif callee_name.startswith('omp_'):
                     cat = 'omp-call'
 
-                call_node = Node(ver, loc, call, cat=cat, fn=fn, callee_name=callee_name,
-                                 all_sps=self._all_sps)
+                call_node = Node(ver, loc, call, cat=cat, fn=fn,
+                                 callee_name=callee_name,
+                                 all_calls=self._all_calls)
 
                 if call_node.is_relevant():
                     self._relevant_nodes.add(call_node)
 
                 parent_cntnr = row.get('cntnr', None)
                 if parent_cntnr:
-                    self.add_edge(Node(ver, loc, parent_cntnr), call_node, mark=mark)
+                    self.add_edge(Node(ver, loc, parent_cntnr),
+                                  call_node, mark=mark)
 
                 if fd:
                     fd_node = Node(ver, loc, fd, cat=row['fd_cat'], fn=fn)
                     if not parent_cntnr:
                         self.add_edge(fd_node, call_node, mark=mark)
+
+        if gotos:
+            pass  # not yet
 
         #
 
