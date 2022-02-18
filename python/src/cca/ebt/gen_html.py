@@ -410,6 +410,7 @@ class HtmlGenerator(object):
         if idx is None:
             logger.warning('failed to get idx: {}'
                            .format(self.node_to_str(node)))
+        else:
             id_attr = f' id="id_{idx}"'
 
         call_flag = is_call(node)
