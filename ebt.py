@@ -229,6 +229,9 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
     if all_sps:
         subcmd += ' -s'
 
+    if all_calls:
+        subcmd += ' -c'
+
     if html:
         subcmd += ' --html'
 
