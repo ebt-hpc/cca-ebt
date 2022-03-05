@@ -3,9 +3,12 @@ FROM codinuum/cca:devel
 MAINTAINER ebtxhpc
 
 RUN set -x && \
+    mkdir -p /var/lib/cca/log && \
     mkdir -p /var/lib/cca/projects && \
     mkdir -p /var/lib/cca/mongo/db && \
-    chown -R cca:cca /var/lib/cca
+    mkdir -p /mnt/mongo && \
+    chown -R cca:cca /var/lib/cca && \
+    chmod -R a+w /var/lib/cca
 
 COPY cca /opt/cca/
 
@@ -28,6 +31,7 @@ RUN set -x && \
             python3-sklearn \
             python3-psutil \
             apache2 \
+            bindfs \
             python3-pymongo && \
     pip3 install msgpack simplejson gensim supervisor
 
@@ -41,6 +45,7 @@ RUN set -x && \
     rm -r python
 
 COPY supervisord.conf /etc/
+COPY supervisord-linux.conf /etc/
 COPY --chown=www-data:www-data www /var/www/
 COPY apache2/sites-available/*.conf /etc/apache2/sites-available/
 COPY apache2/conf-available/*.conf /etc/apache2/conf-available/
@@ -59,6 +64,8 @@ RUN set -x && \
     git clone https://github.com/vakata/jstree && \
     unzip jquery-ui-1.13.0.zip && \
     unzip codemirror.zip && \
+    rm jquery-ui-1.13.0.zip && \
+    rm codemirror.zip && \
     chown www-data:www-data jquery-3.6.0.min.js && \
     chown -R www-data:www-data jquery-ui-1.13.0 && \
     chown -R www-data:www-data jstree metrics outline target topic && \

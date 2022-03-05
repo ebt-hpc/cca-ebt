@@ -39,7 +39,7 @@ DEFAULT_SRV_PORT = 18000
 CCA_HOME = '/opt/cca'
 CCA_VAR = '/var/lib/cca'
 PROJS_DIR = CCA_VAR+'/projects'
-CCA_LOG_DIR = '/var/log/cca'
+CCA_LOG_DIR = '/var/lib/cca/log'
 WWW_DIR = '/var/www'
 SRV_CMD = '/usr/local/bin/supervisord'
 
@@ -54,6 +54,7 @@ LOG_DIR_NAME = 'log'
 
 # WIN_HOST_FLAG = True
 WIN_HOST_FLAG = sys.platform.startswith('win')
+LINUX_HOST_FLAG = sys.platform == 'linux'
 
 # timezone
 
@@ -198,21 +199,23 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
         return
 
     dest_root = os.path.join(dpath, DATA_DIR_NAME)
-    if os.path.exists(dest_root):
-        print(f'You are about to overwrite "{dest_root}".')
-        while True:
-            a = input('Do you want to proceed (y/n)? ')
-            if a == 'y':
-                break
-            elif a == 'n':
-                return
 
-    else:
-        try:
-            os.makedirs(dest_root)
-        except Exception as e:
-            print(f'"{dest_root}": faild to create: {e}')
-            return
+    if not dry_run:
+        if os.path.exists(dest_root):
+            print(f'You are about to overwrite "{dest_root}".')
+            while True:
+                a = input('Do you want to proceed (y/n)? ')
+                if a == 'y':
+                    break
+                elif a == 'n':
+                    return
+
+        else:
+            try:
+                os.makedirs(dest_root)
+            except Exception as e:
+                print(f'"{dest_root}": faild to create: {e}')
+                return
 
     proj_path = get_proj_path(dpath)
 
@@ -257,6 +260,9 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
 
     if TZ:
         run_cmd += f' -e "TZ={TZ}"'
+
+    if LINUX_HOST_FLAG:
+        run_cmd += ' --user {}:{}'.format(os.geteuid(), os.getegid())
 
     run_cmd += f' {vol_opt}'
     run_cmd += ' {} {}'.format(get_image_name(image, devel=devel), subcmd)
@@ -387,7 +393,6 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
             return
 
     vol_opt = f'-v "{dpath}:{proj_path}"'
-    vol_opt += f' -v "{log_dir}:{CCA_LOG_DIR}"'
     vol_opt += f' -v "{outline_path}:{data_path_base}outline/{proj_id}"'
     vol_opt += f' -v "{metrics_path}:{data_path_base}metrics/{proj_id}"'
     vol_opt += f' -v "{target_path}:{data_path_base}target/{proj_id}"'
@@ -407,14 +412,24 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
     run_cmd = f'{CONTAINER_CMD} run'
     run_cmd += ' -d'
     run_cmd += ' --rm'
+    run_cmd += ' --privileged'
     run_cmd += f' {port_opt}'
     run_cmd += f' --name {name}'
 
     if TZ:
         run_cmd += f' -e "TZ={TZ}"'
 
+    if LINUX_HOST_FLAG:
+        run_cmd += ' -e "HOST_UID={}"'.format(os.geteuid())
+        run_cmd += ' -e "HOST_GID={}"'.format(os.getegid())
+
     run_cmd += f' {vol_opt}'
-    run_cmd += ' {} {}'.format(get_image_name(image, devel=devel), SRV_CMD)
+
+    srv_cmd = SRV_CMD
+    if LINUX_HOST_FLAG:
+        srv_cmd += ' -c /etc/supervisord-linux.conf'
+
+    run_cmd += ' {} {}'.format(get_image_name(image, devel=devel), srv_cmd)
 
     print(run_cmd)
     print(f'\nport={port}')
