@@ -412,7 +412,10 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
     run_cmd = f'{CONTAINER_CMD} run'
     run_cmd += ' -d'
     run_cmd += ' --rm'
-    run_cmd += ' --privileged'
+
+    if LINUX_HOST_FLAG:
+        run_cmd += ' --privileged'
+
     run_cmd += f' {port_opt}'
     run_cmd += f' --name {name}'
 
