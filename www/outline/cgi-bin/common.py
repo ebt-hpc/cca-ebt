@@ -30,11 +30,13 @@ import simplejson
 
 BASE_DIR = '/var/www/outline/treeview'
 BASE_URL = '/outline/treeview'
+DEBUG_MODE = False
 
 try:
     from debug import local
     BASE_DIR = local.BASE_DIR
     BASE_URL = local.BASE_URL
+    DEBUG_MODE = True
 except Exception:
     pass
 

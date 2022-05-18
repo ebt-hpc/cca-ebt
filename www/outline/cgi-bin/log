@@ -4,7 +4,7 @@
   Log provider
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2020 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import json
 
 from common import DEFAULT_USER, MONGO_PORT
 
+import cgi
+import cgitb
+
 TEMPL = '''Content-Type: application/json
 
 %s
@@ -35,8 +38,6 @@ TEMPL = '''Content-Type: application/json
 
 ###
 
-import cgi
-import cgitb
 cgitb.enable()
 
 form = cgi.FieldStorage()
@@ -159,7 +160,7 @@ else:
                 cli = MongoClient('localhost', MONGO_PORT)
                 db = cli.loop_survey
                 col = db.log
-                log_id = col.insert(log)
+                log_id = col.insert_one(log)
 
             except Exception as e:
                 db_failure = str(e)

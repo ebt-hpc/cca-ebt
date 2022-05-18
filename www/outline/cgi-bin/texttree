@@ -4,7 +4,7 @@
   Text tree view provider
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2020 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,9 +25,12 @@ import os
 import sys
 import requests
 
-from common import DEFAULT_USER, BASE_URL
-from common import (get_proj_index, get_ver_index, get_path_list, get_proj_path,
-                    get_ver_path)
+from common import DEFAULT_USER, BASE_URL, DEBUG_MODE
+from common import (get_proj_index, get_ver_index, get_path_list,
+                    get_proj_path, get_ver_path)
+
+import cgi
+import cgitb
 
 ###
 
@@ -84,24 +87,27 @@ def render(data, lv='', out=sys.stdout):
 ###
 
 
-import cgi
-import cgitb
 cgitb.enable()
 
 form = cgi.FieldStorage()
 
 user = form.getvalue('user', DEFAULT_USER)
 proj = form.getvalue('proj', None)
-ver  = form.getvalue('ver', None)
+ver = form.getvalue('ver', None)
 path = form.getvalue('path', None)
-fid  = form.getvalue('fid', None)
+fid = form.getvalue('fid', None)
 
 content = 'FAILED'
 
 # host = os.environ['HTTP_HOST']
 script = '/'.join(os.environ['SCRIPT_NAME'].split('/')[:-1]) + '/data'
 
-json_url = 'http://localhost%s' % script
+if DEBUG_MODE:
+    port = os.environ['SERVER_PORT']
+    json_url = f'http://localhost:{port}{script}'
+else:
+    json_url = f'http://localhost{script}'
+
 json_url_params = None
 
 if proj and ver:

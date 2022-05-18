@@ -4,7 +4,7 @@
   Data provider
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2021 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -32,11 +32,14 @@ from time import time
 import msgpack
 
 from common import DEFAULT_USER, TARGET_DIR, MONGO_PORT
-from common import EXPAND_TARGET_LOOPS, EXPAND_RELEVANT_LOOPS, EXPAND_ALL, COLLAPSE_ALL
+from common import EXPAND_TARGET_LOOPS, EXPAND_RELEVANT_LOOPS
+from common import EXPAND_ALL, COLLAPSE_ALL
 from common import NodeManager, compute_state, get_idx_range_tbl
 from common import get_proj_index, get_ver_index, get_path_list, get_fid_list
 from common import get_proj_path, get_ver_path
 
+import cgi
+import cgitb
 
 MARKER_CALLEE_PAT = re.compile('^.*(dgemm|timer).*$')
 
@@ -310,25 +313,25 @@ def get_last_nid(user, proj, ver, root_fidi):
 
 ###
 
-import cgi
-import cgitb
+
 cgitb.enable()
 
 form = cgi.FieldStorage()
 
 user = form.getvalue('user', DEFAULT_USER)
 proj = form.getvalue('proj', None)
-ver  = form.getvalue('ver', None)
+ver = form.getvalue('ver', None)
 path = form.getvalue('path', None)
-fid  = form.getvalue('fid', None)
+fid = form.getvalue('fid', None)
 
 node_mgr = NodeManager()
 
+
 def make_metrics_line_per_lv(lv, i, others, bf, perc, display):
     lv_id = mklvid(i, lv)
-    attr = 'class="on_level %s"%s' % (lv_id,
-                                      ' style="display:inline;"'
-                                      if display else '')
+    attr = 'class="on_level {}"{}'.format(lv_id,
+                                          ' style="display:inline;"'
+                                          if display else '')
     others[lv].sort()
     line = METRICS_LINE_FMT % {'attr': attr,
                                'others': ''.join(others[lv]),
@@ -361,7 +364,7 @@ if proj and ver and fid:
         'ver': ver,
     }
 
-    git_url0 = '/gitweb/?p=%s;a=blob_plain;f=' % pid
+    git_url0 = f'/gitweb/?p={pid};a=blob_plain;f='
     git_url1 = ';h='
     git_url2 = ';hb='+vid
 
@@ -376,7 +379,7 @@ if proj and ver and fid:
     def get_encoded_path(path):
         encoded = None
         try:
-            encoded = encoded_path_tbl[path] 
+            encoded = encoded_path_tbl[path]
         except KeyError:
             encoded = quote_plus(path)
             encoded_path_tbl[path] = encoded
@@ -407,9 +410,9 @@ if proj and ver and fid:
         if aref_ranges:
             params['aref_ranges'] = aref_ranges
 
-        form = '<form style="display:none;" name="form_%s" method="POST" action="openviewer" target="_blank">' % obj['id']
+        form = '<form style="display:none;" name="form_{}" method="POST" action="openviewer" target="_blank">'.format(obj['id'])
         for kv in params.items():
-            form += "<input type='hidden' name='%s' value='%s'>" % kv
+            form += "<input type='hidden' name='{}' value='{}'>".format(*kv)
         form += '</form>'
 
         return form
@@ -478,9 +481,12 @@ if proj and ver and fid:
                     bff = ['%3.2f' % f for f in bf]
                     # lv_id = [nid+'lv0', nid+'lv1', nid+'lv2']
                     lvs = [
-                        make_metrics_line_per_lv(0, nid, others_lv, bff, perc, False),
-                        make_metrics_line_per_lv(1, nid, others_lv, bff, perc, False),
-                        make_metrics_line_per_lv(2, nid, others_lv, bff, perc, True),
+                        make_metrics_line_per_lv(0, nid, others_lv, bff, perc,
+                                                 False),
+                        make_metrics_line_per_lv(1, nid, others_lv, bff, perc,
+                                                 False),
+                        make_metrics_line_per_lv(2, nid, others_lv, bff, perc,
+                                                 True),
                     ]
 
                     text = TEXT_FMT % {'nid': nid,
@@ -509,22 +515,24 @@ if proj and ver and fid:
 
             with open(tree_data_path, 'rb') as treef:
                 st = time()
-                tree_data = msgpack.unpack(treef, object_hook=hook, raw=False, strict_map_key=False)
+                tree_data = msgpack.unpack(treef, object_hook=hook, raw=False,
+                                           strict_map_key=False)
 
         except Exception as e:
             tree_data['failure'] = str(e)
 
     if tree_data and 'failure' not in tree_data:
         node_mgr.set_offset(tree_data.get('lmi', 1))
+        ver_json_path = os.path.join(TARGET_DIR, proj, ver+'.json')
         try:
-            with open(os.path.join(TARGET_DIR, proj, ver+'.json'), 'r') as targetf:
+            with open(ver_json_path, 'r') as targetf:
                 target_data = simplejson.load(targetf)
 
         except Exception:
             pass
 
         try:
-            #st = time()
+            # st = time()
 
             stat_data = compute_state(user, proj, ver)
 

@@ -30,6 +30,7 @@ RUN set -x && \
             python3-scipy \
             python3-sklearn \
             python3-psutil \
+            python3-requests \
             apache2 \
             bindfs \
             python3-pymongo && \
