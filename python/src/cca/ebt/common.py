@@ -5,7 +5,7 @@
   Common functions
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2021 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -375,6 +375,7 @@ def create_argparser(desc):
 
 def make_status_setter(path):
     def set_status(mes):
+        logger.info(mes)
         log('[STATUS] '+mes)
         try:
             with open(path, 'w') as f:
@@ -421,7 +422,6 @@ class AnalyzerBase(object):
 
         if not ensure_dir(dest_root):
             set_status(f'failed to create directory: "{dest_root}"')
-            logger.error(f'failed to create directory: "{dest_root}"')
             return
 
         if proj_id is None:
@@ -438,7 +438,6 @@ class AnalyzerBase(object):
 
         # parse
         set_status('parsing source files...')
-        logger.info('parsing source files...')
         rc = parse(proj_dir, proj_id, ver)
         if rc != 0:
             set_status('faild to parse source files')
@@ -448,7 +447,6 @@ class AnalyzerBase(object):
         if not skip_build:
             # build FB
             set_status('building FB...')
-            logger.info('building FB...')
             rc = build_fb(proj_dir, proj_id,
                           mem=self._mem, pw=self._pw, port=self._port,
                           set_status=set_status,
@@ -465,12 +463,10 @@ class AnalyzerBase(object):
         if not skip_outline:
             # analyze facts
             set_status('analyzing facts...')
-            logger.info('analyzing facts...')
             try:
                 self.analyze_facts(proj_dir, proj_id, ver, dest_root, langs=langs)
             except Exception as e:
                 set_status(f'failed to analyze facts: {e}')
-                logger.error(f'failed to analyze facts: {e}')
                 reset_virtuoso(pw=self._pw, port=self._port,
                                backup_fb=backup_fb)
                 return
@@ -478,9 +474,7 @@ class AnalyzerBase(object):
         if cleanup:
             # cleanup
             set_status('cleaning up temporary files...')
-            logger.info('cleaning up temporary files...')
             reset_virtuoso(pw=self._pw, port=self._port, backup_fb=backup_fb)
             clear_temp()
 
         set_status('finished.')
-        logger.info('finished.')

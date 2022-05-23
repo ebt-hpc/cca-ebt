@@ -5,7 +5,7 @@
   A script for creating Virtuoso configurations
 
   Copyright 2013-2017 RIKEN
-  Copyright 2018-2020 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -39,114 +39,118 @@ BUFSIZE_TBL = {
 
 INI_FMT = '''
 [Database]
-DatabaseFile			= %(db_root)s/virtuoso.db
-ErrorLogFile			= %(db_root)s/virtuoso.log
-LockFile			= %(db_root)s/virtuoso.lck
-TransactionFile			= %(db_root)s/virtuoso.trx
-xa_persistent_file		= %(db_root)s/virtuoso.pxa
-ErrorLogLevel			= 7
-FileExtend			= 200
-MaxCheckpointRemap		= 2000
-Striping			= 0
-TempStorage			= TempDatabase
+DatabaseFile                    = %(db_root)s/virtuoso.db
+ErrorLogFile                    = %(db_root)s/virtuoso.log
+LockFile                        = %(db_root)s/virtuoso.lck
+TransactionFile                 = %(db_root)s/virtuoso.trx
+xa_persistent_file              = %(db_root)s/virtuoso.pxa
+ErrorLogLevel                   = 7
+FileExtend                      = 200
+MaxCheckpointRemap              = 2000
+Striping                        = 0
+TempStorage                     = TempDatabase
 
 [TempDatabase]
-DatabaseFile			= %(db_root)s/virtuoso-temp.db
-TransactionFile			= %(db_root)s/virtuoso-temp.trx
-MaxCheckpointRemap		= 2000
-Striping			= 0
+DatabaseFile                    = %(db_root)s/virtuoso-temp.db
+TransactionFile                 = %(db_root)s/virtuoso-temp.trx
+MaxCheckpointRemap              = 2000
+Striping                        = 0
+
+[Flags]
+tn_max_memory                   = 2000000000
 
 [Parameters]
-ServerPort			= %(port)d
-LiteMode			= 0
-DisableUnixSocket		= 1
-DisableTcpSocket		= 0
-MaxClientConnections		= 10
-CheckpointInterval		= -1
-O_DIRECT			= 0
-CaseMode			= 2
-MaxStaticCursorRows		= 5000
-CheckpointAuditTrail		= 0
-AllowOSCalls			= 0
-SchedulerInterval		= 10
-DirsAllowed			= ., /opt/virtuoso/vad, %(fact_root)s, %(ont_root)s
-ThreadCleanupInterval		= 0
-ThreadThreshold			= 10
-ResourcesCleanupInterval	= 0
-FreeTextBatchSize		= 100000
-SingleCPU			= 0
-VADInstallDir			= /opt/virtuoso/vad/
+ServerPort                      = %(port)d
+LiteMode                        = 0
+DisableUnixSocket               = 1
+DisableTcpSocket                = 0
+MaxClientConnections            = 10
+CheckpointInterval              = -1
+O_DIRECT                        = 0
+CaseMode                        = 2
+MaxStaticCursorRows             = 5000
+CheckpointAuditTrail            = 0
+AllowOSCalls                    = 0
+SchedulerInterval               = 10
+DirsAllowed                     = ., /opt/virtuoso/vad, %(fact_root)s, %(ont_root)s
+ThreadCleanupInterval           = 0
+ThreadThreshold                 = 10
+ResourcesCleanupInterval        = 0
+FreeTextBatchSize               = 100000
+SingleCPU                       = 0
+VADInstallDir                   = /opt/virtuoso/vad/
 PrefixResultNames               = 0
-RdfFreeTextRulesSize		= 100
-IndexTreeMaps			= 256
+RdfFreeTextRulesSize            = 100
+IndexTreeMaps                   = 256
 MaxMemPoolSize                  = 5000000000
-TransactionAfterImageLimit      = 5000000000
+TransactionAfterImageLimit      = 16000000000
 PrefixResultNames               = 0
 MacSpotlight                    = 0
 IndexTreeMaps                   = 64
-MaxQueryMem 		 	= 2G
-VectorSize 		 	= 1000
-MaxVectorSize 		 	= 1000000
-AdjustVectorSize 	 	= 0
-ThreadsPerQuery 	 	= 4
-AsyncQueueMaxThreads 	 	= 10
+MaxQueryMem                     = 3G
+VectorSize                      = 1000
+MaxVectorSize                   = 1000000
+AdjustVectorSize                = 0
+ThreadsPerQuery                 = 4
+AsyncQueueMaxThreads            = 10
 
 NumberOfBuffers = %(nbufs)d
 MaxDirtyBuffers = %(mdbufs)d
 
 [HTTPServer]
-ServerPort			= 8890
-ServerRoot			= /opt/virtuoso/vsp
-MaxClientConnections		= 10
-DavRoot				= DAV
-EnabledDavVSP			= 0
-HTTPProxyEnabled		= 0
-TempASPXDir			= 0
-DefaultMailServer		= localhost:25
-ServerThreads			= 10
-MaxKeepAlives			= 10
-KeepAliveTimeout		= 10
-MaxCachedProxyConnections	= 10
-ProxyConnectionCacheTimeout	= 15
-HTTPThreadSize			= 280000
-HttpPrintWarningsInOutput	= 0
-Charset				= UTF-8
-MaintenancePage             	= atomic.html
-EnabledGzipContent          	= 1
+;ServerPort                      = 8890
+;ServerRoot                      = /opt/virtuoso/vsp
+;MaxClientConnections            = 10
+MaxClientConnections            = 0
+;DavRoot                         = DAV
+EnabledDavVSP                   = 0
+HTTPProxyEnabled                = 0
+TempASPXDir                     = 0
+;DefaultMailServer               = localhost:25
+;ServerThreads                   = 10
+;MaxKeepAlives                   = 10
+;KeepAliveTimeout                = 10
+;MaxCachedProxyConnections       = 10
+;ProxyConnectionCacheTimeout     = 15
+;HTTPThreadSize                  = 280000
+HttpPrintWarningsInOutput       = 0
+Charset                         = UTF-8
+;MaintenancePage                 = atomic.html
+;EnabledGzipContent              = 1
 
 [AutoRepair]
-BadParentLinks			= 0
+BadParentLinks                  = 0
 
 [Client]
-SQL_PREFETCH_ROWS		= 100
-SQL_PREFETCH_BYTES		= 16000
-SQL_QUERY_TIMEOUT		= 0
-SQL_TXN_TIMEOUT			= 0
+SQL_PREFETCH_ROWS               = 100
+SQL_PREFETCH_BYTES              = 16000
+SQL_QUERY_TIMEOUT               = 0
+SQL_TXN_TIMEOUT                 = 0
 
 [VDB]
-ArrayOptimization		= 0
-NumArrayParameters		= 10
-VDBDisconnectTimeout		= 1000
-KeepConnectionOnFixedThread	= 0
+ArrayOptimization               = 0
+NumArrayParameters              = 10
+VDBDisconnectTimeout            = 1000
+KeepConnectionOnFixedThread     = 0
 
 [Replication]
-ServerName			= db-EBT
-ServerEnable			= 1
-QueueMax			= 50000
+ServerName                      = db-EBT
+ServerEnable                    = 1
+QueueMax                        = 50000
 
 [Zero Config]
-ServerName			= virtuoso (EBT)
+ServerName                      = virtuoso (EBT)
 
 [URIQA]
-DynamicLocal			= 0
-DefaultHost			= localhost:8890
+DynamicLocal                    = 0
+DefaultHost                     = localhost:8890
 
 [SPARQL]
-ResultSetMaxRows           	= 10000
-MaxQueryCostEstimationTime 	= 400
-MaxQueryExecutionTime      	= 60
-DefaultQuery               	= select distinct ?Concept where {[] a ?Concept} LIMIT 100
-DeferInferenceRulesInit    	= 0
+ResultSetMaxRows                = 1000000
+MaxQueryCostEstimationTime      = 400
+MaxQueryExecutionTime           = 60
+DefaultQuery                    = select distinct ?Concept where {[] a ?Concept} LIMIT 100
+DeferInferenceRulesInit         = 0
 '''
 
 

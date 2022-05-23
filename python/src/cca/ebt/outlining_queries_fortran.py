@@ -4,7 +4,7 @@
   A script for outlining Fortran programs
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2019 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -257,7 +257,8 @@ Q_GOTOS_F = '''DEFINE input:inference "ont.cpi"
 PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
-SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog ?goto ?goto_cat ?label ?constr
+SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog ?goto ?goto_cat ?label
+                ?constr
 WHERE {
 GRAPH <%%(proj)s> {
 
@@ -451,8 +452,8 @@ PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
 SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog
-?constr ?cat
-?parent_constr ?parent_cat ?parent_sub ?parent_prog ?parent_pu_name ?parent_vpu_name
+                ?constr ?cat
+                ?parent_constr ?parent_cat ?parent_sub ?parent_prog ?parent_pu_name ?parent_vpu_name
 WHERE {
 GRAPH <%%(proj)s> {
 
@@ -594,13 +595,13 @@ PREFIX f:   <%(f_ns)s>
 PREFIX ver: <%(ver_ns)s>
 PREFIX src: <%(src_ns)s>
 SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp ?sp_cat ?sub ?main ?prog
-?constr ?cat ?call ?call_cat ?call_name
-?callee ?callee_name ?callee_loc ?callee_cat ?callee_pu_name
+                ?constr ?cat ?call ?call_cat ?call_name
+                ?callee ?callee_name ?callee_loc ?callee_cat ?callee_pu_name
 WHERE {
 GRAPH <%%(proj)s> {
 
   {
-    SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?constr ?callee ?cat
+    SELECT DISTINCT ?ver ?loc ?pu ?pu_name ?vpu_name ?constr ?callee ?cat
                     ?call ?call_cat ?call_name
     WHERE {
 
@@ -643,7 +644,7 @@ GRAPH <%%(proj)s> {
         ?call_cat0 rdfs:label ?call_cat .
       }
 
-    } GROUP BY ?ver ?loc ?pu_name ?vpu_name ?constr ?callee ?cat
+    } GROUP BY ?ver ?loc ?pu ?pu_name ?vpu_name ?constr ?callee ?cat
                ?call ?call_cat ?call_name
   }
 
@@ -688,7 +689,7 @@ GRAPH <%%(proj)s> {
       ?sp_cat0 rdfs:label ?sp_cat
     }
   }
-
+{
   OPTIONAL {
     ?constr f:inMainProgram ?main .
     ?main a f:MainProgram .
@@ -696,7 +697,7 @@ GRAPH <%%(proj)s> {
       ?main f:name ?prog .
     }
   }
-
+}
 }
 }
 ''' % NS_TBL

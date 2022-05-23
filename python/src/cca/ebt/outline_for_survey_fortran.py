@@ -4,7 +4,7 @@
   A script for outlining Fortran programs
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2021 Chiba Institute of Technology
+  Copyright 2018-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,10 +42,13 @@ from cca.ccautil.cca_config import PROJECTS_DIR
 from cca.ccautil.siteconf import GIT_REPO_BASE
 from cca.ccautil.virtuoso import VIRTUOSO_PW, VIRTUOSO_PORT
 from cca.factutil.entity import SourceCodeEntity
+from cca.ccautil.common import setup_logger
 
 ###
 
 logger = logging.getLogger()
+
+DEBUG = False
 
 METRICS_ROW_HEADER = list(metrics.abbrv_tbl.keys()) \
     + metrics.META_KEYS + ['nid', 'root_file']
@@ -80,9 +83,9 @@ class Node(NodeBase):
         sl = self.get_start_line()
         el = self.get_end_line()
         if sl == el:
-            r = '%d' % sl
+            r = f'{sl}'
         else:
-            r = '%d-%d' % (sl, el)
+            r = f'{sl}-{el}'
 
         s = '{}[{}:{}:{}:{}]'\
             .format(self.cat, r, self.sub, pu, os.path.basename(self.loc))
@@ -104,7 +107,7 @@ class Node(NodeBase):
                 elif nparents > 1:
                     if 'pp' not in [TYPE_TBL.get(c, None) for c in self.cats]:
                         pstr = ', '.join([str(p) for p in self._parents])
-                        logger.warning('multiple parents:\n%s:\nparents=[%s]' % (self, pstr))
+                        logger.warning(f'multiple parents:\n{self}:\nparents=[{pstr}]')
 
         return self._container
 
@@ -117,7 +120,7 @@ class Node(NodeBase):
                     if nd.cats & CALLS:
                         score += nd.count_parent_loops_in_container()
 
-                logger.debug('%d <- [%s]' % (score, ';'.join([str(x) for x in chain])))
+                logger.debug('{} <- [{}]'.format(score, ';'.join([str(x) for x in chain])))
             else:
                 score = -1
         else:
@@ -380,7 +383,7 @@ class Outline(OutlineBase):
                 fop_tbl = self._metrics.get_item_tbl(metrics.N_FP_OPS)
                 logger.info('fop_tbl has {} items'.format(len(fop_tbl)))
                 # for k in fop_tbl.keys():
-                #     print('!!! %s' % (k,))
+                #     print(f'!!! {k}')
                 aa0_tbl = self._metrics.get_item_tbl(metrics.N_A_REFS[0])
                 logger.info('aa0_tbl has {} items'.format(len(aa0_tbl)))
 
@@ -400,10 +403,10 @@ class Outline(OutlineBase):
         p.add_child(c)
         c.add_parent(p)
 
-        # print('!!! %s(%d) -> %s(%d)' % (p,
-        #                                 len(p.get_children()),
-        #                                 c,
-        #                                 len(c.get_children())))
+        logger.debug('add_edge: {}({}) -> {}({})'.format(p,
+                                                         len(p.get_children()),
+                                                         c,
+                                                         len(c.get_children())))
 
         if mark and 'do-construct' in c.cats:
             mkey = c.get_mkey()
@@ -531,7 +534,7 @@ class Outline(OutlineBase):
         logger.info('check marks...')
         a = set()
         for marked in self._marked_nodes:
-            # print('!!! marked=%s' % marked)
+            # print(f'!!! marked={marked}')
             ancs = marked.get_ancestors()
             a.update(ancs)
 
@@ -799,14 +802,15 @@ class Outline(OutlineBase):
             except KeyError:
                 pass
 
-        logger.info('%d root nodes (out of %d nodes) found' % (len(roots), count))
+        logger.info('{} root nodes (out of {} nodes) found'.format(len(roots), count))
 
-        # def dump(lv, k):
-        #     print('!!! %s%s(%d) %s' % ('  '*lv, k,
-        #                                len(k.get_children()),
-        #                                ';'.join([c.cat for c in k.get_children()])))
-        # for root in roots:
-        #     self.iter_tree(root, dump)
+        if DEBUG:
+            def dump(lv, k):
+                print('!!! {}{}({}) {}'.format('  '*lv, k,
+                                               len(k.get_children()),
+                                               ';'.join([c.cat for c in k.get_children()])))
+            for root in roots:
+                self.iter_tree(root, dump)
 
         tree = {'node_tbl': self._node_tbl, 'roots': roots}
 
@@ -898,7 +902,7 @@ def test(proj):
     logger.info(f'{count} top constructs (that contain loops) found')
 
     def dump(lv, k):
-        print('%s%s' % ('  '*lv, k))
+        print('{}{}'.format('  '*lv, k))
 
     for ver in root_tbl.keys():
         lver = get_lver(ver)
@@ -908,7 +912,7 @@ def test(proj):
 
         loc_tbl = root_tbl[ver]
         for loc in loc_tbl.keys():
-            print('*** ver=%s loc=%s' % (lver, loc))
+            print(f'*** ver={lver} loc={loc}')
             for root in loc_tbl[loc]:
                 ol.iter_tree(root, dump)
 
@@ -930,7 +934,7 @@ def test2(proj):
     if sub:
         print(len(sub.get_children()))
         for c in sub.get_children():
-            print('%s %s' % (c, c != sub))
+            print('{} {}'.format(c, c != sub))
 
 
 def main():
@@ -984,6 +988,11 @@ def main():
                         help='project id (default: all projects)')
 
     args = parser.parse_args()
+
+    log_level = logging.INFO
+    if args.debug:
+        log_level = logging.DEBUG
+    setup_logger(logger, log_level)
 
     proj_list = []
 
