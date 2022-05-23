@@ -30,15 +30,12 @@ RUN set -x && \
 RUN set -x && \
     apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            python3-sympy \
-            python3-scipy \
-            python3-sklearn \
             python3-psutil \
             python3-requests \
+            python3-pymongo \
             apache2 \
-            bindfs \
-            python3-pymongo && \
-    pip3 install msgpack simplejson gensim supervisor
+            bindfs && \
+    pip3 install msgpack simplejson scipy scikit-learn sympy gensim supervisor
 
 COPY python /root/python
 
