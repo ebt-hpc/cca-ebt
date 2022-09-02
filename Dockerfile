@@ -1,4 +1,4 @@
-FROM codinuum/cca:devel
+FROM codinuum/cca:devel-20.04
 
 MAINTAINER ebtxhpc
 
@@ -16,13 +16,9 @@ RUN set -x && \
     apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             gnupg2 && \
-    wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add - && \
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" \
-            | tee /etc/apt/sources.list.d/mongodb-org-5.0.list && \
-    echo "deb [ arch=arm64 ] http://ports.ubuntu.com/ubuntu-ports impish-security main" \
-            | tee /etc/apt/sources.list.d/impish-security-arm64.list && \
-    echo "deb [ arch=amd64 ] http://archive.ubuntu.com/ubuntu impish-security main" \
-            | tee /etc/apt/sources.list.d/impish-security-amd64.list && \
+    wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" \
+            | tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \
     apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             mongodb-org
