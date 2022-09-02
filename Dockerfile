@@ -56,19 +56,19 @@ RUN set -x && \
     mkdir /var/run/apache2 && \
     cd /var/www/outline/treeview && \
     mkdir metrics outline target topic && \
-    wget https://code.jquery.com/jquery-3.6.0.min.js && \
-    wget https://jqueryui.com/resources/download/jquery-ui-1.13.0.zip && \
-    wget https://codemirror.net/codemirror.zip && \
+    wget https://code.jquery.com/jquery-3.6.1.min.js && \
+    wget https://jqueryui.com/resources/download/jquery-ui-1.13.2.zip && \
+    wget https://codemirror.net/5/codemirror.zip && \
     git clone https://github.com/vakata/jstree && \
-    unzip jquery-ui-1.13.0.zip && \
+    unzip jquery-ui-1.13.2.zip && \
     unzip codemirror.zip && \
-    rm jquery-ui-1.13.0.zip && \
+    rm jquery-ui-1.13.2.zip && \
     rm codemirror.zip && \
-    chown www-data:www-data jquery-3.6.0.min.js && \
-    chown -R www-data:www-data jquery-ui-1.13.0 && \
+    chown www-data:www-data jquery-3.6.1.min.js && \
+    chown -R www-data:www-data jquery-ui-1.13.2 && \
     chown -R www-data:www-data jstree metrics outline target topic && \
-    ln -s jquery-3.6.0.min.js jquery.min.js && \
-    ln -s jquery-ui-1.13.0 jquery-ui && \
+    ln -s jquery-3.6.1.min.js jquery.min.js && \
+    ln -s jquery-ui-1.13.2 jquery-ui && \
     ln -s codemirror-* codemirror && \
     ln -s /var/lib/cca/projects .
 
