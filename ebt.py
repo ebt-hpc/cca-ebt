@@ -186,10 +186,7 @@ def check_mem(mem_gb):
 
 def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
             all_roots=False, all_sps=False, all_calls=False,
-            html=False,
-            tree_url=None,
-            desc_url=None,
-            desc_ext=None,
+            html=False, tree_url=None, desc_url=None, desc_ext=None,
             debug=True,
             image=IMAGE_NAME):
 
@@ -508,11 +505,14 @@ def opcount(args):
 
 
 def outline(args):
+    all_roots = args.all_roots or args.all
+    all_sps = args.all_sps or args.all
+    all_calls = args.all_calls or args.all
     run_cmd('outline', args.proj_dir, args.mem, dry_run=args.dry_run,
             keep_fb=args.keep_fb, devel=args.devel,
-            all_roots=args.all_roots,
-            all_sps=args.all_sps,
-            all_calls=args.all_calls,
+            all_roots=all_roots,
+            all_sps=all_sps,
+            all_calls=all_calls,
             html=args.html,
             tree_url=args.tree_url,
             desc_url=args.desc_url,
@@ -578,20 +578,20 @@ def main():
     parser_outline.add_argument('-k', '--keep-fb', dest='keep_fb',
                                 action='store_true', help='keep FB')
 
-    parser_outline.add_argument('-r', '--all-roots', dest='all_roots',
-                                action='store_true',
+    parser_outline.add_argument('-a', '--all', dest='all', action='store_true',
+                                help=('allow all subprograms and calls to be shown'
+                                      ' (equivalent to "-r -s -c")'))
+
+    parser_outline.add_argument('-r', '--all-roots', dest='all_roots', action='store_true',
                                 help='allow subprograms to be shown as roots')
 
-    parser_outline.add_argument('-s', '--all-sps', dest='all_sps',
-                                action='store_true',
+    parser_outline.add_argument('-s', '--all-sps', dest='all_sps', action='store_true',
                                 help='allow loop-free subprograms to be shown')
 
-    parser_outline.add_argument('-c', '--all-calls', dest='all_calls',
-                                action='store_true',
+    parser_outline.add_argument('-c', '--all-calls', dest='all_calls', action='store_true',
                                 help='allow all calls to be shown')
 
-    parser_outline.add_argument('--html', dest='html',
-                                action='store_true',
+    parser_outline.add_argument('--html', dest='html', action='store_true',
                                 help='generate HTML files from outlines')
 
     parser_outline.add_argument('--tree-url', dest='tree_url', type=str, metavar='URL',

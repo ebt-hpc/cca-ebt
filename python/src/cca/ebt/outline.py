@@ -136,21 +136,17 @@ class Analyzer(AnalyzerBase):
 def main():
     parser = create_argparser('Analyze C/C++/Fortran programs for outlining')
 
-    parser.add_argument('-a', '--all', dest='all',
-                        action='store_true',
+    parser.add_argument('-a', '--all', dest='all', action='store_true',
                         help=('allow all subprograms and calls to be shown'
                               ' (equivalent to "-r -s -c")'))
 
-    parser.add_argument('-r', '--all-roots', dest='all_roots',
-                        action='store_true',
+    parser.add_argument('-r', '--all-roots', dest='all_roots', action='store_true',
                         help='allow subprograms to be shown as root nodes')
 
-    parser.add_argument('-s', '--all-sps', dest='all_sps',
-                        action='store_true',
+    parser.add_argument('-s', '--all-sps', dest='all_sps', action='store_true',
                         help='allow loop-free subprograms to be shown')
 
-    parser.add_argument('-c', '--all-calls', dest='all_calls',
-                        action='store_true',
+    parser.add_argument('-c', '--all-calls', dest='all_calls', action='store_true',
                         help='allow all calls to be shown')
 
     parser.add_argument('--html', dest='html', action='store_true',
