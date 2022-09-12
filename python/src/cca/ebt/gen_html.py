@@ -34,16 +34,18 @@ logger = logging.getLogger()
 
 HTML_DIR = 'html'
 
-TREE_PREFIX = 'T-'
-DESC_PREFIX = 'D-'
+TREE_PREFIX = ''
+DESC_PREFIX = ''
 
 TREE_DIR_NAME = 'T'
 DESC_DIR_NAME = 'D'
 
 INDENT = 2
 
-TREE_ROOT = f'/{TREE_DIR_NAME}/'
-DESC_ROOT = f'/{DESC_DIR_NAME}/'
+TREE_URL = f'/{TREE_DIR_NAME}/'
+DESC_URL = f'/{DESC_DIR_NAME}/'
+
+DESC_EXT = ''
 
 HTML_TEMPL = '''<!DOCTYPE html>
 <html>
@@ -150,8 +152,8 @@ pre {
     background-color: #fff;
     color: #000;
     border-style: solid;
-    border-width: thin; 
-    border-color: #aaa; 
+    border-width: thin;
+    border-color: #aaa;
 }
 .call:hover {
     background-color: #efffef;
@@ -169,6 +171,10 @@ pre {
     font-style: italic;
     font-size: 90%;
 }
+.emph {
+    font-weight: bold;
+    font-size: 104%;
+}
 '''
 
 
@@ -183,18 +189,32 @@ def ensure_dir(d):
     return b
 
 
-def tree_path_to_url(path):
-    path = os.path.join(os.path.dirname(path),
-                        TREE_PREFIX+os.path.basename(path))
-    u = TREE_ROOT + pathname2url(path)
-    return u
+def change_ext(path, ext):
+    path_ = path
+    h, e = os.path.splitext(path)
+    if e != ext:
+        path_ = h + ext
+    return path_
 
 
-def desc_path_to_url(path):
+def tree_path_to_url(path, prefix=TREE_URL, basename_prefix=TREE_PREFIX):
     path = os.path.join(os.path.dirname(path),
-                        DESC_PREFIX+os.path.basename(path))
-    u = DESC_ROOT + pathname2url(path)
-    return u
+                        basename_prefix + os.path.basename(path)
+                        )
+    if not prefix.endswith('/'):
+        prefix += '/'
+    url = prefix + pathname2url(path)
+    return url
+
+
+def desc_path_to_url(path, prefix=DESC_URL, basename_prefix=DESC_PREFIX, ext=''):
+    path = os.path.join(os.path.dirname(path),
+                        basename_prefix + change_ext(os.path.basename(path), ext)
+                        )
+    if not prefix.endswith('/'):
+        prefix += '/'
+    url = prefix + pathname2url(path)
+    return url
 
 
 class HTMLScanner(HTMLParser):
@@ -246,7 +266,7 @@ def dump_css(path):
     if os.path.exists(path):
         logger.warning(f'{path} exists')
     else:
-        logger.info(f'dumping CSS into {path}...')
+        logger.info(f'dumping CSS into "{path}"...')
         with open(path, 'w') as f:
             f.write(CSS)
 
@@ -258,7 +278,7 @@ def dump_html(html, path, prefix=''):
     if os.path.exists(path):
         logger.warning(f'{path} exists')
     else:
-        logger.info(f'dumping HTML into {path}...')
+        logger.info(f'dumping HTML into "{path}"...')
         with open(path, 'w') as f:
             if INDENT > 0:
                 html = indent(html)
@@ -275,14 +295,34 @@ def is_subprogram(node):
     return cat.endswith('-subprogram')
 
 
+def is_module(node):
+    cat = node.get('cat', '')
+    return cat.endswith('-module')
+
+
 def is_call(node):
     return node.get('type', '') == 'call'
 
 
+def emph_callee(code, callee):
+    code_ = code
+    if callee:
+        code_ = code.replace(callee, f'<span class="emph">{callee}</span>')
+    return code_
+
+
 class HtmlGenerator(object):
-    def __init__(self, ver_dir, out_dir, debug=False):
+    def __init__(self, ver_dir, out_dir,
+                 tree_url=TREE_URL,
+                 desc_url=DESC_URL,
+                 desc_ext=DESC_EXT,
+                 debug=False):
+
         self._ver_dir = ver_dir
         self._out_dir = out_dir
+        self._tree_url = tree_url
+        self._desc_url = desc_url
+        self._desc_ext = desc_ext
         self._debug = debug
         with open(os.path.join(ver_dir, 'path_list.json')) as f:
             self._path_list = json.load(f)
@@ -303,15 +343,17 @@ class HtmlGenerator(object):
                     li.append(f'{k}: {v} -> ???')
             else:
                 li.append(f'{k}: {v}')
-        s = '{{{}}}'.format(', '.join(li))
+        s = f'{{{", ".join(li)}}}'
         return s
 
     def show_node(self, node, indent=0):
         if self._debug:
             ind = indent * ' '
             for k, v in node.items():
-                if k in ('children', 'aref_ranges', 'other_metrics', 'lmi'):
+                if k in ('aref_ranges', 'other_metrics', 'lmi'):
                     pass
+                elif k == 'children':
+                    print(f'{ind}{k}: ({len(v)})')
                 elif k == 'fid':
                     try:
                         fpath = self._path_list[int(v)]
@@ -336,27 +378,30 @@ class HtmlGenerator(object):
             except Exception:
                 logger.error(f'failed to get path: fid={fid}')
         else:
-            logger.error('failed to get fid: node={}'.format(self.node_to_str(node)))
+            logger.error(f'failed to get fid: node={self.node_to_str(node)}')
         return fpath
 
-    def gen_path_of_main(self, node):
+    def gen_path_of_main(self, node, ext='.html'):
         fpath = self.path_of_node_fid(node)
         pu = node.get('pu', None)
         if pu is None:
-            fpath = os.path.join(fpath, 'main.html')
+            fpath = os.path.join(fpath, f'main{ext}')
         else:
-            fpath = os.path.join(fpath, f'{pu}.html')
+            fpath = os.path.join(fpath, f'{pu}{ext}')
         return fpath
 
-    def gen_path_of_subprogram(self, node):
+    def gen_path_of_subprogram(self, node, ext='.html'):
         fpath = None
         cat = node.get('cat', None)
         name = node.get('name', None)
+
+        logger.debug(f'name={name} cat={cat}')
 
         if is_subprogram(node) and cat is not None and name is not None:
             fpath = self.path_of_node_fid(node)
             pu = node.get('pu', '')
             ok = pu != ''
+
             if cat.endswith('-external-subprogram'):
                 if '|' in pu:
                     pul = pu.split('|')
@@ -364,10 +409,18 @@ class HtmlGenerator(object):
                 else:
                     ok &= name == pu
                 if ok:
-                    fpath = os.path.join(fpath, f'{name}.html')
+                    fpath = os.path.join(fpath, f'{name}{ext}')
+
+            elif cat.endswith('-internal-subprogram'):
+                if ok:
+                    prefix = ''.join([f'{n}-' for n in node.get('qspn', [])])
+                    logger.debug(f'prefix={prefix}')
+                    fpath = os.path.join(fpath, f'{prefix}{name}{ext}')
             else:
                 if ok:
-                    fpath = os.path.join(fpath, f'{pu}-{name}.html')
+                    fpath = os.path.join(fpath, f'{pu}-{name}{ext}')
+
+        logger.debug(f'fpath={fpath}')
 
         return fpath
 
@@ -382,34 +435,36 @@ class HtmlGenerator(object):
         idx = node.get('idx', None)
         children = node.get('children', [])
 
+        code_style = 'code'
+
         if ty == 'call*':
             code_style = 'external'
-        else:
-            code_style = 'code'
 
-        code = '''<span class="{}">\n{}\n</span>'''.format(code_style,
-                                                           node.get('code',
-                                                                    ''))
+        callee = node.get('callee', None)
+
+        _code = emph_callee(node.get("code", ""), callee)
+
+        code = f'<span class="{code_style}">\n{_code}\n</span>'
+
         desc = ''
 
         id_attr = ''
 
         if path is not None:
-            code = '<a href="{}">\n{}\n</a>'.format(tree_path_to_url(path),
-                                                    code)
+            tree_url = tree_path_to_url(path, prefix=self._tree_url)
+            code = f'<a href="{tree_url}">\n{code}\n</a>'
             fpath = self.path_of_node_fid(node)
             sl = node.get('sl', -1)
             el = node.get('el', -1)
             code += f'\n&nbsp;[{sl}-{el}:{fpath}]'
 
-            desc_url = desc_path_to_url(path)
+            desc_url = desc_path_to_url(path, prefix=self._desc_url, ext=self._desc_ext)
             desc = '&nbsp;\n<span class="desc">\n'
             desc += f'<a href={desc_url} target="_blank">\n'
             desc += '[desc]\n</a>\n</span>'
 
         if idx is None:
-            logger.warning('failed to get idx: {}'
-                           .format(self.node_to_str(node)))
+            logger.warning(f'failed to get idx: {self.node_to_str(node)}')
         else:
             id_attr = f' id="id_{idx}"'
 
@@ -442,7 +497,9 @@ class HtmlGenerator(object):
         return s
 
     def proc_tree(self, node, top=False):
+
         rpath = None
+
         if is_main(node):
             rpath = self.gen_path_of_main(node)
             fpath = self.ensure_abs_path(rpath)
@@ -451,20 +508,26 @@ class HtmlGenerator(object):
                 name = 'main'
             html = self.tree_to_html(node, name, rpath)
             dump_html(html, fpath, prefix=TREE_PREFIX)
-            print('-', fpath)
+            if self._debug:
+                print('-', fpath)
             self.show_node(node)
 
         elif is_call(node):
             self.show_node(node)
             for c in node.get('children', []):
-                print('-', self.gen_path_of_subprogram(c))
+                if self._debug:
+                    print('-', self.gen_path_of_subprogram(c))
                 self.show_node(c, indent=2)
 
         elif is_subprogram(node):
             rpath = self.gen_path_of_subprogram(node)
             fpath = self.ensure_abs_path(rpath)
-            html = self.tree_to_html(node, node.get('name', '???'), rpath)
+            sp_name = node.get('name', '???')
+            html = self.tree_to_html(node, sp_name, rpath)
             dump_html(html, fpath, prefix=TREE_PREFIX)
+            self.show_node(node)
+
+        else:
             self.show_node(node)
 
         for child in node.get('children', []):
@@ -477,14 +540,12 @@ class HtmlGenerator(object):
         for nid in self._callees_tbl.get(callee, []):
             nd = self._nid_tbl.get(nid, None)
             if nd is not None:
-                logger.debug('{} -> {}:{}'.format(callee,
-                                                  nid,
-                                                  nd.get('code', '???')))
+                logger.debug(f'{callee} -> {nid}:{nd.get("code", "???")}')
                 callees.append(nd)
         if False and callees == []:
             nd = self._node_tbl.get(callee, None)
             if nd is not None:
-                logger.debug('{} -> {}'.format(callee, nd.get('code', '???')))
+                logger.debug(f'{callee} -> {nd.get("code", "???")}')
                 callees.append(nd)
         return callees
 
@@ -499,7 +560,7 @@ class HtmlGenerator(object):
                     self._node_tbl[name] = node
                 nid = node.get('id', None)
                 if nid in idl:
-                    logger.debug('{} -> {}'.format(nid, node.get('code', '???')))
+                    logger.debug(f'{nid} -> {node.get("code", "???")}')
                     self._nid_tbl[nid] = node
             for child in node.get('children', []):
                 scan(child)
@@ -537,9 +598,18 @@ class HtmlGenerator(object):
         dump_css(os.path.join(self._out_dir, 'doc.css'))
 
 
-def gen_html(ver_dir, html_dir, debug=False):
+def gen_html(ver_dir, html_dir,
+             tree_url=TREE_URL,
+             desc_url=DESC_URL,
+             desc_ext=DESC_EXT,
+             debug=False):
+
     ensure_dir(html_dir)
-    g = HtmlGenerator(ver_dir, html_dir, debug=debug)
+    g = HtmlGenerator(ver_dir, html_dir,
+                      tree_url=tree_url,
+                      desc_url=desc_url,
+                      desc_ext=desc_ext,
+                      debug=debug)
     g.gen()
 
 
@@ -558,6 +628,15 @@ def main():
     parser.add_argument('-o', '--html-dir', type=str, metavar='DIR',
                         default=HTML_DIR, help='set output directory')
 
+    parser.add_argument('--tree-url', type=str, metavar='URL', default=TREE_URL,
+                        help='specify URL for trees in generated HTML files')
+
+    parser.add_argument('--desc-url', type=str, metavar='URL', default=DESC_URL,
+                        help='specify URL for description links in generated HTML files')
+
+    parser.add_argument('--desc-ext', type=str, metavar='EXT', default=DESC_EXT,
+                        help='specify extension for description links in generated HTML files')
+
     args = parser.parse_args()
 
     log_level = logging.INFO
@@ -565,7 +644,11 @@ def main():
         log_level = logging.DEBUG
     setup_logger(logger, log_level)
 
-    gen_html(args.ver_dir, args.html_dir, debug=args.debug)
+    gen_html(args.ver_dir, args.html_dir,
+             tree_url=args.tree_url,
+             desc_url=args.desc_url,
+             desc_ext=args.desc_ext,
+             debug=args.debug)
 
 
 if __name__ == '__main__':

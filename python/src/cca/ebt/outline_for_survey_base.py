@@ -4,7 +4,7 @@
   A script for outlining C programs
 
   Copyright 2013-2018 RIKEN
-  Copyright 2017-2021 Chiba Institute of Technology
+  Copyright 2017-2022 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -152,7 +152,7 @@ def index(idx_gen, data, callees_tbl):
                 if callees:
                     d['nlinks'] = len(callees)
                 else:
-                    logger.debug('!!! not found: "{}"'.format(callee_name))
+                    logger.debug(f'!!! not found: "{callee_name}"')
 
     scan(data)
 
@@ -203,6 +203,9 @@ class NodeBase(object):
         self._all_sps = all_sps
         self._all_calls = all_calls
 
+    def set_relevant(self):
+        self.relevant = True
+
     def __eq__(self, other):
         if isinstance(other, NodeBase):
             e = self.uri == other.uri
@@ -241,10 +244,7 @@ class NodeBase(object):
         else:
             r = '%d-%d' % (sl, el)
 
-        s = '{}[{}:{}:{}]'.format(self.cat,
-                                  r,
-                                  self.get_name(),
-                                  os.path.basename(self.loc))
+        s = f'{self.cat}[{r}:{self.get_name()}:{os.path.basename(self.loc)}]'
 
         return s
 
@@ -298,13 +298,16 @@ class NodeBase(object):
 
     def get_max_chain(self, visited_containers=[]):  # chain of call or subprog
         if self._max_chain is None:
+            logger.debug(f'{self}')
 
             container = self.get_container()
 
             if container is None:
-                pass
+                logger.debug('container is None')
 
             elif container is self:
+                logger.debug('container is self')
+
                 if container in visited_containers:
                     raise Exit
 
@@ -314,6 +317,8 @@ class NodeBase(object):
                 elif container.cats & self.SUBPROGS:
                     calls = container.get_parents()
 
+                    logger.debug(f'|calls|={len(calls)}')
+
                     max_chain = []
                     in_file_call = False
                     start_line = sys.maxsize
@@ -322,7 +327,11 @@ class NodeBase(object):
                     skip_count = 0
 
                     for call in calls:
+                        logger.debug(f'call={call}')
+
                         callc = call.get_container()
+
+                        logger.debug(f'callc={callc}')
 
                         if callc:
                             try:
@@ -336,10 +345,12 @@ class NodeBase(object):
                             else:
                                 chain_ = [container, call] + chain
 
+                                logger.debug(f'|chain_|={len(chain_)}')
+
                                 loc_ = call.loc
 
                                 in_file_call_ = False
-                                if chain:
+                                if True or chain:
                                     in_file_call_ = loc_ == container.loc
 
                                 start_line_ = call.get_start_line()
@@ -347,6 +358,8 @@ class NodeBase(object):
                                 score_ = self.score_of_chain(chain_)
 
                                 max_score = self.score_of_chain(max_chain)
+
+                                logger.debug(f'score_={score_} max_score={max_score}')
 
                                 cond0 = score_ > max_score
                                 cond1 = score_ == max_score and in_file_call_ \
@@ -364,7 +377,11 @@ class NodeBase(object):
 
                     if skip_count < len(calls):
                         self._max_chain = max_chain
+                    elif self._all_sps and self.cats & self.SUBPROGS:
+                        logger.debug('1')
+                        return [self]
                     else:
+                        logger.debug('0')
                         return []
 
                 else:  # another root (e.g. pp-directive)
@@ -372,6 +389,8 @@ class NodeBase(object):
 
             else:  # container is not self
                 self._max_chain = container.get_max_chain()
+
+        logger.debug(f'{len(self._max_chain)}')
 
         return self._max_chain
 
@@ -521,26 +540,35 @@ class NodeBase(object):
                 omitted=set()):
         # ntbl: caller_name * func node * level -> visited
 
-        logger.debug('! {}'.format(self))
+        for anc in ancl:
+            logger.debug(f'anc: {anc}')
 
+        # ancl_ = list(filter(lambda x: x.cats & (self.SUBPROGS | self.CALLS), ancl))
         ancl_ = ancl
         lv = len(ancl)
 
-        if self.cats & self.SUBPROGS:
+        logger.debug(f'<{self}> (lv={lv})')
+
+        if self.cats & self.SUBPROGS and (ancl == [] or self is not ancl[0]):
             ancl_ = [self] + ancl
             if lv > 0:
                 ntbl[(ancl[0].get_name(), self, lv)] = True
-                logger.debug('[REG] %s:%s:%d' % (ancl[0].get_name(),
-                                                 self.get_name(), lv))
+                logger.debug(f'[REG] {ancl[0].get_name()}:{self.get_name()}:{lv}')
 
         _children_l = sorted(list(self._children))
 
-        logger.debug('len(_children)={}'.format(len(self._children)))
+        logger.debug(f'nchildren={len(self._children)}')
 
-        children_l = list(filter(lambda c: c not in ancl and c.relevant,
-                                 _children_l))
+        # for c in _children_l:
+        #     logger.debug(f' {c.get_name()}({c.cats}): relevant={c.relevant}')
+
+        children_l = list(filter(lambda c: c not in ancl and c.relevant, _children_l))
+
+        logger.debug(f' -> nchildren={len(children_l)}')
 
         children_l = self.check_children(children_l)
+
+        logger.debug(f' -> nchildren={len(children_l)}')
 
         is_caller = self.cats & self.CALLS
 
@@ -549,7 +577,7 @@ class NodeBase(object):
         self.ignored_callee_count = 0
 
         if is_caller:
-            logger.debug('callee_name={}'.format(self._callee_name))
+            logger.debug(f'callee_name={self._callee_name}')
 
             ancl_ = [self] + ancl
 
@@ -578,20 +606,15 @@ class NodeBase(object):
                 else:
                     b = False
 
-                logger.debug('[LOOKUP] {}:{}:{}'.format(self.get_name(),
-                                                        c,
-                                                        len(ancl_)))
+                logger.debug(f'[LOOKUP] ({self.get_name()},{c},{len(ancl_)})')
+
                 hit = (self.get_name(), c, len(ancl_)) in ntbl
 
                 b = b and (not hit)
 
-                logger.debug('[FILT] ({}->){} (lv={}) --> {} (hit={}, max_lv={})'
-                             .format(self.get_name(),
-                                     c.get_name(),
-                                     lv_,
-                                     b,
-                                     hit,
-                                     max_lv))
+                logger.debug(f'[FILT] ({self.get_name()}->){c.get_name()} (lv={lv_})'
+                             f' --> {b} (hit={hit}, max_lv={max_lv})')
+
                 return b
 
             before = len(children_l)

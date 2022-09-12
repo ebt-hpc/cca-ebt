@@ -176,7 +176,8 @@ def check_mem(mem_gb):
         mem = mem_gb * 1000000000
         container_mem_gb = container_mem / 1000000000
         if mem > container_mem:
-            print(f'[WARNING] specified memory amount ({mem_gb}GB) exceeds container\'s ({container_mem_gb:.2f}GB)')
+            print(f'[WARNING] specified memory amount'
+                  f' ({mem_gb}GB) exceeds container\'s ({container_mem_gb:.2f}GB)')
             b = False
     else:
         b = False
@@ -186,6 +187,9 @@ def check_mem(mem_gb):
 def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
             all_roots=False, all_sps=False, all_calls=False,
             html=False,
+            tree_url=None,
+            desc_url=None,
+            desc_ext=None,
             debug=True,
             image=IMAGE_NAME):
 
@@ -238,6 +242,15 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
     if html:
         subcmd += ' --html'
 
+    if tree_url:
+        subcmd += f' --tree-url {tree_url}'
+
+    if desc_url:
+        subcmd += f' --desc-url {desc_url}'
+
+    if desc_ext:
+        subcmd += f' --desc-ext {desc_ext}'
+
     if debug:
         subcmd += ' -d'
 
@@ -262,10 +275,10 @@ def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
         run_cmd += f' -e "TZ={TZ}"'
 
     if LINUX_HOST_FLAG:
-        run_cmd += ' --user {}:{}'.format(os.geteuid(), os.getegid())
+        run_cmd += f' --user {os.geteuid()}:{os.getegid()}'
 
     run_cmd += f' {vol_opt}'
-    run_cmd += ' {} {}'.format(get_image_name(image, devel=devel), subcmd)
+    run_cmd += f' {get_image_name(image, devel=devel)} {subcmd}'
 
     stat_path = os.path.join(dest_root, STAT_NAME)
 
@@ -319,7 +332,7 @@ def restore_mongo_db(vol_name, mongo_path, dry_run=False, force=False,
     run_cmd += f' -v "{vol_name}:{CCA_VAR}/mongo"'
     run_cmd += f' -v "{mongo_path}:/tmp/mongo"'
     guest_cmd = f'/bin/bash -c "rm -rf {CCA_VAR}/mongo/db; cp -a /tmp/mongo/db {CCA_VAR}/mongo/"'
-    run_cmd += ' {} {}'.format(get_image_name(image), guest_cmd)
+    run_cmd += f' {get_image_name(image)} {guest_cmd}'
     print(run_cmd)
     if not dry_run:
         try:
@@ -346,7 +359,7 @@ def save_mongo_db(vol_name, mongo_path, dry_run=False, force=False,
     run_cmd += f' -v "{vol_name}:{CCA_VAR}/mongo"'
     run_cmd += f' -v "{mongo_path}:/tmp/mongo"'
     guest_cmd = f'/bin/bash -c "rm -rf /tmp/mongo/db; cp -a {CCA_VAR}/mongo/db /tmp/mongo/"'
-    run_cmd += ' {} {}'.format(get_image_name(image), guest_cmd)
+    run_cmd += f' {get_image_name(image)} {guest_cmd}'
     print(run_cmd)
     if not dry_run:
         try:
@@ -423,8 +436,8 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
         run_cmd += f' -e "TZ={TZ}"'
 
     if LINUX_HOST_FLAG:
-        run_cmd += ' -e "HOST_UID={}"'.format(os.geteuid())
-        run_cmd += ' -e "HOST_GID={}"'.format(os.getegid())
+        run_cmd += f' -e "HOST_UID={os.geteuid()}"'
+        run_cmd += f' -e "HOST_GID={os.getegid()}"'
 
     run_cmd += f' {vol_opt}'
 
@@ -432,7 +445,7 @@ def run_tv_srv(dpath, port=DEFAULT_SRV_PORT, dry_run=False, devel=False,
     if LINUX_HOST_FLAG:
         srv_cmd += ' -c /etc/supervisord-linux.conf'
 
-    run_cmd += ' {} {}'.format(get_image_name(image, devel=devel), srv_cmd)
+    run_cmd += f' {get_image_name(image, devel=devel)} {srv_cmd}'
 
     print(run_cmd)
     print(f'\nport={port}')
@@ -480,8 +493,7 @@ def stop_tv_srv(dpath, dry_run=False, devel=False, save=False):
 
 
 def update(args):
-    cmd = '{} pull {}'\
-        .format(CONTAINER_CMD, get_image_name(args.image, devel=args.devel))
+    cmd = f'{CONTAINER_CMD} pull {get_image_name(args.image, devel=args.devel)}'
     print(cmd)
     if not args.dry_run:
         try:
@@ -502,6 +514,9 @@ def outline(args):
             all_sps=args.all_sps,
             all_calls=args.all_calls,
             html=args.html,
+            tree_url=args.tree_url,
+            desc_url=args.desc_url,
+            desc_ext=args.desc_ext,
             image=args.image)
 
 
@@ -546,7 +561,7 @@ def main():
                                            formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser_opcount.add_argument('proj_dir', type=str, metavar='DIR',
-                                help='directory that subject programs reside')
+                                help='directory that contains subject programs')
 
     parser_opcount.add_argument('-k', '--keep-fb', dest='keep_fb',
                                 action='store_true', help='keep FB')
@@ -558,7 +573,7 @@ def main():
                                            formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser_outline.add_argument('proj_dir', type=str, metavar='DIR',
-                                help='directory that subject programs reside')
+                                help='directory that contains subject programs')
 
     parser_outline.add_argument('-k', '--keep-fb', dest='keep_fb',
                                 action='store_true', help='keep FB')
@@ -579,6 +594,16 @@ def main():
                                 action='store_true',
                                 help='generate HTML files from outlines')
 
+    parser_outline.add_argument('--tree-url', dest='tree_url', type=str, metavar='URL',
+                                help='specify URL for trees in generated HTML files')
+
+    parser_outline.add_argument('--desc-url', dest='desc_url', type=str, metavar='URL',
+                                help='specify URL for description links in generated HTML files')
+
+    parser_outline.add_argument('--desc-ext', type=str, metavar='EXT',
+                                help=('specify extension for description links'
+                                      ' in generated HTML files'))
+
     parser_outline.set_defaults(func=outline)
 
     parser_tv = subparsers.add_parser('treeview')
@@ -589,7 +614,7 @@ def main():
                                                formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser_tv_start.add_argument('proj_dir', type=str, metavar='DIR',
-                                 help='directory that subject programs reside')
+                                 help='directory that contains subject programs')
 
     parser_tv_start.add_argument('-p', '--port', dest='port', type=int,
                                  default=DEFAULT_SRV_PORT, metavar='PORT',
@@ -605,7 +630,7 @@ def main():
                                               formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser_tv_stop.add_argument('proj_dir', type=str, metavar='DIR',
-                                help='directory that subject programs reside')
+                                help='directory that contains subject programs')
 
     parser_tv_stop.add_argument('--save', dest='save', action='store_true',
                                 help='save viewer state (Windows host only)')

@@ -31,7 +31,7 @@ from .outline_for_survey_fortran import Outline as OutlineForSurveyFortran
 from .outline_for_survey_base import gen_conf_a, METRICS_DIR
 from .select_targets import predict_kernels, TARGET_DIR_NAME
 from .collect_readme_for_survey import collect_readme
-from .gen_html import HTML_DIR, gen_html
+from .gen_html import HTML_DIR, TREE_URL, DESC_URL, DESC_EXT, gen_html
 from cca.ccautil.common import setup_logger
 
 logger = logging.getLogger()
@@ -57,12 +57,19 @@ class Analyzer(AnalyzerBase):
 
     def __init__(self, mem=4, pw=None, port=VIRTUOSO_PORT,
                  all_roots=False, all_sps=False, all_calls=False,
-                 html=False):
+                 html=False,
+                 tree_url=None,
+                 desc_url=None,
+                 desc_ext=None,
+                 ):
         super().__init__(mem=mem, pw=pw, port=port)
         self._all_roots = all_roots
         self._all_sps = all_sps
         self._all_calls = all_calls
-        self._html = html
+        self._html = html or tree_url or desc_url
+        self._tree_url = TREE_URL if tree_url is None else tree_url
+        self._desc_url = DESC_URL if desc_url is None else desc_url
+        self._desc_ext = DESC_EXT if desc_ext is None else desc_ext
 
     def analyze_facts(self, proj_dir, proj_id, ver, dest_root,
                       bf0l=BF0L, bf0u=BF0U,
@@ -120,11 +127,19 @@ class Analyzer(AnalyzerBase):
             for v in os.listdir(outline_v_dir):
                 ver_dir = os.path.join(outline_v_dir, v)
                 html_dir = os.path.join(html_base_dir, v)
-                gen_html(ver_dir, html_dir)
+                gen_html(ver_dir, html_dir,
+                         tree_url=self._tree_url,
+                         desc_url=self._desc_url,
+                         desc_ext=self._desc_ext)
 
 
 def main():
     parser = create_argparser('Analyze C/C++/Fortran programs for outlining')
+
+    parser.add_argument('-a', '--all', dest='all',
+                        action='store_true',
+                        help=('allow all subprograms and calls to be shown'
+                              ' (equivalent to "-r -s -c")'))
 
     parser.add_argument('-r', '--all-roots', dest='all_roots',
                         action='store_true',
@@ -140,6 +155,15 @@ def main():
 
     parser.add_argument('--html', dest='html', action='store_true',
                         help='generate HTML files from outlines')
+
+    parser.add_argument('--tree-url', dest='tree_url', type=str, metavar='URL',
+                        help='specify URL for trees in generated HTML files')
+
+    parser.add_argument('--desc-url', dest='desc_url', type=str, metavar='URL',
+                        help='specify URL for description links in generated HTML files')
+
+    parser.add_argument('--desc-ext', type=str, metavar='EXT', default='',
+                        help='specify extension for description links in generated HTML files')
 
     args = parser.parse_args()
 
@@ -158,11 +182,18 @@ def main():
     import cca.ccautil.materialize_fact
     cca.ccautil.materialize_fact.logger = logger
 
+    all_roots = args.all_roots or args.all
+    all_sps = args.all_sps or args.all
+    all_calls = args.all_calls or args.all
+
     a = Analyzer(mem=args.mem, pw=args.pw, port=args.port,
-                 all_roots=args.all_roots,
-                 all_sps=args.all_sps,
-                 all_calls=args.all_calls,
-                 html=args.html)
+                 all_roots=all_roots,
+                 all_sps=all_sps,
+                 all_calls=all_calls,
+                 html=args.html,
+                 tree_url=args.tree_url,
+                 desc_url=args.desc_url,
+                 desc_ext=args.desc_ext)
 
     langs = []
     if not args.ignore_cpp:

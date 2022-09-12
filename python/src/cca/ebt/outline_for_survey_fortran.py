@@ -87,8 +87,7 @@ class Node(NodeBase):
         else:
             r = f'{sl}-{el}'
 
-        s = '{}[{}:{}:{}:{}]'\
-            .format(self.cat, r, self.sub, pu, os.path.basename(self.loc))
+        s = f'{self.cat}[{r}:{self.sub}:{pu}:{os.path.basename(self.loc)}]'
 
         return s
 
@@ -369,6 +368,29 @@ class Outline(OutlineBase):
 
                 tbl[constr_node.get_mkey()] = li
 
+            query = QUERY_TBL['isp_qspn'] % {'proj': self._graph_uri}
+
+            for qvs, row in self._sparql.query(query):
+                ver = row['ver']
+                loc = row['loc']
+                isp = row['isp']
+                qspn = row['qspn']
+
+                pu_name = row.get('pu_name', None)
+                # vpu_name = row.get('vpu_name', None)
+
+                # lver = get_lver(ver)
+
+                isp_node = self.get_node(Node(ver, loc, isp))
+
+                li = [remove_leading_digits(x) for x in qspn.split(QN_SEP)]
+                li.reverse()
+                if li[0] == pu_name:
+                    del li[0]
+                li.insert(0, pu_name)
+
+                tbl[isp_node.get_mkey()] = li
+
             self._qspn_tbl = tbl
 
     def extract_metrics(self):
@@ -403,10 +425,7 @@ class Outline(OutlineBase):
         p.add_child(c)
         c.add_parent(p)
 
-        logger.debug('add_edge: {}({}) -> {}({})'.format(p,
-                                                         len(p.get_children()),
-                                                         c,
-                                                         len(c.get_children())))
+        logger.debug(f'add_edge: {p}({len(p.get_children())}) -> {c}({len(c.get_children())})')
 
         if mark and 'do-construct' in c.cats:
             mkey = c.get_mkey()
@@ -450,16 +469,18 @@ class Outline(OutlineBase):
             call_name = row['call_name']
             callee_name = norm_callee_name(row['callee_name'])
 
-            call_node = Node(ver, loc, call, cat=call_cat, prog=prog, sub=sub,
+            call_node = Node(ver, loc, call, cat=call_cat,
+                             all_calls=self._all_calls,
+                             prog=prog, sub=sub,
                              callee_name=call_name,
                              pu_name=pu_name,
-                             vpu_name=vpu_name,
-                             all_calls=self._all_calls)
+                             vpu_name=vpu_name)
 
             parent_constr = row.get('constr', None)
 
             if sp:
                 sp_node = Node(ver, loc, sp, cat=row['sp_cat'],
+                               all_sps=self._all_sps,
                                sub=sub, pu_name=pu_name, vpu_name=vpu_name)
                 if not parent_constr:
                     self.add_edge(sp_node, call_node, mark=mark)
@@ -469,16 +490,22 @@ class Outline(OutlineBase):
                 if not parent_constr and not sp:
                     self.add_edge(main_node, call_node, mark=mark)
 
+            if call_node.is_relevant():
+                self._relevant_nodes.add(call_node)
+
             callee = row['callee']
             callee_loc = row['callee_loc']
             callee_cat = row['callee_cat']
             callee_pu_name = row.get('callee_pu_name', None)
 
             callee_node = Node(ver, callee_loc, callee, cat=callee_cat,
-                               sub=callee_name, pu_name=callee_pu_name,
-                               all_sps=self._all_sps)
+                               all_sps=self._all_sps,
+                               sub=callee_name, pu_name=callee_pu_name)
 
             self.add_edge(call_node, callee_node, mark=mark)
+
+            if callee_node.is_relevant():
+                self._relevant_nodes.add(callee_node)
 
         logger.debug('constr_sp')
         query = QUERY_TBL['constr_sp'] % {'proj': self._graph_uri}
@@ -509,11 +536,12 @@ class Outline(OutlineBase):
             call_name = row['call_name']
             callee_name = norm_callee_name(row['callee_name'])
 
-            call_node = Node(ver, loc, call, cat=call_cat, prog=prog, sub=sub,
+            call_node = Node(ver, loc, call, cat=call_cat,
+                             all_calls=self._all_calls,
+                             prog=prog, sub=sub,
                              callee_name=call_name,
                              pu_name=pu_name,
-                             vpu_name=vpu_name,
-                             all_calls=self._all_calls)
+                             vpu_name=vpu_name)
 
             self.add_edge(constr_node, call_node, mark=mark)
 
@@ -526,10 +554,13 @@ class Outline(OutlineBase):
             callee_pu_name = row.get('callee_pu_name', None)
 
             callee_node = Node(ver, callee_loc, callee, cat=callee_cat,
-                               sub=callee_name, pu_name=callee_pu_name,
-                               all_sps=self._all_sps)
+                               all_sps=self._all_sps,
+                               sub=callee_name, pu_name=callee_pu_name)
 
             self.add_edge(call_node, callee_node, mark=mark)
+
+            if callee_node.is_relevant():
+                self._relevant_nodes.add(callee_node)
 
         logger.info('check marks...')
         a = set()
@@ -591,6 +622,7 @@ class Outline(OutlineBase):
 
             elif sp:
                 sp_node = Node(ver, loc, sp, cat=row['sp_cat'],
+                               all_sps=self._all_sps,
                                sub=sub, pu_name=pu_name, vpu_name=vpu_name)
                 # sp_flag = False
                 self.add_edge(sp_node, constr_node, mark=mark)
@@ -637,6 +669,7 @@ class Outline(OutlineBase):
 
                 if sp:
                     sp_node = Node(ver, loc, sp, cat=row['sp_cat'],
+                                   all_sps=self._all_sps,
                                    sub=sub, pu_name=pu_name, vpu_name=vpu_name)
                     if not parent_constr:
                         self.add_edge(sp_node, dtv_node, mark=mark)
@@ -677,11 +710,12 @@ class Outline(OutlineBase):
                 if callee_name.startswith('mpi_'):
                     cat = 'mpi-call'
 
-                call_node = Node(ver, loc, call, cat=cat, prog=prog, sub=sub,
+                call_node = Node(ver, loc, call, cat=cat,
+                                 all_calls=self._all_calls,
+                                 prog=prog, sub=sub,
                                  callee_name=callee_name,
                                  pu_name=pu_name,
-                                 vpu_name=vpu_name,
-                                 all_calls=self._all_calls)
+                                 vpu_name=vpu_name)
 
                 if call_node.is_relevant():
                     self._relevant_nodes.add(call_node)
@@ -693,6 +727,7 @@ class Outline(OutlineBase):
 
                 if sp:
                     sp_node = Node(ver, loc, sp, cat=row['sp_cat'],
+                                   all_sps=self._all_sps,
                                    sub=sub, pu_name=pu_name, vpu_name=vpu_name)
                     if not parent_constr:
                         self.add_edge(sp_node, call_node, mark=mark)
@@ -739,6 +774,7 @@ class Outline(OutlineBase):
 
                 if sp:
                     sp_node = Node(ver, loc, sp, cat=row['sp_cat'],
+                                   all_sps=self._all_sps,
                                    sub=sub, pu_name=pu_name, vpu_name=vpu_name)
                     if not parent_constr:
                         self.add_edge(sp_node, goto_node, mark=mark)
@@ -802,7 +838,7 @@ class Outline(OutlineBase):
             except KeyError:
                 pass
 
-        logger.info('{} root nodes (out of {} nodes) found'.format(len(roots), count))
+        logger.info(f'{len(roots)} root nodes (out of {count} nodes) found')
 
         if DEBUG:
             def dump(lv, k):
@@ -815,9 +851,9 @@ class Outline(OutlineBase):
         tree = {'node_tbl': self._node_tbl, 'roots': roots}
 
         for nd in self._relevant_nodes:
-            nd.relevant = True
+            self.get_node(nd).set_relevant()
             for a in nd.get_ancestors():
-                a.relevant = True
+                self.get_node(a).set_relevant()
 
         self.set_tree(tree)
 

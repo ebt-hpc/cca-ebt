@@ -870,6 +870,70 @@ GRAPH <%%(proj)s> {
 ''' % NS_TBL
 
 
+Q_ISP_QSPN_F = '''DEFINE input:inference "ont.cpi"
+PREFIX f:   <%(f_ns)s>
+PREFIX ver: <%(ver_ns)s>
+PREFIX src: <%(src_ns)s>
+SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?qspn ?isp
+WHERE {
+GRAPH <%%(proj)s> {
+  {
+    SELECT DISTINCT ?ver ?loc ?pu_name ?vpu_name ?sp0 ?isp
+    (GROUP_CONCAT(DISTINCT CONCAT(STR(?dist), ?n); SEPARATOR=",") AS ?qspn)
+    WHERE {
+
+      ?isp a f:InternalSubprogram ;
+             f:inSubprogram ?sp0 ;
+             f:inProgramUnit ?pu .
+
+      ?sp0 src:inFile/src:location ?loc .
+
+      FILTER NOT EXISTS {
+        ?isp f:inSubprogram/f:inSubprogram ?sp0 .
+      }
+
+      ?pu a f:ProgramUnit ;
+          src:inFile/src:location ?pu_loc ;
+          ver:version ?ver .
+
+      OPTIONAL {
+        ?pu f:name ?pu_name .
+      }
+
+      OPTIONAL {
+        ?pu f:includedInProgramUnit ?vpu .
+        ?vpu f:name ?vpu_name .
+      }
+
+      ?sp0 a f:Subprogram ;
+           f:name ?sp0_name .
+
+      ?spx f:name ?n .
+
+      {
+        SELECT ?x ?sp
+        WHERE {
+          ?x a f:Subprogram ;
+             f:inSubprogram ?sp .
+        }
+      } OPTION(TRANSITIVE,
+               T_IN(?x),
+               T_OUT(?sp),
+               T_DISTINCT,
+               T_MIN(0),
+               T_NO_CYCLES,
+               T_STEP (?x) AS ?spx,
+               T_STEP ('step_no') AS ?dist
+               )
+      FILTER (?x = ?sp0)
+
+    } GROUP BY ?ver ?loc ?sp0 ?isp ?pu_name ?vpu_name
+  }
+}
+}
+''' % NS_TBL
+
+
 QUERY_TBL = {
     'aa_in_loop':    Q_AA_IN_LOOP_F,
     'other_calls':   Q_OTHER_CALLS_F,
@@ -879,6 +943,7 @@ QUERY_TBL = {
     'constr_sp':     Q_CONSTR_SP_F,
     'sp_sp':         Q_SP_SP_F,
     'constr_qspn':   Q_CONSTR_QSPN_F,
+    'isp_qspn':      Q_ISP_QSPN_F,
 }
 
 
