@@ -42,8 +42,8 @@ DESC_DIR_NAME = 'D'
 
 INDENT = 2
 
-TREE_URL = f'/{TREE_DIR_NAME}/'
-DESC_URL = f'/{DESC_DIR_NAME}/'
+TREE_URL = '/'
+DESC_URL = '/'
 
 DESC_EXT = ''
 
@@ -197,23 +197,30 @@ def change_ext(path, ext):
     return path_
 
 
-def tree_path_to_url(path, prefix=TREE_URL, basename_prefix=TREE_PREFIX):
+def tree_path_to_url(path,
+                     head=TREE_URL, dir_name=TREE_DIR_NAME, basename_prefix=TREE_PREFIX):
     path = os.path.join(os.path.dirname(path),
                         basename_prefix + os.path.basename(path)
                         )
-    if not prefix.endswith('/'):
-        prefix += '/'
-    url = prefix + pathname2url(path)
+    if dir_name:
+        path = os.path.join(dir_name, path)
+    if not head.endswith('/'):
+        head += '/'
+    url = head + pathname2url(path)
     return url
 
 
-def desc_path_to_url(path, prefix=DESC_URL, basename_prefix=DESC_PREFIX, ext=''):
+def desc_path_to_url(path,
+                     head=DESC_URL, dir_name=DESC_DIR_NAME, basename_prefix=DESC_PREFIX, ext=''):
+
     path = os.path.join(os.path.dirname(path),
                         basename_prefix + change_ext(os.path.basename(path), ext)
                         )
-    if not prefix.endswith('/'):
-        prefix += '/'
-    url = prefix + pathname2url(path)
+    if dir_name:
+        path = os.path.join(dir_name, path)
+    if not head.endswith('/'):
+        head += '/'
+    url = head + pathname2url(path)
     return url
 
 
@@ -271,10 +278,10 @@ def dump_css(path):
             f.write(CSS)
 
 
-def dump_html(html, path, prefix=''):
-    if prefix:
+def dump_html(html, path, basename_prefix=''):
+    if basename_prefix:
         path = os.path.join(os.path.dirname(path),
-                            prefix+os.path.basename(path))
+                            basename_prefix + os.path.basename(path))
     if os.path.exists(path):
         logger.warning(f'{path} exists')
     else:
@@ -304,10 +311,11 @@ def is_call(node):
     return node.get('type', '') == 'call'
 
 
-def emph_callee(code, callee):
+def emph_name(code, name):
     code_ = code
-    if callee:
-        code_ = code.replace(callee, f'<span class="emph">{callee}</span>')
+    if name:
+        code_ = code_.replace(name, f'<span class="emph">{name}</span>')
+        logger.debug(f'"{name}": {code} -> {code_}')
     return code_
 
 
@@ -432,6 +440,7 @@ class HtmlGenerator(object):
     def node_to_item(self, node, path=None, force_all=False):
 
         ty = node.get('type', '???')
+        cat = node.get('cat', '???')
         idx = node.get('idx', None)
         children = node.get('children', [])
 
@@ -440,9 +449,21 @@ class HtmlGenerator(object):
         if ty == 'call*':
             code_style = 'external'
 
-        callee = node.get('callee', None)
+        _code = node.get("code", "")
 
-        _code = emph_callee(node.get("code", ""), callee)
+        if _code:
+            if cat.endswith('main-program'):
+                pu = node.get('pu', None)
+                logger.debug(f'pu="{pu}"')
+                _code = emph_name(_code, pu)
+            if cat.endswith('-subprogram'):
+                name = node.get('name', None)
+                logger.debug(f'name="{name}"')
+                _code = emph_name(_code, name)
+            else:
+                callee = node.get('callee', None)
+                logger.debug(f'callee="{callee}"')
+                _code = emph_name(_code, callee)
 
         code = f'<span class="{code_style}">\n{_code}\n</span>'
 
@@ -451,14 +472,15 @@ class HtmlGenerator(object):
         id_attr = ''
 
         if path is not None:
-            tree_url = tree_path_to_url(path, prefix=self._tree_url)
+            tree_url = tree_path_to_url(path, head=self._tree_url)
             code = f'<a href="{tree_url}">\n{code}\n</a>'
             fpath = self.path_of_node_fid(node)
             sl = node.get('sl', -1)
             el = node.get('el', -1)
             code += f'\n&nbsp;[{sl}-{el}:{fpath}]'
 
-            desc_url = desc_path_to_url(path, prefix=self._desc_url, ext=self._desc_ext)
+            desc_url = desc_path_to_url(path, head=self._desc_url, dir_name='',
+                                        ext=self._desc_ext)
             desc = '&nbsp;\n<span class="desc">\n'
             desc += f'<a href={desc_url} target="_blank">\n'
             desc += '[desc]\n</a>\n</span>'
@@ -507,7 +529,7 @@ class HtmlGenerator(object):
             if name is None:
                 name = 'main'
             html = self.tree_to_html(node, name, rpath)
-            dump_html(html, fpath, prefix=TREE_PREFIX)
+            dump_html(html, fpath, basename_prefix=TREE_PREFIX)
             if self._debug:
                 print('-', fpath)
             self.show_node(node)
@@ -524,7 +546,7 @@ class HtmlGenerator(object):
             fpath = self.ensure_abs_path(rpath)
             sp_name = node.get('name', '???')
             html = self.tree_to_html(node, sp_name, rpath)
-            dump_html(html, fpath, prefix=TREE_PREFIX)
+            dump_html(html, fpath, basename_prefix=TREE_PREFIX)
             self.show_node(node)
 
         else:
