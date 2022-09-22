@@ -601,8 +601,9 @@ WHERE {
 GRAPH <%%(proj)s> {
 
   {
-    SELECT DISTINCT ?ver ?loc ?pu ?pu_name ?vpu_name ?constr ?callee ?cat
+    SELECT DISTINCT ?ver ?loc ?pu ?constr ?callee ?cat
                     ?call ?call_cat ?call_name
+                    ?sp ?sp_cat ?sub
     WHERE {
 
       ?call a ?call_cat0 OPTION (INFERENCE NONE) ;
@@ -644,8 +645,26 @@ GRAPH <%%(proj)s> {
         ?call_cat0 rdfs:label ?call_cat .
       }
 
-    } GROUP BY ?ver ?loc ?pu ?pu_name ?vpu_name ?constr ?callee ?cat
+      OPTIONAL {
+        ?constr f:inSubprogram ?sp .
+        ?sp a f:Subprogram ;
+            a ?sp_cat0 OPTION (INFERENCE NONE) ;
+            f:name ?sub .
+
+        FILTER NOT EXISTS {
+          ?constr f:inSubprogram ?sp0 .
+          ?sp0 f:inSubprogram ?sp .
+          FILTER (?sp != ?sp0)
+        }
+
+        GRAPH <http://codinuum.com/ont/cpi> {
+          ?sp_cat0 rdfs:label ?sp_cat
+        }
+      }
+
+    } GROUP BY ?ver ?loc ?pu ?constr ?callee ?cat
                ?call ?call_cat ?call_name
+               ?sp ?sp_cat ?sub
   }
 
   {
@@ -673,31 +692,16 @@ GRAPH <%%(proj)s> {
     } GROUP BY ?callee ?callee_cat ?callee_loc ?ver ?callee_pu_name
   }
 
-  OPTIONAL {
-    ?constr f:inSubprogram ?sp .
-    ?sp a f:Subprogram ;
-        a ?sp_cat0 OPTION (INFERENCE NONE) ;
-        f:name ?sub .
-
-    FILTER NOT EXISTS {
-      ?constr f:inSubprogram ?sp0 .
-      ?sp0 f:inSubprogram ?sp .
-      FILTER (?sp != ?sp0)
-    }
-
-    GRAPH <http://codinuum.com/ont/cpi> {
-      ?sp_cat0 rdfs:label ?sp_cat
-    }
-  }
-{
-  OPTIONAL {
-    ?constr f:inMainProgram ?main .
-    ?main a f:MainProgram .
+  {
     OPTIONAL {
-      ?main f:name ?prog .
+      ?constr f:inMainProgram ?main .
+      ?main a f:MainProgram .
+      OPTIONAL {
+        ?main f:name ?prog .
+      }
     }
   }
-}
+
 }
 }
 ''' % NS_TBL
