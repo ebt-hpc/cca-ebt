@@ -24,6 +24,7 @@ __author__ = 'Masatomo Hashimoto <m.hashimoto@stair.center>'
 import os
 import sys
 import time
+import json
 from datetime import datetime, timedelta
 from subprocess import Popen, run
 from threading import Thread
@@ -157,27 +158,41 @@ def get_image_name(image_name, devel=False):
     return image
 
 
-def get_container_mem():
-    cmd = f'{CONTAINER_CMD} info --format "{{{{json .MemTotal}}}}"'
-    m = None
+def get_container_info():
+    cmd = f'{CONTAINER_CMD} info --format "{{{{json .}}}}"'
+    d = None
     try:
         r = run(cmd, shell=True, capture_output=True, text=True)
         r.check_returncode()
-        m = int(r.stdout.strip())
+        d = json.loads(r.stdout.strip())
     except Exception as e:
-        print('[ERROR] failed to get container memory: {}'.format(str(e)))
+        print(f'[ERROR] failed to get container info: {e}')
+    return d
+
+
+def get_container_mem(info=None):
+    if info is None:
+        info = get_container_info()
+    m = info['MemTotal']
     return m
 
 
 def check_mem(mem_gb):
-    container_mem = get_container_mem()
+    info = get_container_info()
+    container_mem = get_container_mem(info)
+    running_containers = info.get('ContainersRunning', -1)
+    if running_containers < 0:
+        print('[WARNING] failed to get the number of running containers')
     b = True
     if container_mem is not None:
         mem = mem_gb * 1000000000
-        container_mem_gb = container_mem / 1000000000
+        if running_containers >= 0:
+            container_mem /= (running_containers + 1)
         if mem > container_mem:
+            container_mem_gb = container_mem / 1000000000
             print(f'[WARNING] specified memory amount'
-                  f' ({mem_gb}GB) exceeds container\'s ({container_mem_gb:.2f}GB)')
+                  f' ({mem_gb}GB) exceeds container\'s'
+                  f' ({container_mem_gb:.2f}GB/Container)')
             b = False
     else:
         b = False
