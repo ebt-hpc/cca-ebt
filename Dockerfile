@@ -1,4 +1,4 @@
-FROM codinuum/cca:devel-20.04
+FROM codinuum/cca:devel
 
 MAINTAINER ebtxhpc
 
@@ -15,10 +15,12 @@ COPY cca /opt/cca/
 RUN set -x && \
     apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            gnupg2 && \
-    wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add - && \
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" \
-            | tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \
+            gnupg curl && \
+    curl -fsSL https://pgp.mongodb.com/server-7.0.asc \
+            | gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor && \
+            echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] \
+            https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" \
+            | tee /etc/apt/sources.list.d/mongodb-org-7.0.list && \
     apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             mongodb-org
