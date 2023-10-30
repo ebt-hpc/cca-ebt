@@ -410,32 +410,20 @@ class HtmlGenerator(object):
             pu = node.get('pu', '')
             ok = pu != ''
 
-            cats = node.get('cats', [])
-            if any([c.endswith('-internal-subprogram') for c in cats]):
-                if ok:
-                    prefix = ''.join([f'{n}-' for n in node.get('qspn', [])])
-                    logger.debug(f'prefix={prefix}')
-                    fpath = os.path.join(fpath, f'{prefix}{name}{ext}')
+            # cats = node.get('cats', [])
+            # if any([c.endswith('-internal-subprogram') for c in cats]):
+            #     if ok:
+            #         prefix = ''.join([f'{n}-' for n in node.get('qspn', [])])
+            #         logger.debug(f'prefix={prefix}')
+            #         fpath = os.path.join(fpath, f'{prefix}{name}{ext}')
 
-            elif any([c.endswith('-module-subprogram') for c in cats]):
-                if ok:
-                    prefix = ''.join([f'{n}-' for n in node.get('qspn', [])])
-                    logger.debug(f'prefix={prefix}')
-                    fpath = os.path.join(fpath, f'{prefix}{name}{ext}')
+            # elif any([c.endswith('-module-subprogram') for c in cats]):
+            #     if ok:
+            #         prefix = ''.join([f'{n}-' for n in node.get('qspn', [])])
+            #         logger.debug(f'prefix={prefix}')
+            #         fpath = os.path.join(fpath, f'{prefix}{name}{ext}')
 
-            elif any([c.endswith('-external-subprogram') for c in cats]):
-                if '|' in pu:
-                    pul = pu.split('|')
-                    ok &= name in pul
-                else:
-                    ok &= name == pu
-                if ok:
-                    fpath = os.path.join(fpath, f'{name}{ext}')
-            else:
-                if ok:
-                    fpath = os.path.join(fpath, f'{pu}-{name}{ext}')
-
-            # if cat.endswith('-external-subprogram'):
+            # elif any([c.endswith('-external-subprogram') for c in cats]):
             #     if '|' in pu:
             #         pul = pu.split('|')
             #         ok &= name in pul
@@ -443,15 +431,27 @@ class HtmlGenerator(object):
             #         ok &= name == pu
             #     if ok:
             #         fpath = os.path.join(fpath, f'{name}{ext}')
-
-            # elif cat.endswith('-internal-subprogram'):
-            #     if ok:
-            #         prefix = ''.join([f'{n}-' for n in node.get('qspn', [])])
-            #         logger.debug(f'prefix={prefix}')
-            #         fpath = os.path.join(fpath, f'{prefix}{name}{ext}')
             # else:
             #     if ok:
             #         fpath = os.path.join(fpath, f'{pu}-{name}{ext}')
+
+            if cat.endswith('-external-subprogram'):
+                if '|' in pu:
+                    pul = pu.split('|')
+                    ok &= name in pul
+                else:
+                    ok &= name == pu
+                if ok:
+                    fpath = os.path.join(fpath, f'{name}{ext}')
+
+            elif cat.endswith('-internal-subprogram'):
+                if ok:
+                    prefix = ''.join([f'{n}-' for n in node.get('qspn', [])])
+                    logger.debug(f'prefix={prefix}')
+                    fpath = os.path.join(fpath, f'{prefix}{name}{ext}')
+            else:
+                if ok:
+                    fpath = os.path.join(fpath, f'{pu}-{name}{ext}')
 
         logger.debug(f'fpath={fpath}')
 
