@@ -4,7 +4,7 @@
   A script for outlining C programs
 
   Copyright 2013-2018 RIKEN
-  Copyright 2017-2022 Chiba Institute of Technology
+  Copyright 2017-2025 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ class IndexGenerator(object):
 
 
 def node_list_to_string(li):
-    return '\n'.join(['{}: {}'.format(i, x) for i, x in enumerate(li)])
+    return '\n'.join([f'{i}: {x}' for i, x in enumerate(li)])
 
 
 def index(idx_gen, data, callees_tbl):
@@ -429,7 +429,7 @@ class NodeBase(object):
             try:
                 self._fid = self.get_ent().get_file_id().get_value()
             except Exception:
-                logger.debug('!!! uri={}'.format(self.uri))
+                logger.debug(f'!!! uri={self.uri}')
         return self._fid
 
     def get_start_line(self):
@@ -666,14 +666,12 @@ class NodeBase(object):
                 li = expanded_callee_tbl[self._callee_name]
                 expanded = li + [x for x in children if x not in li]
                 expanded_callee_tbl[self._callee_name] = expanded
-                logger.debug('expanded_callee_tbl: {} -> [{}]'
-                             .format(self._callee_name,
-                                     ';'.join([x['id'] for x in expanded])))
+                logger.debug(f'expanded_callee_tbl: {self._callee_name}'
+                             f' -> [{";".join([x["id"] for x in expanded])}]')
             except KeyError:
                 expanded_callee_tbl[self._callee_name] = children
-                logger.debug('expanded_callee_tbl: {} -> [{}]'
-                             .format(self._callee_name,
-                                     ';'.join([x['id'] for x in children])))
+                logger.debug(f'expanded_callee_tbl: {self._callee_name}'
+                             f' -> [{";".join([x["id"] for x in children])}]')
 
         d = self.get_record(children)
 
@@ -701,7 +699,7 @@ class NodeBase(object):
 
             if is_caller and self._children != [] and children == [] and is_filtered_out:
                 v = (d, len(ancl))
-                logger.debug('{} -> {}'.format(self._callee_name, v[1]))
+                logger.debug(f'{self._callee_name} -> {v[1]}')
                 try:
                     collapsed_caller_tbl[self._callee_name].append(v)
                 except KeyError:
@@ -1319,7 +1317,7 @@ class OutlineBase(object):
                         nodes.add(node)
 
                 except KeyError:
-                    # print('!!! not found: {}'.format(mkey))
+                    # print(f'!!! not found: {mkey}')
                     pass
 
             idgen = IdGenerator()
@@ -1365,8 +1363,7 @@ class OutlineBase(object):
 
                     d_tbl[d['id']] = root
 
-                    logger.debug('collapsed_caller_tbl: {}'
-                                 .format(list(collapsed_caller_tbl.keys())))
+                    logger.debug(f'collapsed_caller_tbl: {list(collapsed_caller_tbl.keys())}')
 
                 nid = idgen.gen()
 
@@ -1421,10 +1418,8 @@ class OutlineBase(object):
                         callee_dl = expanded_callee_tbl.get(callee, [])
                         if callee_dl:
                             callees_tbl[callee] = [d['id'] for d in callee_dl]
-                            logger.debug('  callees_tbl: {} -> [{}]'
-                                         .format(callee,
-                                                 ','.join(callees_tbl[callee]))
-                                         )
+                            logger.debug(f'  callees_tbl: {callee}'
+                                         f' -> [{",".join(callees_tbl[callee])}]')
                             logger.debug(' -> skip')
                             continue
 
@@ -1434,8 +1429,7 @@ class OutlineBase(object):
                         for (r_, tbl) in root_expanded_callee_tbl.items():
                             callee_dl = tbl.get(callee, [])
                             if callee_dl:
-                                logger.debug('{} callee dicts found in {}'
-                                             .format(len(callee_dl), r_))
+                                logger.debug(f'{len(callee_dl)} callee dicts found in {r_}')
                                 collapsed_caller_tbl_ \
                                     = root_collapsed_caller_tbl.get(r_, {})
                                 break
@@ -1465,8 +1459,7 @@ class OutlineBase(object):
                                 if lv > max_lv:
                                     max_lv = lv
                                     selected = d
-                                logger.debug('    nid={} lv={}'.format(d['id'],
-                                                                       lv))
+                                logger.debug(f'    nid={d['id']} lv={lv}')
 
                             selected_id = selected['id']
                             logger.debug('    -> selected %s' % selected_id)
@@ -1474,7 +1467,7 @@ class OutlineBase(object):
                             copied_dl = []
 
                             try:
-                                base = '{}{}'.format(selected_id, NID_SEP)
+                                base = f'{selected_id}{NID_SEP}'
                                 idl = selected_id.split(NID_SEP)
 
                                 def conv_id(i):
@@ -1501,14 +1494,12 @@ class OutlineBase(object):
                                     copied = copy_dict(callee_d, hook=hook,
                                                        info=info)
                                     copied_dl.append(copied)
-                                    logger.debug('{} nodes copied'
-                                                 .format(info['count']))
+                                    logger.debug(f'{info['count']} nodes copied')
 
                                 selected['children'] = copied_dl
                                 callees_tbl[callee] = [d['id'] for d in copied_dl]
-                                logger.debug('callees_tbl: {} -> [{}]'
-                                             .format(callee,
-                                                     ','.join(callees_tbl[callee])))
+                                logger.debug(f'callees_tbl: {callee}'
+                                             f' -> [{",".join(callees_tbl[callee])}]')
                             except Exception as e:
                                 logger.warning(str(e))
 
@@ -1536,7 +1527,7 @@ class OutlineBase(object):
                     metrics_path = os.path.join(metrics_dir, metrics_file_name)
 
                     logger.info(f'dumping metrics into "{metrics_path}"...')
-                    logger.info('{} rows found'.format(len(csv_rows)))
+                    logger.info(f'{len(csv_rows)} rows found')
 
                     try:
                         with open(metrics_path, 'w') as metricsf:
@@ -1621,10 +1612,7 @@ class OutlineBase(object):
                             callees_tbl = root_callees_tbl[r]
                             if callees_tbl:
                                 logger.debug('callees_tbl found')
-                                logger.debug(' keys=[{}]'
-                                             .format(','
-                                                     .join(callees_tbl
-                                                           .keys())))
+                                logger.debug(f' keys=[{",".join(callees_tbl.keys())}]')
                                 json_d['callees_tbl'] = callees_tbl
                         except KeyError:
                             pass

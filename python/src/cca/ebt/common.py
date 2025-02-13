@@ -5,7 +5,7 @@
   Common functions
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2022 Chiba Institute of Technology
+  Copyright 2018-2025 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ def log(mes, out=sys.stdout):
 
     m = os.path.basename(fname)
 
-    out.write('[{}][{}]{} {}\n'.format(get_timestamp(), m, mstr, mes))
+    out.write(f'[{get_timestamp()}][{m}]{mstr} {mes}\n')
     # out.flush()
 
 
@@ -285,7 +285,7 @@ def parse(proj_dir, proj_id, ver):
     # args += ' -parser:fortran'
     args += ' %s' % proj_dir
 
-    cmd = '{}{}'.format(PARSESRC_CMD, args)
+    cmd = f'{PARSESRC_CMD}{args}'
     logger.info(f'cmd={cmd}')
 
     rc = proc.system(cmd)
@@ -400,7 +400,7 @@ class AnalyzerBase(object):
         else:
             self._pw = pw
 
-        logger.info('pw={} port={}'.format(self._pw, self._port))
+        logger.info(f'pw={self._pw} port={self._port}')
 
     def analyze_facts(self, proj_dir, proj_id, ver, dest_root, langs=[]):
         pass

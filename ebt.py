@@ -4,7 +4,7 @@
   A driver script for CCA/EBT container image
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2022 Chiba Institute of Technology
+  Copyright 2018-2025 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ CCA_VAR = '/var/lib/cca'
 PROJS_DIR = CCA_VAR+'/projects'
 CCA_LOG_DIR = '/var/lib/cca/log'
 WWW_DIR = '/var/www'
-SRV_CMD = '/usr/local/bin/supervisord'
+SRV_CMD = '/usr/bin/supervisord'
 
 
 CONTAINER_CMD = 'docker'
@@ -332,7 +332,7 @@ def restore_mongo_db(vol_name, mongo_path, dry_run=False, force=False,
         print(f'restoring state from "{mongo_path}"...')
     else:
         while True:
-            a = input(f'Do you want to restore state from "{mongo_path}" (y/n)? ')
+            a = input(f'Do you want to restore state from "{mongo_path}" [y/n]? ')
             if a == 'y':
                 break
             elif a == 'n':

@@ -4,7 +4,7 @@
   Outlining C/C++/Fortran programs
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2020 Chiba Institute of Technology
+  Copyright 2018-2025 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ class Analyzer(AnalyzerBase):
         conf = gen_conf_a(proj_id, ver, proj_dir)
 
         for lang in langs:
-            logger.info('outlining {} source code...'.format(lang))
+            logger.info(f'outlining {lang} source code...')
             ol = OUTLINE_TBL[lang](proj_id,
                                    method='odbc',
                                    pw=self._pw,
@@ -98,7 +98,7 @@ class Analyzer(AnalyzerBase):
             ol.gen_data(lang, dest_root, omitted=OMIT_TBL[lang],
                         all_roots=self._all_roots)
 
-            logging.info('generating topic data for "{}"...'.format(lang))
+            logging.info(f'generating topic data for "{lang}"...')
             ol.gen_topic(lang,
                          outdir=dest_root,
                          docsrc=proj_parent_dir,

@@ -4,7 +4,7 @@
   A script for outlining Fortran programs
 
   Copyright 2013-2018 RIKEN
-  Copyright 2018-2022 Chiba Institute of Technology
+  Copyright 2018-2025 Chiba Institute of Technology
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ class Node(NodeBase):
                     if nd.cats & CALLS:
                         score += nd.count_parent_loops_in_container()
 
-                logger.debug('{} <- [{}]'.format(score, ';'.join([str(x) for x in chain])))
+                logger.debug(f'{score} <- [{";".join([str(x) for x in chain])}]')
             else:
                 score = -1
         else:
@@ -403,11 +403,11 @@ class Outline(OutlineBase):
 
             try:
                 fop_tbl = self._metrics.get_item_tbl(metrics.N_FP_OPS)
-                logger.info('fop_tbl has {} items'.format(len(fop_tbl)))
+                logger.info(f'fop_tbl has {len(fop_tbl)} items')
                 # for k in fop_tbl.keys():
                 #     print(f'!!! {k}')
                 aa0_tbl = self._metrics.get_item_tbl(metrics.N_A_REFS[0])
-                logger.info('aa0_tbl has {} items'.format(len(aa0_tbl)))
+                logger.info(f'aa0_tbl has {len(aa0_tbl)} items')
 
             except KeyError:
                 logger.warning('could not find metrics')
@@ -842,9 +842,8 @@ class Outline(OutlineBase):
 
         if DEBUG:
             def dump(lv, k):
-                print('!!! {}{}({}) {}'.format('  '*lv, k,
-                                               len(k.get_children()),
-                                               ';'.join([c.cat for c in k.get_children()])))
+                print(f'!!! {"  "*lv}{k}({len(k.get_children())})'
+                      f' {";".join([c.cat for c in k.get_children()])}')
             for root in roots:
                 self.iter_tree(root, dump)
 
@@ -938,7 +937,7 @@ def test(proj):
     logger.info(f'{count} top constructs (that contain loops) found')
 
     def dump(lv, k):
-        print('{}{}'.format('  '*lv, k))
+        print(f'{"  "*lv}{k}')
 
     for ver in root_tbl.keys():
         lver = get_lver(ver)
@@ -970,7 +969,7 @@ def test2(proj):
     if sub:
         print(len(sub.get_children()))
         for c in sub.get_children():
-            print('{} {}'.format(c, c != sub))
+            print(f'{c} {c != sub}')
 
 
 def main():
