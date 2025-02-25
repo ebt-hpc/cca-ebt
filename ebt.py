@@ -202,7 +202,7 @@ def check_mem(mem_gb):
 def run_cmd(subcmd_name, dpath, mem, dry_run=False, devel=False, keep_fb=False,
             all_roots=False, all_sps=False, all_calls=False,
             html=False, tree_url=None, desc_url=None, desc_ext=None,
-            debug=True,
+            debug=False,
             image=IMAGE_NAME):
 
     if not check_mem(mem):
@@ -516,7 +516,7 @@ def update(args):
 
 def opcount(args):
     run_cmd('opcount', args.proj_dir, args.mem, dry_run=args.dry_run,
-            keep_fb=args.keep_fb, devel=args.devel, image=args.image)
+            keep_fb=args.keep_fb, devel=args.devel, debug=args.debug, image=args.image)
 
 
 def outline(args):
@@ -532,6 +532,7 @@ def outline(args):
             tree_url=args.tree_url,
             desc_url=args.desc_url,
             desc_ext=args.desc_ext,
+            debug=args.debug,
             image=args.image)
 
 
@@ -551,7 +552,7 @@ def main():
 
     parser.add_argument('-m', '--mem', dest='mem', metavar='GB', type=int,
                         choices=[2, 4, 8, 16, 32, 48, 64],
-                        help='available memory (GB)', default=4)
+                        help='specify available memory (GB)', default=4)
 
     parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true',
                         help='only print container commands')
@@ -562,6 +563,9 @@ def main():
 
     parser.add_argument('-x', '--experimental', dest='devel',
                         action='store_true', help='use experimental image')
+
+    parser.add_argument('-d', '--debug', dest='debug',
+                        action='store_true', help='enable debug logging')
 
     subparsers = parser.add_subparsers(title='subcommands')
 
